@@ -1,0 +1,18 @@
+repos:
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 24.2.0
+    hooks:
+      - id: black
+        language_version: python3.10
+        args: [
+          "--line-length", "79",
+          "--target-version", "py310",
+          "--check",
+          "--diff",
+          "src/"
+        ]
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v2.37.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
