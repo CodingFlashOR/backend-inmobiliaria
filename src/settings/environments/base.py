@@ -22,7 +22,7 @@ BASE_APPS = [
     "django.contrib.staticfiles",
 ]
 
-LOCAL_APPS = []
+LOCAL_APPS = ["apps.users"]
 
 THIRD_APPS = ["rest_framework", "corsheaders"]
 
