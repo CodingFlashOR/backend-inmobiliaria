@@ -15,7 +15,7 @@ class IUserRepository(ABC):
     @abstractclassmethod
     def insert(cls, data: Dict[str, Any]) -> None:
         """
-        Insert a new user into the repository.
+        Insert a new user into the database.
 
         Parameters:
         - data: A dictionary containing the user data.
@@ -26,7 +26,7 @@ class IUserRepository(ABC):
     @abstractclassmethod
     def get_user(cls, **filters) -> User:
         """
-        Retrieve a user from the repository based on the provided filters.
+        Retrieve a user from the database based on the provided filters.
 
         Parameters:
         - filters: Keyword arguments that define the filters to apply.
