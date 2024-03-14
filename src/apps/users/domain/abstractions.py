@@ -13,7 +13,7 @@ class IUserRepository(ABC):
     model: User
 
     @abstractclassmethod
-    def insert(self, data: Dict[str, Any]) -> User:
+    def insert(cls, data: Dict[str, Any]) -> None:
         """
         Insert a new user into the repository.
 
@@ -24,7 +24,7 @@ class IUserRepository(ABC):
         pass
 
     @abstractclassmethod
-    def get_user(self, **filters) -> User:
+    def get_user(cls, **filters) -> User:
         """
         Retrieve a user from the repository based on the provided filters.
 
