@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from typing import Dict
 
 from apps.users.infrastructure.db import UserRepository
+from apps.users.schemas.register import SerializerSchema
 from apps.exceptions import UserNotFoundError
 
 
@@ -32,11 +33,11 @@ class ErrorMessages(serializers.Serializer):
             self.fields[field_name].error_messages.update(msg)
 
 
+@SerializerSchema
 class RegisterSerializer(ErrorMessages):
     """
-    Serializer for user registration.
-
-    This serializer validates the data necessary for user registration according to the business logic.
+    Handles the data for user registration. Checks that the provided email, password,
+    and confirm password meet the necessary requirements.
     """
 
     email = serializers.CharField(

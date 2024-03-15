@@ -8,6 +8,7 @@ from typing import Dict, Any
 from apps.users.infrastructure.serializers import RegisterSerializer
 from apps.users.infrastructure.db import UserRepository
 from apps.users.applications import Registration
+from apps.users.schemas.register import ViewSchema
 
 
 class RegisterAPIView(generics.GenericAPIView):
@@ -23,10 +24,6 @@ class RegisterAPIView(generics.GenericAPIView):
     application_class = Registration
 
     def _handle_valid_request(self, data: Dict[str, Any]) -> Response:
-        """
-        Handles the response for a valid request.
-        """
-
         self.application_class(user_repository=UserRepository).create_user(
             data=data
         )
@@ -34,9 +31,6 @@ class RegisterAPIView(generics.GenericAPIView):
         return Response(status=status.HTTP_201_CREATED)
 
     def _handle_invalid_request(self, serializer: Serializer) -> Response:
-        """
-        Handles the response for an invalid request.
-        """
 
         return Response(
             data={
@@ -47,7 +41,17 @@ class RegisterAPIView(generics.GenericAPIView):
             content_type="application/json",
         )
 
+    @ViewSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
+        """
+        Handle POST requests for user registration.
+
+        This method allows the registration of a new user. It waits for a POST
+        request with a user's registration data, validates the information, and then
+        creates a new user if the data is valid or returns an error response if it is
+        not.
+        """
+
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             return self._handle_valid_request(data=serializer.validated_data)
