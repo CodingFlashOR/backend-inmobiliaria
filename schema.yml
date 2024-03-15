@@ -1,0 +1,135 @@
+openapi: 3.0.3
+info:
+  title: Inmobiliaria Bonpland API
+  version: 1.0.0
+  description: Welcome to the Bonpland Real Estate API documentation. This guide provides
+    detailed information on all available endpoints, including the HTTP methods they
+    accept, the parameters they require, and the response formats they return. This
+    documentation is designed to be a useful reference for both developers who maintain
+    and extend the API, and frontend developers who consume it in their client applications.
+    If you have any questions or encounter any problems, feel free to contact the
+    development team.
+paths:
+  /api/v1/user/:
+    post:
+      operationId: user_create
+      description: |-
+        Handle POST requests for user registration.
+
+        This method allows the registration of a new user. It waits for a POST
+        request with a user's registration data, validates the information, and then
+        creates a new user if the data is valid or returns an error response if it is
+        not.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              DataValid:
+                value:
+                  email: user1@example.com
+                  password: Aaa123456789
+                  confirm_password: Aaa123456789
+                summary: Register a new user
+                description: |-
+                  A valid user registration data. The following validations will be applied:
+                  - **Email:** Must be in a valid email format, no longer than 90 characters and not in use.
+                  - **Password:** Must be at least 8 characters, not more than 20 characters, and not a common or simple password.
+                  - **Confirm Password:** Must match the password.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          description: '**(CREATED)** User created correctly.'
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: object
+              examples:
+                EmailInvalid:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      email:
+                      - Correo electrónico inválido.
+                      password:
+                      - La contraseña debe tener al menos 8 caracteres.
+                  summary: Invalid request data
+                PasswordsNotMatch:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      non_field_errors:
+                      - Las contraseñas no coinciden.
+                  summary: Passwords do not match
+                EmailAlreadyUse:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      email:
+                      - Este correo electrónico ya está en uso.
+                  summary: Email already in use
+          description: '**(BAD_REQUEST)** The request data are invalid, error message(s)
+            are returned for each field that did not pass the validations.'
+        '500':
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                  code:
+                    type: string
+              examples:
+                DatabaseConnectionError:
+                  value:
+                    code: database_connection_error
+                    detail: Unable to establish a connection with the database. Please
+                      try again later.
+                  summary: Database connection error
+          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      description: |-
+        Handles the data for user registration. Checks that the provided email, password,
+        and confirm password meet the necessary requirements.
+      properties:
+        email:
+          type: string
+          minLength: 1
+          pattern: ^([A-Za-z0-9]+[-_.])*[A-Za-z0-9]+@[A-Za-z]+(\.[A-Z|a-z]{2,4}){1,2}$
+          maxLength: 90
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+          maxLength: 20
+        confirm_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - confirm_password
+      - email
+      - password
+tags:
+- name: Users
+  description: It comprises all the endpoints that manage all the functionality related
+    to a user in the API.
