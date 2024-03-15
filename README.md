@@ -125,10 +125,10 @@ Primero debes clonar este repositorio utilizando el siguiente comando en tu cons
 De esta manera podrás usar todas las funcionalidades que este proyecto tiene para ofrecer. Es importante que hayas seguido todos los pasos explicados en el orden establecido.
 
 ## 3. Tests
-Para correr las pruebas unitarias del código ejecuta el siguiente comando.
+Para correr las pruebas del proyecto debes cambiar el estado del entorno a `test` en la configuración de las varaibles de entorno y ejecutas el siguiente comando.
 
 ```bash
-pytest
+pytest src/tests
 ```
 
 ## 4. Documentación
