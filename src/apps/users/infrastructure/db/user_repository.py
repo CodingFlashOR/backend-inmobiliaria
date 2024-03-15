@@ -25,6 +25,8 @@ class UserRepository(IUserRepository):
         try:
             cls.model.objects.create_user(**data)
         except OperationalError:
+            # In the future, a retry system will be implemented when the database is
+            # suddenly unavailable.
             raise DatabaseConnectionError()
 
     @classmethod
@@ -39,6 +41,8 @@ class UserRepository(IUserRepository):
         try:
             user = cls.model.objects.filter(query).first()
         except OperationalError:
+            # In the future, a retry system will be implemented when the database is
+            # suddenly unavailable.
             raise DatabaseConnectionError()
         if not user:
             raise UserNotFoundError(
