@@ -51,4 +51,5 @@ class RegisterAPIView(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             return self._handle_valid_request(data=serializer.validated_data)
+
         return self._handle_invalid_request(serializer=serializer)
