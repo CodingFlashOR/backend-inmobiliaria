@@ -1,6 +1,7 @@
 import pytest
 
 from unittest.mock import Mock
+from typing import Dict
 
 from apps.users.applications import Registration
 from apps.exceptions import DatabaseConnectionError
@@ -17,10 +18,21 @@ class TestRegistration:
 
     application_class = Registration
 
-    def test_if_user_is_registered(self, user_repository: Mock) -> None:
+    @pytest.mark.parametrize(
+        "data",
+        [
+            {
+                "email": "user@example.com",
+                "password": "Aaa123456789",
+            }
+        ],
+        ids=["valid data"],
+    )
+    def test_if_user_registered(
+        self, user_repository: Mock, data: Dict[str, str]
+    ) -> None:
 
-        user = UserFactory.build()
-        data = {"email": user.email, "password": user.password}
+        user = UserFactory.build(**data)
 
         # Mocking the methods
         insert: Mock = user_repository.insert
@@ -34,10 +46,19 @@ class TestRegistration:
 
         insert.assert_called_once_with(data=data)
 
-    def test_if_raises_database_error(self, user_repository: Mock) -> None:
-
-        user = UserFactory.build()
-        data = {"email": user.email, "password": user.password}
+    @pytest.mark.parametrize(
+        "data",
+        [
+            {
+                "email": "user@example.com",
+                "password": "Aaa123456789",
+            }
+        ],
+        ids=["valid data"],
+    )
+    def test_if_raises_database_error(
+        self, user_repository: Mock, data: Dict[str, str]
+    ) -> None:
 
         # Mocking the methods
         insert: Mock = user_repository.insert
