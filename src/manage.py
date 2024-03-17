@@ -1,35 +1,14 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
-from decouple import config
 
 import os
 import sys
-
-from settings.constans import Environments
-
-
-def set_django_settings_module() -> None:
-    """Set DJANGO_SETTINGS_MODULE based on the environment status."""
-
-    environment_status = config("ENVIRONMENT_STATUS", cast=str)
-
-    settings_modules = {
-        Environments.DEVELOPMENT.value: "settings.environments.local",
-        Environments.PRODUCTION.value: "settings.environments.production",
-    }
-
-    try:
-        settings_module = settings_modules[environment_status]
-    except KeyError:
-        raise ValueError(f"Invalid environment status: {environment_status}")
-
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings_module)
 
 
 def main() -> None:
     """Run administrative tasks."""
 
-    set_django_settings_module()
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
     try:
         from django.core.management import execute_from_command_line
