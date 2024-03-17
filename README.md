@@ -12,7 +12,7 @@ Este proyecto hace parte de una iniciativa personal, esto implica que dicha inmo
 
 De esta manera se está simulando que la inmobiliaria es un cliente con una necesidad o problemática que desea solucionar a través de una aplicación web. Así comienza la iniciativa de este proyecto que parte del proceso de licitación de requerimientos, documentación, planificación, desarrollo y despliegue.
 
-En este repositorio encontrarás el código fuente de la API para la plataforma de gestión de inmobiliaria Bonpland. Para desarrollar este API nos hemos apoyado de un marco de trabajo muy potente conocido como [Django Rest Framework](https://www.django-rest-framework.org/).
+En este repositorio encontrarás el código fuente de la API para la plataforma de gestión de inmobiliaria Bonpland. Para desarrollar este API nos hemos apoyado de un marco de trabajo muy potente conocido como [Django Rest Framework](https://www.django-rest-framework.org/). La documentación de esta API la encontraras dando click [aquí](https://api-inmobiliaria-swagger-ui-public.onrender.com/api/v1/doc/swagger-ui/).
 
 ## 1. Descripción del proyecto
 
@@ -45,14 +45,13 @@ La estructura del proyecto es la siguiente:
     └── 📁settings
         └── 📁environments
             └── base.py
-            └── local.py
+            └── development.py
             └── production.py
-            └── test.py
+            └── testing.py
         └── asgi.py
-        └── constans.py
         └── urls.py
         └── wsgi.py
-    └── 📁test
+    └── 📁tests
     └── manage.py
     └── pytest.ini
     └── requirements.txt
@@ -64,7 +63,7 @@ La estructura del proyecto es la siguiente:
 
 - **[settings](./src/settings/):** Contiene archivos de configuración para la API. Incluye configuraciones para los diferentes entornos de desarrollo, producción y pruebas, configuraciones de los punto finales de la API, configuraciones ASGI y WSGI, etc.
 
-- **[test](./src/test/):** Contiene pruebas unitarias y de implementación del código de cada aplicación.
+- **[tests](./src/tests/):** Contiene pruebas unitarias y de implementación del código de cada aplicación.
 
 - **[manage.py](./src/manage.py):** esta es una utilidad de línea de comandos que te permite interactuar con tu proyecto Django de varias maneras.
 
@@ -80,8 +79,10 @@ Primero debes clonar este repositorio utilizando el siguiente comando en tu cons
   git clone https://github.com/CodingFlashOR/api-inmobiliaria.git
 ```
 
+### 2.1. Instalación manual
+
 > [!NOTE]
-> Asegúrese que Python esté instalado en su sistema operativo.
+> Asegúrese que Python 3.10.13 esté instalado en su sistema operativo.
 
 - **Paso 1 (instalar dependencias):** Para instalar las teconologias y paquetes que usa el proyecto usa el siguiente comando. Asegurate estar en el directotio raíz.
 
@@ -99,8 +100,11 @@ Primero debes clonar este repositorio utilizando el siguiente comando en tu cons
 - **Paso 3 (configurar variables de entorno):** Crea un archivo con el nombre _.env_ dentro del directorio raíz. Dentro de este archivo se definiran todas las variables de entorno de este proyecto.
 
     ```.env
-    ENVIRONMENT_STATUS='development'
     KEY_DJANGO='value'
+    EMAIL_HOST=smtp.gmail.com
+    EMAIL_HOST_USER=<correo electrónico>
+    EMAIL_HOST_PASSWORD=<contraseña para aplicaciones>
+    EMAIL_PORT=587
     ```
 
     El valor de la variable `KEY_DJANGO` lo puedes obtener ejecutando los siguientes comandos. El ultimo comando retorna el valor de la variable que deberas copiar en el archivo _.env_.
@@ -113,19 +117,33 @@ Primero debes clonar este repositorio utilizando el siguiente comando en tu cons
 - **Paso 4 (realizar migraciones):** Migramos los modelos del proyecto necesarios para el funcionamiento del servidor con el siguiente comando.
 
     ```bash
-    python3 manage.py migrate
+    python3 manage.py migrate --settings=settings.environments.development
     ```
 
 - **Paso 5 (Iniciar el servidor):** Para iniciar el servidor de manera local ejecuta el siguiente comando.
 
     ```bash
-    python3 manage.py runserver
+    python3 manage.py runserver --settings=settings.environments.development
+    ```
+
+### 2.1. Instalación con Docker
+
+- **Paso 1 (Construir imagen):** para construir la imagen del contenedor de este pryecto debes ejecutar el siguiente comando.
+
+    ```bash
+    docker build -t api-inmobiliaria .
+    ```
+
+- **Paso 2 (Correr imagen):** para iniciar el contenedor de este pryecto debes ejecutar el siguiente comando.
+
+    ```bash
+    docker run -p 8000:8000 api-inmobiliaria
     ```
 
 De esta manera podrás usar todas las funcionalidades que este proyecto tiene para ofrecer. Es importante que hayas seguido todos los pasos explicados en el orden establecido.
 
 ## 3. Tests
-Para correr las pruebas del proyecto debes cambiar el estado del entorno a `test` en la configuración de las varaibles de entorno y ejecutas el siguiente comando.
+Para correr las pruebas del proyecto debes ejecutar el siguiente comando.
 
 ```bash
 pytest src/tests
