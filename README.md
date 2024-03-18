@@ -12,7 +12,7 @@ Este proyecto hace parte de una iniciativa personal, esto implica que dicha inmo
 
 De esta manera se está simulando que la inmobiliaria es un cliente con una necesidad o problemática que desea solucionar a través de una aplicación web. Así comienza la iniciativa de este proyecto que parte del proceso de licitación de requerimientos, documentación, planificación, desarrollo y despliegue.
 
-En este repositorio encontrarás el código fuente de la API para la plataforma de gestión de inmobiliaria Bonpland. Para desarrollar este API nos hemos apoyado de un marco de trabajo muy potente conocido como [Django Rest Framework](https://www.django-rest-framework.org/). La documentación de esta API la encontraras dando click [aquí](https://api-inmobiliaria-swagger-ui-public.onrender.com/api/v1/doc/swagger-ui/).
+En este repositorio encontrarás el código fuente de la API para la plataforma de gestión de inmobiliaria Bonpland. Para desarrollar este API nos hemos apoyado de un marco de trabajo muy potente conocido como [Django Rest Framework](https://www.django-rest-framework.org/). La documentación de esta API la encontraras dando click [aquí](https://api-inmobiliaria-dev-xkfs.4.us-1.fl0.io/api/v1/doc/swagger-ui/).
 
 ## 1. Descripción del proyecto
 
