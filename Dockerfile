@@ -13,9 +13,8 @@ RUN apk add --no-cache \
 
 COPY ./src ./
 
-RUN python -m venv /venv && \
-    /venv/bin/pip install --upgrade pip && \
-    /venv/bin/pip install -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
 
 CMD [ "sh", "-c", "python manage.py migrate --settings=settings.environments.production && \
     python manage.py collectstatic --noinput --clear --settings=settings.environments.production && \
