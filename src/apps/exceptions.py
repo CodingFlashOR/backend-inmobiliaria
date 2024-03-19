@@ -69,3 +69,23 @@ class UserNotFoundError(DetailDictMixin, APIException):
             self.detail = detail or self.default_detail
         self.code = self.default_code
         super().__init__(detail=self.detail, code=self.code)
+
+
+class UserInactiveError(DetailDictMixin, APIException):
+    """
+    Exception raised when a user is inactive.
+    """
+
+    status_code = status.HTTP_401_UNAUTHORIZED
+    default_detail = "User is inactive."
+    default_code = "user_inactive"
+
+    def __init__(
+        self, detail: str | Dict[str, Any] = None, code: str = None
+    ) -> None:
+        if isinstance(detail, dict):
+            self.detail = {"detail": detail or self.default_detail}
+        else:
+            self.detail = detail or self.default_detail
+        self.code = code or self.default_code
+        super().__init__(detail=self.detail, code=self.code)
