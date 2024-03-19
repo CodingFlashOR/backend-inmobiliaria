@@ -167,3 +167,73 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class JWT(models.Model):
+    """
+    This model represents a JWT token in the system.
+    """
+
+    id = models.BigAutoField(db_column="id", primary_key=True, serialize=False)
+    user = models.ForeignKey(
+        db_column="user_id",
+        to="User",
+        to_field="id",
+        on_delete=models.SET_NULL,
+        db_index=True,
+        null=True,
+        blank=False,
+    )
+    jti = models.CharField(
+        db_column="jti",
+        max_length=255,
+        unique=True,
+        db_index=True,
+        null=False,
+        blank=False,
+    )
+    token = models.TextField(db_column="token", null=False, blank=False)
+    date_joined = models.DateTimeField(
+        db_column="date_joined", auto_now_add=True
+    )
+    expires_at = models.DateTimeField(
+        db_column="expires_at", null=False, blank=False
+    )
+
+    class Meta:
+        db_table = "jwt"
+        verbose_name = "jwt"
+        verbose_name_plural = "jwts"
+        ordering = ["-date_joined"]
+
+    def __str__(self) -> str:
+        return "Token for {} ({})".format(
+            self.user,
+            self.jti,
+        )
+
+
+class JWTBlacklisted(models.Model):
+    """
+    This model represents a blacklisted JWT token.
+    """
+
+    id = models.BigAutoField(db_column="id", primary_key=True, serialize=False)
+    token = models.OneToOneField(
+        db_column="token_id",
+        to="JWT",
+        to_field="id",
+        on_delete=models.CASCADE,
+    )
+    date_joined = models.DateTimeField(
+        db_column="date_joined", auto_now_add=True
+    )
+
+    class Meta:
+        db_table = "jwt_blacklisted"
+        verbose_name = "jwt_blacklisted"
+        verbose_name_plural = "jwts_blacklisted"
+        ordering = ["-date_joined"]
+
+    def __str__(self) -> str:
+        return f"Blacklisted token for {self.token.user}"
