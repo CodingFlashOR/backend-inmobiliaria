@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User
+from .models import User, JWT, JWTBlacklisted
 
 
 class UserAdminPanel(admin.ModelAdmin):
@@ -38,4 +38,24 @@ class UserAdminPanel(admin.ModelAdmin):
     )
 
 
+class JWTAdminPanel(admin.ModelAdmin):
+    """
+    Admin panel configuration for the JWT model.
+    """
+
+    list_display = ("id", "user", "jti", "token", "date_joined", "expires_at")
+    search_fields = ("user", "jti")
+
+
+class JWTBlacklistedAdminPanel(admin.ModelAdmin):
+    """
+    Admin panel configuration for the JWTBlacklisted model.
+    """
+
+    list_display = ("id", "token", "date_joined")
+    search_fields = ("token",)
+
+
 admin.site.register(User, UserAdminPanel)
+admin.site.register(JWT, JWTAdminPanel)
+admin.site.register(JWTBlacklisted, JWTBlacklistedAdminPanel)

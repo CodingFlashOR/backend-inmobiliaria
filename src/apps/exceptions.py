@@ -89,3 +89,21 @@ class UserInactiveError(DetailDictMixin, APIException):
             self.detail = detail or self.default_detail
         self.code = code or self.default_code
         super().__init__(detail=self.detail, code=self.code)
+
+
+class JWTNotFound(DetailDictMixin, APIException):
+    """
+    Exception raised when a token is not found.
+    """
+
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = "Token not found."
+    default_code = "token_not_found"
+
+    def __init__(self, detail: str | Dict[str, Any] = None, code: str = None):
+        if isinstance(detail, dict):
+            self.detail = {"detail": detail or self.default_detail}
+        else:
+            self.detail = detail or self.default_detail
+        self.code = code or self.default_code
+        super().__init__(detail=self.detail, code=self.code)
