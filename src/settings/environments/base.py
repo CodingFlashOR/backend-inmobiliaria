@@ -126,7 +126,7 @@ AUTHENTICATION_BACKENDS = [
 # API settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "apps.users.authentication.JWTAuthenticati",
+        "apps.users.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
