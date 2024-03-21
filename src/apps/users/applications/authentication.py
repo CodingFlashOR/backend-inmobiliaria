@@ -76,8 +76,8 @@ class Authentication:
     def _check_user_active(self, user: User) -> None:
         if not user.is_active:
             raise UserInactiveError(
-                detail="Cuenta inactiva.",
-                code="user_inactive",
+                detail="Cuenta del usuario inactiva.",
+                code="authentication_failed",
             )
 
     def _generate_tokens(self, user: User) -> Tuple[RefreshToken, AccessToken]:

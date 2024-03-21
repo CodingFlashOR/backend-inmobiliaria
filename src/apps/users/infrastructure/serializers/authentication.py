@@ -4,8 +4,10 @@ from django.core.validators import (
     MaxLengthValidator,
     MinLengthValidator,
 )
+from apps.users.schemas.authentication import SerializerSchema
 
 
+@SerializerSchema
 class AuthenticationSerializer(serializers.Serializer):
     """
     Handles the data for user authentication. Checks that the provided email and
