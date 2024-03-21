@@ -35,7 +35,7 @@ class TestApplication:
     @patch(
         "apps.users.applications.authentication.Authentication._generate_tokens"
     )
-    def test_authentication(
+    def test_auth(
         self,
         generate_tokens: Mock,
         authenticate: Mock,
@@ -97,7 +97,7 @@ class TestApplication:
     @patch(
         "apps.users.applications.authentication.Authentication._generate_tokens"
     )
-    def test_authentication_failed(
+    def test_auth_failed(
         self,
         generate_tokens: Mock,
         authenticate: Mock,

@@ -2,7 +2,7 @@ from django.test import Client
 from django.urls import reverse
 import pytest
 
-from typing import Tuple, Dict
+from typing import Tuple
 
 from apps.users.models import User
 from tests.users.factory import UserFactory
@@ -14,7 +14,7 @@ def setUp() -> Tuple[Client, str]:
 
 
 @pytest.mark.django_db
-class TestRegisterAPIView:
+class TestAPIView:
     """
     This class groups all the test cases for the register API view. This view is
     responsible for registering a new user in the real estate management system.
@@ -31,9 +31,7 @@ class TestRegisterAPIView:
         ],
         ids=["valid data"],
     )
-    def test_if_register_user(
-        self, setUp: Tuple[Client, str], data: Dict[str, str]
-    ) -> None:
+    def test_request_valid(self, setUp: Tuple[Client, str], data) -> None:
 
         client, path = setUp
 
@@ -55,9 +53,7 @@ class TestRegisterAPIView:
         ],
         ids=["email invalid"],
     )
-    def test_if_invalid_data(
-        self, setUp: Tuple[Client, str], data: Dict[str, str]
-    ) -> None:
+    def test_request_invalid(self, setUp: Tuple[Client, str], data) -> None:
 
         client, path = setUp
 
@@ -84,9 +80,7 @@ class TestRegisterAPIView:
         ],
         ids=["valid data"],
     )
-    def test_if_email_used(
-        self, setUp: Tuple[Client, str], data: Dict[str, str]
-    ) -> None:
+    def test_if_email_used(self, setUp: Tuple[Client, str], data) -> None:
 
         client, path = setUp
 
