@@ -9,6 +9,9 @@ info:
     and extend the API, and frontend developers who consume it in their client applications.
     If you have any questions or encounter any problems, feel free to contact the
     development team.
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
 paths:
   /api/v1/user/:
     post:
@@ -103,8 +106,153 @@ paths:
                       try again later.
                   summary: Database connection error
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
+  /api/v1/user/login/:
+    post:
+      operationId: user_login_create
+      description: |-
+        Handle POST requests for user authentication.
+
+        This method allows authentication of a user. It waits for a POST request with
+        your credentials, validates the information, and then returns a response with
+        the authentication tokens if the data is valid or returns an error response
+        if it is not.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+            examples:
+              DataValid:
+                value:
+                  email: user1@example.com
+                  password: Aaa123456789
+                summary: User authentication
+                description: |-
+                  Valid credentials for a user. The following validations will be applied:
+                  - **Email:** Must be in a valid email format and no longer than 90 characters.
+                  - **Password:** Must be at least 8 characters and not more than 20 characters.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  access:
+                    type: string
+                  refresh:
+                    type: string
+              examples:
+                ResponseOk:
+                  value:
+                    access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzExMDU0MzYyLCJpYXQiOjE3MTEwNDcxNjIsImp0aSI6IjY0MTE2YzgyYjhmMDQzOWJhNTJkZGZmMzgyNzQ2ZTIwIiwidXNlcl9pZCI6IjJhNmI0NTNiLWZhMmItNDMxOC05YzM1LWIwZTk2ZTg5NGI2MyJ9.gfhWpy5rYY6P3Xrg0usS6j1KhEvF1HqWMiU7AaFkp9A
+                    refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A
+                  summary: Valid request
+          description: '**(OK)** Authenticated user.'
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: object
+              examples:
+                EmailInvalid:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      email:
+                      - Correo electrónico inválido.
+                      password:
+                      - La contraseña debe tener al menos 8 caracteres.
+                  summary: Invalid request data
+                DataInvalid:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      email:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      password:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                  summary: Invalid request
+          description: '**(BAD_REQUEST)** The request data are invalid, error message(s)
+            are returned for each field that did not pass the validations.'
+        '401':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string
+              examples:
+                AuthenticationFailed:
+                  value:
+                    code: authentication_failed
+                    detail: Correo o contraseña inválida.
+                  summary: Credentials invalid
+                UserInactive:
+                  value:
+                    code: authentication_failed
+                    detail: Cuenta del usuario inactiva.
+                  summary: User inactive
+          description: |-
+            **(UNAUTHORIZED)** The user you are trying to authenticate is not authorized, this is due to some of the following reasons.
+            - Invalid credentials.
+            - The user's account has not been activated.
+        '500':
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                  code:
+                    type: string
+              examples:
+                DatabaseConnectionError:
+                  value:
+                    code: database_connection_error
+                    detail: Unable to establish a connection with the database. Please
+                      try again later.
+                  summary: Database connection error
+          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
 components:
   schemas:
+    AuthenticationRequest:
+      type: object
+      description: |-
+        Handles the data for user authentication. Checks that the provided email and
+        password meet the necessary requirements.
+      properties:
+        email:
+          type: string
+          minLength: 1
+          pattern: ^([A-Za-z0-9]+[-_.])*[A-Za-z0-9]+@[A-Za-z]+(\.[A-Z|a-z]{2,4}){1,2}$
+          maxLength: 90
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+          maxLength: 20
+      required:
+      - email
+      - password
     RegisterRequest:
       type: object
       description: |-
