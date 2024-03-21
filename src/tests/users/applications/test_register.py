@@ -1,16 +1,15 @@
 import pytest
 
 from unittest.mock import Mock
-from typing import Dict
 
 from apps.users.applications import Registration
 from apps.exceptions import DatabaseConnectionError
 from tests.users.factory import UserFactory
 
 
-class TestRegistration:
+class TestApplication:
     """
-    A test class for the Registration application.
+    A test class for the `Registration` application.
 
     This class contains test methods to verify the behavior of the Registration
     application. It tests both successful registration and handling of database errors.
@@ -28,9 +27,7 @@ class TestRegistration:
         ],
         ids=["valid data"],
     )
-    def test_if_user_registered(
-        self, user_repository: Mock, data: Dict[str, str]
-    ) -> None:
+    def test_registration(self, user_repository: Mock, data) -> None:
 
         user = UserFactory.build(**data)
 
@@ -54,11 +51,9 @@ class TestRegistration:
                 "password": "Aaa123456789",
             }
         ],
-        ids=["valid data"],
+        ids=["error connection"],
     )
-    def test_if_raises_database_error(
-        self, user_repository: Mock, data: Dict[str, str]
-    ) -> None:
+    def test_db_error(self, user_repository: Mock, data) -> None:
 
         # Mocking the methods
         insert: Mock = user_repository.insert

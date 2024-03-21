@@ -1,6 +1,6 @@
 import pytest
 
-from typing import Dict, Set
+from typing import Dict
 from unittest.mock import Mock, patch
 
 from apps.users.infrastructure.serializers import RegisterSerializer
@@ -8,7 +8,7 @@ from apps.exceptions import UserNotFoundError
 from tests.users.factory import UserFactory
 
 
-class TestRegisterSerializer:
+class TestSerializer:
     """
     A class to test the RegisterSerializer.
 
@@ -30,9 +30,7 @@ class TestRegisterSerializer:
         ids=["valid data"],
     )
     @patch("apps.users.infrastructure.serializers.register.UserRepository")
-    def test_if_serializer_valid(
-        self, repository: Mock, data: Dict[str, str]
-    ) -> None:
+    def test_serializer_valid(self, repository: Mock, data) -> None:
 
         # Mocking the methods
         get_user: Mock = repository.get_user
@@ -113,8 +111,8 @@ class TestRegisterSerializer:
         ],
     )
     @patch("apps.users.infrastructure.serializers.register.UserRepository")
-    def test_if_serializer_invalid(
-        self, repository: Mock, data: Dict[str, str], error_messages: Set[str]
+    def test_serializer_invalid(
+        self, repository: Mock, data, error_messages
     ) -> None:
 
         # Mocking the methods
