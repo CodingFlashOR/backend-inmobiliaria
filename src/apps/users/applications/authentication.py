@@ -1,34 +1,17 @@
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
-from rest_framework_simplejwt.tokens import Token
 from django.contrib.auth import authenticate
 
-from typing import Dict, Tuple, List, Protocol
+from typing import Dict
 
-from apps.users.domain.typing import JWTType, AccessToken, RefreshToken
-from apps.users.domain.abstractions import IJWTRepository
+from apps.users.applications.use_case import JWTUseCaseBase
+from apps.users.domain.typing import JWTType
+from apps.users.domain.abstractions import IJWTRepository, ITokenClass
 from apps.users.models import User
 from apps.users.utils import decode_jwt
 from apps.exceptions import UserInactiveError
 
 
-class ITokenClass(Protocol):
-    """
-    Interface that defines the methods that a class must implement to be used as a
-    JWT class.
-    """
-
-    def get_token(self, user: User) -> Token:
-        """
-        This method should return a JWT token for the given user.
-
-        Parameters:
-        - user: The user for which to generate the token.
-        """
-
-        ...
-
-
-class Authentication:
+class Authentication(JWTUseCaseBase):
     """
     Use case that is responsible for authenticating the user.
 
@@ -45,8 +28,7 @@ class Authentication:
     def __init__(
         self, jwt_class: ITokenClass, jwt_repository: IJWTRepository
     ) -> None:
-        self.jwt_class = jwt_class
-        self.jwt_repository = jwt_repository
+        super().__init__(jwt_repository=jwt_repository, jwt_class=jwt_class)
 
     def authenticate_user(
         self, credentials: Dict[str, str]
@@ -59,7 +41,13 @@ class Authentication:
         user = self._verify_credentials(credentials=credentials)
         self._check_user_active(user=user)
         refresh, access = self._generate_tokens(user=user)
-        self._add_tokens_to_checklist(user=user, tokens=[refresh, access])
+        self._add_tokens_to_checklist(
+            user=user,
+            token_data=[
+                {"token": refresh, "payload": decode_jwt(token=refresh)},
+                {"token": access, "payload": decode_jwt(token=access)},
+            ],
+        )
 
         return {"access": access, "refresh": refresh}
 
@@ -78,21 +66,4 @@ class Authentication:
             raise UserInactiveError(
                 detail="Cuenta del usuario inactiva.",
                 code="authentication_failed",
-            )
-
-    def _generate_tokens(self, user: User) -> Tuple[RefreshToken, AccessToken]:
-        refresh = self.jwt_class.get_token(user=user)
-        access = refresh.access_token
-
-        return str(refresh), str(access)
-
-    def _add_tokens_to_checklist(
-        self, user: User, tokens: List[JWTType]
-    ) -> None:
-        for token in tokens:
-            payload = decode_jwt(token=token)
-            self.jwt_repository.add_to_checklist(
-                token=token,
-                payload=payload,
-                user=user,
             )

@@ -107,3 +107,21 @@ class JWTNotFound(DetailDictMixin, APIException):
             self.detail = detail or self.default_detail
         self.code = code or self.default_code
         super().__init__(detail=self.detail, code=self.code)
+
+
+class JWTError(DetailDictMixin, APIException):
+    """
+    Exception raised when a token error occurs.
+    """
+
+    status_code = status.HTTP_401_UNAUTHORIZED
+    default_detail = "Token error."
+    default_code = "token_error"
+
+    def __init__(self, detail: str | Dict[str, Any] = None, code: str = None):
+        if isinstance(detail, dict):
+            self.detail = {"detail": detail or self.default_detail}
+        else:
+            self.detail = detail or self.default_detail
+        self.code = code or self.default_code
+        super().__init__(detail=self.detail, code=self.code)
