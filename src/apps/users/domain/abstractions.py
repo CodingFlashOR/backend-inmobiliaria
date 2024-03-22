@@ -1,7 +1,8 @@
+from rest_framework_simplejwt.tokens import Token
 from django.db.models import QuerySet
 
 from abc import abstractclassmethod, ABC
-from typing import Dict, Any
+from typing import Dict, Any, Protocol
 
 from apps.users.models import User, JWT, JWTBlacklisted
 from .typing import JWTType, JWTPayload
@@ -86,7 +87,7 @@ class IJWTRepository(ABC):
         pass
 
     @abstractclassmethod
-    def add_to_blacklist(cls, token: JWTType) -> None:
+    def add_to_blacklist(cls, token: JWT) -> None:
         """
         Add a token to the blacklist.
 
@@ -95,3 +96,20 @@ class IJWTRepository(ABC):
         """
 
         pass
+
+
+class ITokenClass(Protocol):
+    """
+    Interface that defines the methods that a class must implement to be used as a
+    JWT class.
+    """
+
+    def get_token(self, user: User) -> Token:
+        """
+        This method should return a JWT token for the given user.
+
+        Parameters:
+        - user: The user for which to generate the token.
+        """
+
+        ...
