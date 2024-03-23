@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 from apps.users.applications import Registration
 from apps.exceptions import DatabaseConnectionError
-from tests.users.factory import UserFactory
+from tests.users.factory import UserModelFactory
 
 
 class TestApplication:
@@ -29,7 +29,7 @@ class TestApplication:
     )
     def test_registration(self, user_repository: Mock, data) -> None:
 
-        user = UserFactory.build(**data)
+        user = UserModelFactory.build(**data)
 
         # Mocking the methods
         insert: Mock = user_repository.insert

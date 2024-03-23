@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 from apps.users.applications import Authentication
 from apps.exceptions import UserInactiveError
 from apps.exceptions import DatabaseConnectionError
-from tests.users.factory import UserFactory, JWTFactory
+from tests.users.factory import UserModelFactory, JWTFactory
 
 
 class TestApplication:
@@ -43,16 +43,16 @@ class TestApplication:
         credentials,
     ) -> None:
 
-        user = UserFactory.build(is_active=True)
-        access, access_payload = JWTFactory.access(user=user)
-        refresh, refresh_payload = JWTFactory.refresh(user=user)
+        user = UserModelFactory.build(is_active=True)
+        access = JWTFactory.access(user=user)
+        refresh = JWTFactory.refresh(user=user)
 
         # Mocking the methods
         add_to_checklist: Mock = jwt_repository.add_to_checklist
 
         # Setting the return values
         authenticate.return_value = user
-        generate_tokens.return_value = (refresh, access)
+        generate_tokens.return_value = (refresh["token"], access["token"])
         add_to_checklist.return_value = None
 
         tokens = self.application_class(
@@ -63,13 +63,13 @@ class TestApplication:
         authenticate.assert_called_once_with(**credentials)
         generate_tokens.assert_called_once_with(user=user)
         add_to_checklist.assert_any_call(
-            token=access, payload=access_payload, user=user
+            token=access["token"], payload=access["payload"], user=user
         )
         add_to_checklist.assert_any_call(
-            token=refresh, payload=refresh_payload, user=user
+            token=refresh["token"], payload=refresh["payload"], user=user
         )
-        assert tokens["access"] == access
-        assert tokens["refresh"] == refresh
+        assert tokens["access"] == access["token"]
+        assert tokens["refresh"] == refresh["token"]
 
     @pytest.mark.parametrize(
         "credentials, exeption, user_inactive",
@@ -112,7 +112,7 @@ class TestApplication:
 
         # Setting the return values
         if user_inactive:
-            authenticate.return_value = UserFactory.build(
+            authenticate.return_value = UserModelFactory.build(
                 email=credentials["email"], password=credentials["password"]
             )
             generate_tokens.return_value = ("abc", "abc")
@@ -151,20 +151,20 @@ class TestApplication:
         credentials,
     ) -> None:
 
-        user = UserFactory.build(
+        user = UserModelFactory.build(
             is_active=True,
             email=credentials["email"],
             password=credentials["password"],
         )
-        access, _ = JWTFactory.access(user=user)
-        refresh, refresh_payload = JWTFactory.refresh(user=user)
+        access = JWTFactory.access(user=user)
+        refresh = JWTFactory.refresh(user=user)
 
         # Mocking the methods
         add_to_checklist: Mock = jwt_repository.add_to_checklist
 
         # Setting the return values
         authenticate.return_value = user
-        generate_tokens.return_value = (refresh, access)
+        generate_tokens.return_value = (refresh["token"], access["token"])
         add_to_checklist.side_effect = DatabaseConnectionError
 
         with pytest.raises(DatabaseConnectionError):
@@ -176,5 +176,5 @@ class TestApplication:
         authenticate.assert_called_once_with(**credentials)
         generate_tokens.assert_called_once_with(user=user)
         add_to_checklist.assert_any_call(
-            token=refresh, payload=refresh_payload, user=user
+            token=refresh["token"], payload=refresh["payload"], user=user
         )

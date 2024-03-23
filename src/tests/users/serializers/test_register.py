@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 from apps.users.infrastructure.serializers import RegisterSerializer
 from apps.exceptions import UserNotFoundError
-from tests.users.factory import UserFactory
+from tests.users.factory import UserModelFactory
 
 
 class TestSerializer:
@@ -151,7 +151,7 @@ class TestSerializer:
         self, repository: Mock, data: Dict[str, str]
     ) -> None:
 
-        user = UserFactory.build(email=data["email"])
+        user = UserModelFactory.build(email=data["email"])
 
         # Mocking the methods
         get_user: Mock = repository.get_user

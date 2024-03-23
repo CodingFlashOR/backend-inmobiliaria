@@ -70,8 +70,8 @@ class TestAPIView:
             (
                 {"email": "user@example.com", "password": "Aaa123456789"},
                 401,
-                "user_inactive",
-                "Cuenta inactiva.",
+                "authentication_failed",
+                "Cuenta del usuario inactiva.",
                 True,
                 False,
             ),
