@@ -91,7 +91,7 @@ class UserInactiveError(DetailDictMixin, APIException):
         super().__init__(detail=self.detail, code=self.code)
 
 
-class JWTNotFound(DetailDictMixin, APIException):
+class JWTNotFoundError(DetailDictMixin, APIException):
     """
     Exception raised when a token is not found.
     """

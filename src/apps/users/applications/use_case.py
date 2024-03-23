@@ -3,7 +3,7 @@ from typing import List, Dict, Tuple, Any
 from apps.users.domain.abstractions import IJWTRepository, ITokenClass
 from apps.users.domain.typing import AccessToken, RefreshToken
 from apps.users.models import User, JWT
-from apps.exceptions import JWTError, JWTNotFound
+from apps.exceptions import JWTError, JWTNotFoundError
 
 
 class JWTUseCaseBase:
@@ -23,7 +23,7 @@ class JWTUseCaseBase:
 
         latest_tokens = self.jwt_repository.get_tokens_user(user=user)[:2]
         if len(latest_tokens) == 0:
-            raise JWTNotFound(
+            raise JWTNotFoundError(
                 code="token_not_found", detail="Tokens do not exist."
             )
         latest_token_jtis = [token_obj.jti for token_obj in latest_tokens]

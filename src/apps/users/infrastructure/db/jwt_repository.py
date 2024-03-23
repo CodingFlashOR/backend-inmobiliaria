@@ -5,7 +5,7 @@ from django.db import OperationalError
 from apps.users.domain.abstractions import IJWTRepository
 from apps.users.domain.typing import JWTPayload, JWTType
 from apps.users.models import User, JWT, JWTBlacklisted
-from apps.exceptions import JWTNotFound, DatabaseConnectionError
+from apps.exceptions import JWTNotFoundError, DatabaseConnectionError
 
 
 class JWTRepository(IJWTRepository):
@@ -42,7 +42,7 @@ class JWTRepository(IJWTRepository):
             # suddenly unavailable.
             raise DatabaseConnectionError()
         if not token:
-            raise JWTNotFound(
+            raise JWTNotFoundError(
                 code="token_not_found",
                 detail=f'Token {filters.get("token", "")} not found.',
             )
