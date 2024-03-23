@@ -2,7 +2,11 @@ import pytest
 
 from unittest.mock import Mock
 
-from apps.users.domain.abstractions import IUserRepository, IJWTRepository
+from apps.users.domain.abstractions import (
+    IUserRepository,
+    IJWTRepository,
+    ITokenClass,
+)
 
 
 @pytest.fixture
@@ -21,3 +25,12 @@ def jwt_repository() -> Mock:
     """
 
     return Mock(spec_set=IJWTRepository, name="JWTRepositoryMock")
+
+
+@pytest.fixture
+def jwt_class() -> Mock:
+    """
+    Mock the `TokenClass` class.
+    """
+
+    return Mock(spec_set=ITokenClass, name="TokenClassMock")

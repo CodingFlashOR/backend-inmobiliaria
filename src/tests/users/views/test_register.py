@@ -5,7 +5,7 @@ import pytest
 from typing import Tuple
 
 from apps.users.models import User
-from tests.users.factory import UserFactory
+from tests.users.factory import UserModelFactory
 
 
 @pytest.fixture
@@ -84,7 +84,7 @@ class TestAPIView:
 
         client, path = setUp
 
-        UserFactory.create(email=data["email"], password=data["password"])
+        UserModelFactory.create(email=data["email"], password=data["password"])
 
         response = client.post(path=path, data=data)
 
