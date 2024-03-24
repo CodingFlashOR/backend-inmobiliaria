@@ -1,14 +1,15 @@
 from rest_framework import serializers
 from jwt import DecodeError, ExpiredSignatureError
 
+from apps.users.schemas.refresh_tokens import SerializerSchema
 from apps.users.utils import decode_jwt
 
 
+@SerializerSchema
 class RefreshTokenSerializer(serializers.Serializer):
     """
-    Serializer for the refresh token of users in the real estate management system.
-
-    This serializer validates the refresh and access tokens. The refresh token is validated to check if it is expired or not. The access token is validated to check if it is invalid.
+    Handles the data for user token refresh. Checks that the provided access and
+    refresh tokens meet the necessary requirements.
     """
 
     refresh = serializers.CharField(required=True)
