@@ -7,7 +7,6 @@ from apps.users.domain.abstractions import (
     ITokenClass,
 )
 from apps.users.domain.typing import JWTType
-from apps.users.utils import decode_jwt
 
 
 class RefreshTokens(JWTUseCaseBase):
@@ -51,12 +50,6 @@ class RefreshTokens(JWTUseCaseBase):
         )
         self._add_tokens_to_blacklist(tokens=tokens)
         refresh, access = self._generate_tokens(user=user)
-        self._add_tokens_to_checklist(
-            user=user,
-            token_data=[
-                {"token": refresh, "payload": decode_jwt(token=refresh)},
-                {"token": access, "payload": decode_jwt(token=access)},
-            ],
-        )
+        self._add_tokens_to_checklist(tokens=[access, refresh], user=user)
 
         return {"access": access, "refresh": refresh}

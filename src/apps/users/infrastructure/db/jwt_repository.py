@@ -2,8 +2,9 @@ from rest_framework_simplejwt.utils import datetime_from_epoch
 from django.db.models import Q, QuerySet
 from django.db import OperationalError
 
+from apps.users.infrastructure.utils import decode_jwt
 from apps.users.domain.abstractions import IJWTRepository
-from apps.users.domain.typing import JWTPayload, JWTType
+from apps.users.domain.typing import JWTType
 from apps.users.models import User, JWT, JWTBlacklisted
 from apps.exceptions import JWTNotFoundError, DatabaseConnectionError
 
@@ -70,9 +71,7 @@ class JWTRepository(IJWTRepository):
         return tokens
 
     @classmethod
-    def add_to_checklist(
-        cls, payload: JWTPayload, token: JWTType, user: User
-    ) -> None:
+    def add_to_checklist(cls, token: JWTType, user: User) -> None:
         """
         Add a token to the checklist.
 
@@ -82,6 +81,7 @@ class JWTRepository(IJWTRepository):
         - user: A User instance representing the user.
         """
 
+        payload = decode_jwt(token=token)
         try:
             cls.model_token.objects.create(
                 jti=payload["jti"],
