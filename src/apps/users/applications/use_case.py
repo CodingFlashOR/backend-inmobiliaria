@@ -1,7 +1,7 @@
 from typing import List, Dict, Tuple, Any
 
 from apps.users.domain.abstractions import IJWTRepository, ITokenClass
-from apps.users.domain.typing import AccessToken, RefreshToken
+from apps.users.domain.typing import AccessToken, RefreshToken, JWTType
 from apps.users.models import User, JWT
 from apps.exceptions import JWTError, JWTNotFoundError
 
@@ -53,12 +53,11 @@ class JWTUseCaseBase:
         return str(refresh), str(access)
 
     def _add_tokens_to_checklist(
-        self, user: User, token_data: List[Dict[str, Any]]
+        self, user: User, tokens: List[JWTType]
     ) -> None:
-        for element in token_data:
+        for token in tokens:
             self.jwt_repository.add_to_checklist(
-                token=element["token"],
-                payload=element["payload"],
+                token=token,
                 user=user,
             )
 

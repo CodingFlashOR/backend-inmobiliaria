@@ -6,8 +6,6 @@ from typing import Dict
 from apps.users.applications.use_case import JWTUseCaseBase
 from apps.users.domain.typing import JWTType
 from apps.users.domain.abstractions import IJWTRepository, ITokenClass
-from apps.users.models import User
-from apps.users.utils import decode_jwt
 from apps.exceptions import UserInactiveError
 
 
@@ -38,32 +36,18 @@ class Authentication(JWTUseCaseBase):
         tokens.
         """
 
-        user = self._verify_credentials(credentials=credentials)
-        self._check_user_active(user=user)
-        refresh, access = self._generate_tokens(user=user)
-        self._add_tokens_to_checklist(
-            user=user,
-            token_data=[
-                {"token": refresh, "payload": decode_jwt(token=refresh)},
-                {"token": access, "payload": decode_jwt(token=access)},
-            ],
-        )
-
-        return {"access": access, "refresh": refresh}
-
-    def _verify_credentials(self, credentials: Dict[str, str]) -> User:
         user = authenticate(**credentials)
         if not user:
             raise AuthenticationFailed(
                 code="authentication_failed",
                 detail="Correo o contraseña inválida.",
             )
-
-        return user
-
-    def _check_user_active(self, user: User) -> None:
-        if not user.is_active:
+        elif not user.is_active:
             raise UserInactiveError(
                 detail="Cuenta del usuario inactiva.",
                 code="authentication_failed",
             )
+        refresh, access = self._generate_tokens(user=user)
+        self._add_tokens_to_checklist(tokens=[access, refresh], user=user)
+
+        return {"access": access, "refresh": refresh}

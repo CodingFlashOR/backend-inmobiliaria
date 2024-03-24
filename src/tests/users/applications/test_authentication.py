@@ -62,12 +62,8 @@ class TestApplication:
 
         authenticate.assert_called_once_with(**credentials)
         generate_tokens.assert_called_once_with(user=user)
-        add_to_checklist.assert_any_call(
-            token=access["token"], payload=access["payload"], user=user
-        )
-        add_to_checklist.assert_any_call(
-            token=refresh["token"], payload=refresh["payload"], user=user
-        )
+        add_to_checklist.assert_any_call(token=access["token"], user=user)
+        add_to_checklist.assert_any_call(token=refresh["token"], user=user)
         assert tokens["access"] == access["token"]
         assert tokens["refresh"] == refresh["token"]
 
@@ -175,6 +171,4 @@ class TestApplication:
 
         authenticate.assert_called_once_with(**credentials)
         generate_tokens.assert_called_once_with(user=user)
-        add_to_checklist.assert_any_call(
-            token=refresh["token"], payload=refresh["payload"], user=user
-        )
+        add_to_checklist.assert_any_call(token=access["token"], user=user)
