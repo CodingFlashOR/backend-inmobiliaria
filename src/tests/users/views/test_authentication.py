@@ -5,7 +5,7 @@ import pytest
 from typing import Tuple
 from unittest.mock import Mock, patch
 
-from apps.users.utils import decode_jwt
+from apps.users.infrastructure.utils import decode_jwt
 from apps.users.models import User, JWT
 from apps.exceptions import DatabaseConnectionError
 

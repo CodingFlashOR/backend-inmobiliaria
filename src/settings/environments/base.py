@@ -126,7 +126,7 @@ AUTHENTICATION_BACKENDS = [
 # API settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "apps.users.authentication.JWTAuthentication",
+        "apps.users.infrastructure.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
@@ -183,7 +183,7 @@ SPECTACULAR_SETTINGS = {
         },
     ],
     "SERVE_INCLUDE_SCHEMA": False,
-    # "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAuthenticated"],
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAuthenticated"],
     "COMPONENT_SPLIT_REQUEST": True,
     "LICENSE": {
         "name": "MIT License",
