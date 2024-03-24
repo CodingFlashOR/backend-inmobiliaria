@@ -106,6 +106,166 @@ paths:
                       try again later.
                   summary: Database connection error
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
+  /api/v1/user/jwt/refresh/:
+    post:
+      operationId: user_jwt_refresh_create
+      description: |-
+        Handle POST requests for token refresh.
+
+        This method allows refreshing of a user's tokens. It waits for a POST request
+        with the access and refresh tokens, validates the information, and then
+        returns a response with the new tokens if the data is valid or returns an
+        error response if it is not.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+            examples:
+              DataValid:
+                value:
+                  access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzA2Mjk2MzI3LCJpYXQiOjE3MDYyODkxMjcsImp0aSI6IjQ0Zjg3MDdjZTdhOTQ0Y2RhYWRlNzlhMDg1OThiY2NkIiwidXNlcl9pZCI6IjUwNTI5MjBjLWE3ZDYtNDM4ZS1iZmQwLWVhNTUyMTM4ODM2YyJ9.-FPGYs1m-SDZDs3FJ3wlnqESVhcIg8oYAgKOFBD6Qic
+                  refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcwNjM3NTUyNywiaWF0IjoxNzA2Mjg5MTI3LCJqdGkiOiI3NzE5OGZmM2JkYWQ0MTk5YTExNjcwZGMwMzdmNTM0YyIsInVzZXJfaWQiOiI1MDUyOTIwYy1hN2Q2LTQzOGUtYmZkMC1lYTU1MjEzODgzNmMifQ.dfHpJRflOA1M2BmraxcW401EJvrTqU6HfbVmHHRkF2U
+                summary: JWT for user
+                description: |-
+                  Valid data for the request. The following validations will be applied:
+                  - **Access token:** must be a valid token and expired.
+                  - **Refresh token:** must be a valid token and not expired.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  access:
+                    type: string
+                  refresh:
+                    type: string
+              examples:
+                ResponseOk:
+                  value:
+                    access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzExMDU0MzYyLCJpYXQiOjE3MTEwNDcxNjIsImp0aSI6IjY0MTE2YzgyYjhmMDQzOWJhNTJkZGZmMzgyNzQ2ZTIwIiwidXNlcl9pZCI6IjJhNmI0NTNiLWZhMmItNDMxOC05YzM1LWIwZTk2ZTg5NGI2MyJ9.gfhWpy5rYY6P3Xrg0usS6j1KhEvF1HqWMiU7AaFkp9A
+                    refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A
+                  summary: Valid request
+          description: '**(OK)** New user tokens.'
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: object
+                    properties:
+                      access:
+                        type: array
+                        items:
+                          type: string
+                      refresh:
+                        type: array
+                        items:
+                          type: string
+              examples:
+                InvalidData1:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      access:
+                      - Token is not expired.
+                  summary: Access token not expired
+                InvalidData2:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      refresh:
+                      - Token is expired.
+                  summary: Refresh token expired
+                InvalidData3:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      access:
+                      - Token is invalid.
+                      refresh:
+                      - Token is invalid.
+                  summary: Invalid tokens
+                InvalidData4:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      access:
+                      - This field is required.
+                      - This field may not be blank.
+                      - This field may not be null.
+                      refresh:
+                      - This field is required.
+                      - This field may not be blank.
+                      - This field may not be null.
+                  summary: Invalid request data
+          description: '**(BAD_REQUEST)** The request data are invalid, error message(s)
+            are returned for each field that did not pass the validations.'
+        '401':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string or object
+              examples:
+                UserNotFound:
+                  value:
+                    code: user_not_found
+                    detail: User 2a6b453b-fa2b-4318-9c35-b0e96e894b63 not found.
+                  summary: The user of the tokens was not found
+                TokenNotFound:
+                  value:
+                    code: token_not_found
+                    detail: Tokens do not exist.
+                  summary: The tokens were not foun
+                TokenError:
+                  value:
+                    code: token_error
+                    detail:
+                      message: The token does not match the user's last tokens.
+                      token_type: Access
+                      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A
+                  summary: The tokens do not match the user's last tokens
+          description: |-
+            **(UNAUTHORIZED)** Tokens cannot be refreshed, this is due to one of the following reasons.
+            - The user of the tokens was not found.
+            - The tokens do not match the user's last tokens.
+            - The tokens were not found.
+        '500':
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                  code:
+                    type: string
+              examples:
+                DatabaseConnectionError:
+                  value:
+                    code: database_connection_error
+                    detail: Unable to establish a connection with the database. Please
+                      try again later.
+                  summary: Database connection error
+          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
   /api/v1/user/login/:
     post:
       operationId: user_login_create
@@ -253,6 +413,21 @@ components:
       required:
       - email
       - password
+    RefreshTokenRequest:
+      type: object
+      description: |-
+        Handles the data for user token refresh. Checks that the provided access and
+        refresh tokens meet the necessary requirements.
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+        access:
+          type: string
+          minLength: 1
+      required:
+      - access
+      - refresh
     RegisterRequest:
       type: object
       description: |-
