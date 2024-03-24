@@ -7,6 +7,12 @@ from apps.exceptions import JWTError, JWTNotFoundError
 
 
 class JWTUseCaseBase:
+    """
+    Base class for JWT use cases.
+
+    This class provides common methods for handling JWT tokens, such as verifying,
+    generating, and adding tokens to the checklist or blacklist.
+    """
 
     def __init__(
         self, jwt_repository: IJWTRepository, jwt_class: ITokenClass

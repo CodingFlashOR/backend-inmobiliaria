@@ -9,9 +9,16 @@ from typing import Dict, Any
 from apps.users.infrastructure.serializers import RefreshTokenSerializer
 from apps.users.infrastructure.db import JWTRepository, UserRepository
 from apps.users.applications import RefreshTokens
+from apps.users.schemas.refresh_tokens import ViewSchema
 
 
 class RefreshTokenAPIView(generics.GenericAPIView):
+    """
+    API View for refreshing user tokens.
+
+    This view handles the `POST` request to refresh a user's access and refresh tokens
+    in the system.
+    """
 
     authentication_classes = ()
     serializer_class = RefreshTokenSerializer
@@ -45,7 +52,17 @@ class RefreshTokenAPIView(generics.GenericAPIView):
             content_type="application/json",
         )
 
+    @ViewSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
+        """
+        Handle POST requests for token refresh.
+
+        This method allows refreshing of a user's tokens. It waits for a POST request
+        with the access and refresh tokens, validates the information, and then
+        returns a response with the new tokens if the data is valid or returns an
+        error response if it is not.
+        """
+
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             return self._handle_valid_request(
