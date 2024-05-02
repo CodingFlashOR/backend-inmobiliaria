@@ -2,17 +2,15 @@
 > [!NOTE]
 > Este proyecto aun está en desarrollo.
 
-<picture>
+<div>
     <a href="https://dev-inmobiliaria.netlify.app">
-        <img src="/img/InmobiliariaBonplandBanner.png">
+        <img src="/images/InmobiliariaBonplandBanner.png">
     </a>
-</picture>
+</div>
 
-Este proyecto hace parte de una iniciativa personal, esto implica que dicha inmobiliaria es una **institución ficticia**. El motivo que impulsa el desarrollo de este proyecto es el de mejorar mis habilidades técnicas en el desarrollo backend con Python, partiendo de lo más básico hasta temas avanzados como implementar un sistema de tareas en segundo plano o la implementación de patrones de arquitectura y de diseño.
+Este proyecto hace parte de una iniciativa personal, esto implica que dicha inmobiliaria es una **institución ficticia**. El motivo que impulsa el desarrollo de este proyecto es el de mejorar mis habilidades técnicas en el desarrollo backend con Python, partiendo de lo más básico hasta temas avanzados como implementar un sistema de tareas en segundo plano o la implementación de patrones de arquitectura y de diseño. De esta manera se está simulando que la inmobiliaria es un cliente con una necesidad o problemática que desea solucionar a través de una aplicación web. Así comienza la iniciativa de este proyecto que parte del proceso de licitación de requerimientos, documentación, planificación, desarrollo y despliegue.
 
-De esta manera se está simulando que la inmobiliaria es un cliente con una necesidad o problemática que desea solucionar a través de una aplicación web. Así comienza la iniciativa de este proyecto que parte del proceso de licitación de requerimientos, documentación, planificación, desarrollo y despliegue.
-
-En este repositorio encontrarás el código fuente de la API para la plataforma de gestión de inmobiliaria Bonpland. Para desarrollar este API nos hemos apoyado de un marco de trabajo muy potente conocido como [Django Rest Framework](https://www.django-rest-framework.org/). La documentación de esta API la encontraras dando click [aquí](https://api-inmobiliaria-dev-xkfs.4.us-1.fl0.io/api/v1/doc/swagger-ui/).
+En este repositorio encontrarás el código fuente de la API para la plataforma de gestión de inmobiliaria Bonpland.
 
 ## 1. Descripción del proyecto
 
@@ -26,15 +24,16 @@ El sistema de gestión de inmuebles contendrá dos tipos de usuarios:
 - **Administradores:** Son los individuos que manejan la plataforma online de la inmobiliaria, pueden ser empleados de la misma que se encargan de administrar la plataforma web y las necesidades de los clientes (buscadores de propiedad o propietarios de propiedad).
 
 ### 1.2. Requerimientos funcionales
-- Registro parcial de un usuario.
+- Registro de un usuarios.
 - Autenticación para usuarios.
-- Activar una cuenta de usuario.
 - Actualizar la información de un usuario.
 - Eliminar un usuario.
 - Restablecer contraseña.
 - Confirmar número telefónico.
+- Activación de cuenta de usuarios vía correo electrónico.
 - Filtrado para la búsqueda de inmuebles.
 - Guardado de inmuebles para usuarios.
+- Funcionalidades para administradores.
 
 ### 1.3. Estructura
 La estructura del proyecto es la siguiente:
@@ -71,92 +70,120 @@ La estructura del proyecto es la siguiente:
 
 - **[pytest.ini](./src/pytest.ini):** Este archivo contiene la configuración para pytest, un marco de prueba para Python.
 
-## 2. Instalación en local
+## 2. Tecnologías
+<div>
+    <img src="/images/TechnologiesBackendIB.png">
+</div>
 
-Primero debes clonar este repositorio utilizando el siguiente comando en tu consola.
-
-```bash
-  git clone https://github.com/CodingFlashOR/api-inmobiliaria.git
-```
-
-### 2.1. Instalación manual
-
+## 3. Instalación del proyecto
 > [!NOTE]
-> Asegúrese que Python 3.10.13 esté instalado en su sistema operativo.
+> Asegúrese que Python 3.11.5 esté instalado en su sistema operativo.
 
-- **Paso 1 (instalar dependencias):** Para instalar las teconologias y paquetes que usa el proyecto usa el siguiente comando. Asegurate estar en el directotio raíz.
+Primero debes seguir las siguientes instrucciones y dependiendo de que manera quieres realizar la instalación seguiras los pasos para instalar el proyecto de manera manual o utilizando Docker.
 
+- **Clonar repositorio:** Para clonar este repositorio ejecuta los siguientes comandos.
+    
     ```bash
-    pip install -r "requirements.txt"
+    git clone https://github.com/CodingFlashOR/api-inmobiliaria.git
+    cd api-inmobiliaria
     ```
-
-- **Paso 2 (Instalar configuración pre-commit):** Este repositorio contiene unas reglas necesarias para  mantener la calidad del código, antes de realizar un `commit`se validara que los archivos estan correctamente formateados segun el estandar [PEP8](https://peps.python.org/pep-0008/), también se validará que los commits sigan el estándar [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/). Para iniciar estas reglas debes ejecutar el siguiente comando, 
-
+    
+- **Crear y activar entorno virtual:** Creares un entorno virtual con el siguiente comando, en este entorno instalaremos todas las dependencias de este proyecto.
+    
     ```bash
-    pre-commit install
-    pre-commit install --hook-type commit-msg
+    python3 -m venv <nombre_del_entorno>
     ```
-
-- **Paso 3 (configurar variables de entorno):** Crea un archivo con el nombre _.env_ dentro del directorio raíz. Dentro de este archivo se definiran todas las variables de entorno de este proyecto.
+    
+    Por ultimo activamos el entorno con el siguiente comando.
+    
+    ```bash
+    # Linux y macOS
+    source <nombre_del_entorno>/bin/activate
+    
+    # Windows
+    .<nombre_del_entorno>\Scripts\activate
+    ```
+    
+- **Configurar variables de entorno:** Crea un archivo con el nombre _.env_ dentro del directorio _src_. En este archivo se definiran todas las variables de entorno de este proyecto. Las variables que se deben configurar son las siguientes.
 
     ```.env
-    KEY_DJANGO='value'
-    EMAIL_HOST=smtp.gmail.com
-    EMAIL_HOST_USER=<correo electrónico>
-    EMAIL_HOST_PASSWORD=<contraseña para aplicaciones>
-    EMAIL_PORT=587
+    KEY_DJANGO=<value>
     ```
 
-    El valor de la variable `KEY_DJANGO` lo puedes obtener ejecutando los siguientes comandos. El ultimo comando retorna el valor de la variable que deberas copiar en el archivo _.env_.
+    El valor de la variable `KEY_DJANGO` lo puedes obtener ejecutando los siguientes comandos. Primero iniciamos el intérprete de Python.
 
     ```bash
     python3
+    ```
+    El siguiente comando te va retornar el valor de `KEY_DJANGO` que deberas copiar en el archivo _.env_.
+
+    ```bash
     from django.core.management.utils import get_random_secret_key; print(get_random_secret_key()); exit()
     ```
 
-- **Paso 4 (realizar migraciones):** Migramos los modelos del proyecto necesarios para el funcionamiento del servidor con el siguiente comando.
+### 3.1. Instalación manual
 
+- **Paso 1 (instalar dependencias):** Para instalar las teconologias y paquetes que usa el proyecto usa el siguiente comando. Asegurate estar en el directotio raíz.
+    
     ```bash
-    python3 manage.py migrate --settings=settings.environments.development
+    pip install -r "requirements.txt"
+    ```
+    
+- **Paso 2 (realizar migraciones):** Migramos los modelos del proyecto necesarios para el funcionamiento del servidor con el siguiente comando.
+    
+    ```bash
+    python3 src/manage.py migrate --settings=settings.environments.development
     ```
 
-- **Paso 5 (Iniciar el servidor):** Para iniciar el servidor de manera local ejecuta el siguiente comando.
-
+- **Paso 3 (iniciar el servidor):** Para iniciar el servidor de manera local ejecuta el siguiente comando.
+    
     ```bash
-    python3 manage.py runserver --settings=settings.environments.development
+    python3 src/manage.py runserver --settings=settings.environments.development
     ```
-
-### 2.1. Instalación con Docker
+    
+### 3.2. Instalación con Docker
 
 - **Paso 1 (Construir imagen):** para construir la imagen del contenedor de este pryecto debes ejecutar el siguiente comando.
-
+    
     ```bash
     docker build -t api-inmobiliaria .
     ```
-
+    
 - **Paso 2 (Correr imagen):** para iniciar el contenedor de este pryecto debes ejecutar el siguiente comando.
-
+    
     ```bash
     docker run -p 8000:8000 api-inmobiliaria
     ```
-
+    
 De esta manera podrás usar todas las funcionalidades que este proyecto tiene para ofrecer. Es importante que hayas seguido todos los pasos explicados en el orden establecido.
 
-## 3. Tests
+## 4. Tests
 Para correr las pruebas del proyecto debes ejecutar el siguiente comando.
 
 ```bash
 pytest src/tests
 ```
 
-## 4. Documentación
+## 5. Contributores
+Si está interesado en contribuir a este proyecto, consulte nuestra guía [CONTRIBUTING](CONTRIBUTING.md) para obtener información sobre cómo comenzar. Proporciona pautas sobre cómo configurar su entorno de desarrollo, proponer cambios y más. ¡Esperamos sus contribuciones!
+
+## 6. Documentación
 | Título | Descripción | 
 |----------|----------|
 | [Especifcación de requerimientos](https://drive.google.com/file/d/1rHrYdVJ7h1wPVbSSrLhgfYliH-DhmyL-/view?usp=drive_link) | Este documento detalla los requerimientos funcionales, no funcionales y el comportamiento de las diferentes interfaces del sistema. |
 | [Base de datos]()   | Este documento proporciona una visión detallada de la estructura de la base de datos utilizada en el proyecto. |
 | [Documentación de la API](https://backend-inmobiliaria-dev-rgzp.2.us-1.fl0.io/api/schema/swagger-ui/) | Esta es la documentación para la API del proyecto, que incluye detalles sobre los endpoints disponibles y los datos que se pueden enviar y recibir. |
 
-## 6. Colaboradores
-| Nombre | Rol | 
-|----------|----------|
-| [Carlos Andres Aguirre Ariza](https://github.com/The-Asintota) | Backend |
+## 7. Repositorios relacionados
+- [Repositorio Frontend](https://github.com/CodingFlashOR/frontend-inmobiliaria/tree/dev).
+
+## 8. Colaboradores
+| Nombre | Enlaces | Roles | 
+|----------|:--------:|:--------:|
+| Yoana Avaro | <a href="https://www.linkedin.com/in/yoana-avaro/" target="_blank">LinkedIn</a> | Diseño UX/UI |
+| Maria Fuentes | <a href="https://www.linkedin.com/in/maria-fuentes-112920256/" target="_blank">LinkedIn</a> - <a href="https://github.com/Mmff07" target="_blank">Git Hub</a> - <a href="https://www.behance.net/mariafuentes22" target="_blank">Behance</a> | Diseño UX/UI |
+| Ignacio Nicolas Basilio Buracco | <a href="https://github.com/NachoBasilio" target="_blank">Git Hub</a> - <a href="https://www.linkedin.com/in/ignacio-nicolas-basilio-buracco/" target="_blank">LinkedIn</a> | Frontend |
+| Jose Lozada | <a href="https://github.com/lozada07" target="_blank">Git Hub</a> - <a href="" target="_blank">LinkedIn</a> | Frontend |
+| Carlos Andres Aguirre Ariza | <a href="https://github.com/The-Asintota" target="_blank">Git Hub</a> - <a href="https://www.linkedin.com/in/carlosaguirredev/" target="_blank">LinkedIn</a> | Backend - Frontend |
+| Gabriela Patiño | <a href="https://github.com/Gabyp05" target="_blank">Git Hub</a> - <a href="https://www.linkedin.com/in/gabyp05/" target="_blank">LinkedIn</a> | QA |
+| Carolina Pascua | <a href="https://github.com/CarolinaPascua" target="_blank">Git Hub</a> - <a href="https://www.linkedin.com/in/carolinalidiapascua/" target="_blank">LinkedIn</a> | QA |
