@@ -1,5 +1,3 @@
-import dj_database_url
-
 from .base import *
 
 
@@ -30,10 +28,16 @@ CORS_ORIGIN_WHITELIST = [f"https://{config('CLIENT_HOST', cast=str)}"]
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
-    "default": dj_database_url.config(
-        default=config("POSTGRE_DB_URL", cast=str),
-        engine="django.db.backends.postgresql",
-    ),
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": config("MYSQL_DB_NAME", cast=str),
+        "USER": config("MYSQL_DB_USER", cast=str),
+        "PASSWORD": config("MYSQL_DB_PASSWORD", cast=str),
+        "HOST": config("MYSQL_DB_HOST", cast=str),
+        "OPTIONS": {
+            "sql_mode": "STRICT_TRANS_TABLES",
+        },
+    }
 }
 
 
