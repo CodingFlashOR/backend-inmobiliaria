@@ -8,9 +8,9 @@ djangorestframework-simplejwt==5.3.1
 drf-spectacular==0.27.1
 factory-boy==3.3.0
 gunicorn==21.2.0
+mysqlclient==2.2.4
 phonenumbers==8.13.32
 pre-commit==3.6.2
-psycopg2-binary==2.9.9
 pytest-django==4.8.0
 python-decouple==3.8
 whitenoise==6.6.0
