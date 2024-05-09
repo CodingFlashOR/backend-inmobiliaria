@@ -1,8 +1,6 @@
 from pathlib import Path
 from decouple import config
-
 from datetime import timedelta
-
 from apps.users.domain.constants import (
     ACCESS_TOKEN_LIFETIME,
     REFRESH_TOKEN_LIFETIME,
@@ -133,6 +131,15 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "apps.utils.api_exception_handler",
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+# SMTP settings
+DEFAULT_FROM_EMAIL = config("EMAIL_HOST_USER", cast=str)
+EMAIL_FROM_USER = config("EMAIL_HOST_USER", cast=str)
+EMAIL_HOST = config("EMAIL_HOST", cast=str)
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", cast=str)
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", cast=str)
+EMAIL_PORT = config("EMAIL_PORT", cast=int)
+EMAIL_USE_TLS = True
 
 
 # jwt settings
