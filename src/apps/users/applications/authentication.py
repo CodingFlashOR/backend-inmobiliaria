@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate
 from typing import Dict
 
 from apps.users.applications.use_case import JWTUseCaseBase
-from apps.users.domain.typing import JWTType
+from apps.users.domain.typing import JWToken
 from apps.users.domain.abstractions import IJWTRepository, ITokenClass
 from apps.exceptions import UserInactiveError
 
@@ -30,7 +30,7 @@ class Authentication(JWTUseCaseBase):
 
     def authenticate_user(
         self, credentials: Dict[str, str]
-    ) -> Dict[str, JWTType]:
+    ) -> Dict[str, JWToken]:
         """
         Authenticate a user with the given credentials and return access and refresh
         tokens.

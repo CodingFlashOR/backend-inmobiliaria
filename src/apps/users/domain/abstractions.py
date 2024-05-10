@@ -1,22 +1,16 @@
 from rest_framework_simplejwt.tokens import Token
 from django.db.models import QuerySet, Model
-
-from abc import abstractclassmethod, ABC
+from .typing import JWToken
+from apps.users.models import User, JWT
 from typing import Dict, Any, Protocol
 
-from apps.users.models import User, JWT, JWTBlacklist
-from .typing import JWTType, JWTPayload
 
-
-class IUserRepository(ABC):
+class IUserRepository(Protocol):
     """
-    IUserRepository is an abstract base class that represents a user repository.
-    Subclasses should implement the `insert` and `get_user` methods.
+    IUserRepository is a protocol that defines the interface for a user repository.
     """
 
-    model: User
-
-    @abstractclassmethod
+    @classmethod
     def create(cls, data: Dict[str, Any], role: str) -> None:
         """
         Inserts a new user into the database.
@@ -29,9 +23,9 @@ class IUserRepository(ABC):
         - DatabaseConnectionError: If there is an operational error with the database.
         """
 
-        pass
+        ...
 
-    @abstractclassmethod
+    @classmethod
     def get(cls, **filters) -> QuerySet[User]:
         """
         Retrieves a user from the database according to the provided filters.
@@ -43,9 +37,9 @@ class IUserRepository(ABC):
         - DatabaseConnectionError: If there is an operational error with the database.
         """
 
-        pass
+        ...
 
-    @abstractclassmethod
+    @classmethod
     def get_profile_data(cls, user: User, **filters) -> QuerySet[Model]:
         """
         Retrieves the related data of a user profile from the database according to the
@@ -59,66 +53,76 @@ class IUserRepository(ABC):
         - DatabaseConnectionError: If there is an operational error with the database.
         """
 
-        pass
+        ...
 
 
-class IJWTRepository(ABC):
+class IJWTRepository(Protocol):
     """
-    IJWTRepository is an abstract base class that represents a JWT repository.
-    Subclasses should implement the `get_token`, `get_tokens_user`,
-    `add_to_checklist` and `add_to_blacklist` methods.
+    IJWTRepository is a protocol that defines the interface for a JWT repository.
     """
 
-    model_token: JWT
-    model_blacklist: JWTBlacklist
-
-    @abstractclassmethod
-    def get_token(cls, **filters) -> JWT:
+    @classmethod
+    def get(cls, **filters) -> JWT:
         """
-        Retrieve a token from the database based on the provided filters.
+        Retrieve a JWT from the database based on the provided filters.
 
-        Parameters:
+        #### Parameters:
         - filters: Keyword arguments that define the filters to apply.
+
+        #### Raises:
+        - DatabaseConnectionError: If there is an operational error with the database.
         """
 
-        pass
+        ...
 
-    @abstractclassmethod
+    @classmethod
     def get_tokens_user(cls, **filters) -> QuerySet[JWT]:
         """
         Retrieve tokens for a user from the database based on the provided filters.
 
-        Parameters:
+        #### Parameters:
         - filters: Keyword arguments that define the filters to apply.
+
+        #### Raises:
+        - DatabaseConnectionError: If there is an operational error with the database.
         """
 
-        pass
+        ...
 
-    @abstractclassmethod
-    def add_to_checklist(
-        cls, payload: JWTPayload, token: JWTType, user: User
-    ) -> None:
+    @classmethod
+    def add_to_checklist(cls, token: JWToken, user: User) -> None:
         """
-        Add a token to the checklist.
+        Associate a JSON Web Token with a user by adding it to the checklist.
 
-        Parameters:
-        - payload: A JWTPayload instance that represents the payload of a JWT.
-        - token: A JWTType instance representing a JWT.
-        - user: A User instance representing the user.
+        This way you can keep track of which tokens are associated with which
+        users, and which tokens created are pending expiration or invalidation.
+
+        #### Parameters:
+        - token: A JWToken.
+        - user: An instance of the User model.
+
+        #### Raises:
+        - DatabaseConnectionError: If there is an operational error with the database.
         """
 
-        pass
+        ...
 
-    @abstractclassmethod
+    @classmethod
     def add_to_blacklist(cls, token: JWT) -> None:
         """
-        Add a token to the blacklist.
+        Invalidates a JSON Web Token by adding it to the blacklist.
 
-        Parameters:
-        - token: A JWTType instance representing a JWT.
+        Once a token is blacklisted, it can no longer be used for authentication
+        purposes until it is removed from the blacklist or has expired.
+
+        #### Parameters:
+        - token: An instance of the `JWT` model.
+
+        #### Raises:
+        - DatabaseConnectionError: If there is an operational error with the database.
         """
 
-        pass
+        ...
 
 
 class ITokenClass(Protocol):
@@ -131,7 +135,7 @@ class ITokenClass(Protocol):
         """
         This method should return a JWT token for the given user.
 
-        Parameters:
+        #### Parameters:
         - user: The user for which to generate the token.
         """
 
