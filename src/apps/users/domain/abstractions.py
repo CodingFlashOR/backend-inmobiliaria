@@ -1,10 +1,10 @@
 from rest_framework_simplejwt.tokens import Token
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Model
 
 from abc import abstractclassmethod, ABC
 from typing import Dict, Any, Protocol
 
-from apps.users.models import User, JWT, JWTBlacklisted
+from apps.users.models import User, JWT, JWTBlacklist
 from .typing import JWTType, JWTPayload
 
 
@@ -17,23 +17,46 @@ class IUserRepository(ABC):
     model: User
 
     @abstractclassmethod
-    def insert(cls, data: Dict[str, Any]) -> None:
+    def create(cls, data: Dict[str, Any], role: str) -> None:
         """
-        Insert a new user into the database.
+        Inserts a new user into the database.
 
-        Parameters:
-        - data: A dictionary containing the user data.
+        #### Parameters:
+        - data: Dictionary containing the user's data.
+        - role: Role of the user.
+
+        #### Raises:
+        - DatabaseConnectionError: If there is an operational error with the database.
         """
 
         pass
 
     @abstractclassmethod
-    def get_user(cls, **filters) -> User:
+    def get(cls, **filters) -> QuerySet[User]:
         """
-        Retrieve a user from the database based on the provided filters.
+        Retrieves a user from the database according to the provided filters.
 
-        Parameters:
+        #### Parameters:
         - filters: Keyword arguments that define the filters to apply.
+
+        #### Raises:
+        - DatabaseConnectionError: If there is an operational error with the database.
+        """
+
+        pass
+
+    @abstractclassmethod
+    def get_profile_data(cls, user: User, **filters) -> QuerySet[Model]:
+        """
+        Retrieves the related data of a user profile from the database according to the
+        provided filters.
+
+        #### Parameters:
+        - user: User instance from which to retrieve the related data.
+        - filters: Keyword arguments that define the filters to apply.
+
+        #### Raises:
+        - DatabaseConnectionError: If there is an operational error with the database.
         """
 
         pass
@@ -47,7 +70,7 @@ class IJWTRepository(ABC):
     """
 
     model_token: JWT
-    model_blacklist: JWTBlacklisted
+    model_blacklist: JWTBlacklist
 
     @abstractclassmethod
     def get_token(cls, **filters) -> JWT:
