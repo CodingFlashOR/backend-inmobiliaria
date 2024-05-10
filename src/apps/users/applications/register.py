@@ -18,11 +18,10 @@ class Registration:
     def __init__(self, user_repository: IUserRepository) -> None:
         self.user_repository = user_repository
 
-    def create_user(self, data: Dict[str, Any]) -> None:
+    def create_user(self, data: Dict[str, Any], role: str) -> None:
         """
         Create a new user with the given data.
         """
 
-        if data.get("confirm_password", None):
-            del data["confirm_password"]
-        self.user_repository.insert(data=data)
+        del data["confirm_password"]
+        self.user_repository.create(data=data, role=role)

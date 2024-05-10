@@ -6,7 +6,7 @@ from apps.users.domain.abstractions import (
     IUserRepository,
     ITokenClass,
 )
-from apps.users.domain.typing import JWTType
+from apps.users.domain.typing import JWToken
 
 
 class RefreshTokens(JWTUseCaseBase):
@@ -36,13 +36,13 @@ class RefreshTokens(JWTUseCaseBase):
 
     def refresh_tokens(
         self, access_data: Dict[str, Any], refresh_data: Dict[str, Any]
-    ) -> Dict[str, JWTType]:
+    ) -> Dict[str, JWToken]:
         """
         Creates new tokens for the user.
         """
 
-        user = self.user_repository.get_user(
-            id=access_data["payload"]["user_id"]
+        user = self.user_repository.get(
+            uuid=access_data["payload"]["user_uuid"]
         )
         tokens = self._verify_latest_tokens(
             tokens_data={"access": access_data, "refresh": refresh_data},

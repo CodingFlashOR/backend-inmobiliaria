@@ -2,11 +2,11 @@ from jwt import decode
 
 from typing import Dict
 
-from apps.users.domain.typing import JWTType, JWTPayload
+from apps.users.domain.typing import JWToken, JWTPayload
 from settings.environments.base import SIMPLE_JWT
 
 
-def decode_jwt(token: JWTType, options: Dict[str, bool] = None) -> JWTPayload:
+def decode_jwt(token: JWToken, options: Dict[str, bool] = None) -> JWTPayload:
     """
     Returns the token payload.
     """

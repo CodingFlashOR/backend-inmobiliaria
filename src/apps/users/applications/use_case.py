@@ -1,9 +1,8 @@
-from typing import List, Dict, Tuple, Any
-
 from apps.users.domain.abstractions import IJWTRepository, ITokenClass
-from apps.users.domain.typing import AccessToken, RefreshToken, JWTType
+from apps.users.domain.typing import AccessToken, RefreshToken, JWToken
 from apps.users.models import User, JWT
 from apps.exceptions import JWTError, JWTNotFoundError
+from typing import List, Dict, Tuple, Any
 
 
 class JWTUseCaseBase:
@@ -28,11 +27,14 @@ class JWTUseCaseBase:
         """
 
         latest_tokens = self.jwt_repository.get_tokens_user(user=user)[:2]
+
         if len(latest_tokens) == 0:
             raise JWTNotFoundError(
                 code="token_not_found", detail="Tokens do not exist."
             )
+
         latest_token_jtis = [token_obj.jti for token_obj in latest_tokens]
+
         for token in [tokens_data["access"], tokens_data["refresh"]]:
             if not token["payload"]["jti"] in latest_token_jtis:
                 raise JWTError(
@@ -53,7 +55,7 @@ class JWTUseCaseBase:
         return str(refresh), str(access)
 
     def _add_tokens_to_checklist(
-        self, user: User, tokens: List[JWTType]
+        self, user: User, tokens: List[JWToken]
     ) -> None:
         for token in tokens:
             self.jwt_repository.add_to_checklist(

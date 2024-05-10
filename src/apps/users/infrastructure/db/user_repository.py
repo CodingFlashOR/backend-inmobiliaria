@@ -1,12 +1,11 @@
 from django.db import OperationalError
 from django.db.models import QuerySet, Model
-from apps.users.domain.abstractions import IUserRepository
 from apps.users.models import User, UserManager
 from apps.exceptions import DatabaseConnectionError
 from typing import Dict, Any
 
 
-class UserRepository(IUserRepository):
+class UserRepository:
     """
     UserRepository is a class that provides an abstraction of the database operations
     or queries related to a user.
