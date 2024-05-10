@@ -5,7 +5,7 @@ from django.db import OperationalError
 from apps.users.infrastructure.utils import decode_jwt
 from apps.users.domain.abstractions import IJWTRepository
 from apps.users.domain.typing import JWTType
-from apps.users.models import User, JWT, JWTBlacklisted
+from apps.users.models import User, JWT, JWTBlacklist
 from apps.exceptions import JWTNotFoundError, DatabaseConnectionError
 
 
@@ -16,7 +16,7 @@ class JWTRepository(IJWTRepository):
     """
 
     model_token = JWT
-    model_blacklist = JWTBlacklisted
+    model_blacklist = JWTBlacklist
 
     @classmethod
     def _create_query(cls, **filters):
