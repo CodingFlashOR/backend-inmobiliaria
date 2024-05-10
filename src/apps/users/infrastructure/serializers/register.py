@@ -101,7 +101,7 @@ class RegisterSerializer(ErrorMessages):
 
     def validate_email(self, value: str) -> str:
         try:
-            _ = UserRepository.get_user(email=value)
+            _ = UserRepository.get(email=value)
         except UserNotFoundError:
             return value
 
