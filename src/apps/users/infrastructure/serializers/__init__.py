@@ -1,3 +1,3 @@
-from .register import RegisterSerializer
+from .searcher_user import SearcherUserSerializer
 from .authentication import AuthenticationSerializer
 from .refresh_token import RefreshTokenSerializer

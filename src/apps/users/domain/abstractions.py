@@ -2,7 +2,7 @@ from rest_framework_simplejwt.tokens import Token
 from django.db.models import QuerySet, Model
 from .typing import JWToken
 from apps.users.models import User, JWT
-from typing import Dict, Any, Protocol
+from typing import Dict, Any, Protocol, Optional
 
 
 class IUserRepository(Protocol):
@@ -40,17 +40,21 @@ class IUserRepository(Protocol):
         ...
 
     @classmethod
-    def get_profile_data(cls, user: User, **filters) -> QuerySet[Model]:
+    def get_profile_data(
+        cls, user: Optional[User], role: Optional[str], **filters
+    ) -> QuerySet[Model]:
         """
         Retrieves the related data of a user profile from the database according to the
         provided filters.
 
         #### Parameters:
         - user: User instance from which to retrieve the related data.
+        - role: Role of the user from which to retrieve the related data.
         - filters: Keyword arguments that define the filters to apply.
 
         #### Raises:
         - DatabaseConnectionError: If there is an operational error with the database.
+        - ValueError: If the 'user' or 'role' parameter is not provided.
         """
 
         ...
