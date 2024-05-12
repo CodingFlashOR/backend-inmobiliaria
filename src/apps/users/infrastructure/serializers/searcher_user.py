@@ -42,7 +42,7 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
                 role=UserRoles.SEARCHER.value,
                 address=value,
             )
-        if self.profile.filter(address=value).exists():
+        if self.profile.first():
             raise serializers.ValidationError(
                 code="invalid_data",
                 detail=ERROR_MESSAGES["address_in_use"],
@@ -56,7 +56,7 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
                 role=UserRoles.SEARCHER.value,
                 phone_number=value,
             )
-        if self.profile.filter(phone_number=value).exists():
+        if self.profile.first():
             raise serializers.ValidationError(
                 code="invalid_data",
                 detail=ERROR_MESSAGES["phone_in_use"],
