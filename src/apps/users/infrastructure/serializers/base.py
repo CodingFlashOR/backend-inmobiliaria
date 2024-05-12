@@ -71,7 +71,7 @@ class BaseUserSerializer(ErrorMessagesSerializer):
     def validate_full_name(self, value: str) -> str:
         if not self.user:
             self.user = self._user_repository.get(full_name=value)
-        if self.user.filter(full_name=value).exists():
+        if self.user.first():
             raise serializers.ValidationError(
                 code="invalid_data",
                 detail=ERROR_MESSAGES["name_in_use"],
@@ -82,7 +82,7 @@ class BaseUserSerializer(ErrorMessagesSerializer):
     def validate_email(self, value: str) -> str:
         if not self.user:
             self.user = self._user_repository.get(email=value)
-        if self.user.filter(email=value).exists():
+        if self.user.first():
             raise serializers.ValidationError(
                 code="invalid_data",
                 detail=ERROR_MESSAGES["email_in_use"],

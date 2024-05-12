@@ -1,12 +1,20 @@
-import pytest
-
-from unittest.mock import Mock
-
+from django.db.models.query import QuerySet
 from apps.users.domain.abstractions import (
     IUserRepository,
     IJWTRepository,
     ITokenClass,
 )
+import pytest
+from unittest.mock import Mock
+
+
+@pytest.fixture
+def queryset() -> Mock:
+    """
+    Mock the `QuerySet` class.
+    """
+
+    return Mock(spec_set=QuerySet, name="QuerySetMock")
 
 
 @pytest.fixture
