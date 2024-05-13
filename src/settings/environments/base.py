@@ -125,7 +125,7 @@ AUTHENTICATION_BACKENDS = [
 # API settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "apps.users.infrastructure.authentication.JWTAuthentication",
+        "apps.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
@@ -143,7 +143,7 @@ EMAIL_PORT = config("EMAIL_PORT", cast=int)
 EMAIL_USE_TLS = True
 
 
-# jwt settings
+# JWT authentication settings
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": ACCESS_TOKEN_LIFETIME,
     "REFRESH_TOKEN_LIFETIME": REFRESH_TOKEN_LIFETIME,
@@ -160,8 +160,8 @@ SIMPLE_JWT = {
     "LEEWAY": 0,
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
-    "USER_ID_FIELD": "id",
-    "USER_ID_CLAIM": "user_id",
+    "USER_ID_FIELD": "uuid",
+    "USER_ID_CLAIM": "user_uuid",
     "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     "TOKEN_TYPE_CLAIM": "token_type",
@@ -170,7 +170,7 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
     "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
-    "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
+    "TOKEN_OBTAIN_SERIALIZER": "apps.users.infrastructure.serializers.authentication.TokenObtainPairSerializer",
     "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
     "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt.serializers.TokenVerifySerializer",
     "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",

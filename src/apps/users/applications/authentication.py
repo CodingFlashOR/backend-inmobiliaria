@@ -1,12 +1,9 @@
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate
-
-from typing import Dict
-
 from apps.users.applications.use_case import JWTUseCaseBase
 from apps.users.domain.typing import JWToken
 from apps.users.domain.abstractions import IJWTRepository, ITokenClass
-from apps.exceptions import UserInactiveError
+from typing import Dict
 
 
 class Authentication(JWTUseCaseBase):
@@ -37,16 +34,18 @@ class Authentication(JWTUseCaseBase):
         """
 
         user = authenticate(**credentials)
+
         if not user:
             raise AuthenticationFailed(
                 code="authentication_failed",
-                detail="Correo o contraseña inválida.",
+                detail="Credenciales inválidas.",
             )
         elif not user.is_active:
-            raise UserInactiveError(
-                detail="Cuenta del usuario inactiva.",
+            raise AuthenticationFailed(
                 code="authentication_failed",
+                detail="Cuenta del usuario inactiva.",
             )
+
         refresh, access = self._generate_tokens(user=user)
         self._add_tokens_to_checklist(tokens=[access, refresh], user=user)
 

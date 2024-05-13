@@ -18,7 +18,7 @@ class EmailBackend(ModelBackend):
         self, request: Request, email: str, password: str
     ) -> Optional[User]:
         try:
-            user = UserRepository.get_user(email=email)
+            user = UserRepository.get(email=email).first()
         except UserNotFoundError:
             return None
 

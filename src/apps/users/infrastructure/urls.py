@@ -13,7 +13,7 @@ urlpatterns = [
         name="searcher_user",
     ),
     path(
-        route="user/login/",
+        route="login/",
         view=AuthenticationAPIView.as_view(),
         name="authenticate_user",
     ),
