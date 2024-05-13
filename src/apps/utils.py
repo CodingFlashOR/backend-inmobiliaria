@@ -34,6 +34,7 @@ class ErrorMessagesSerializer(serializers.Serializer):
 
         # Customized error messages
         msg = {
+            "invalid": "El valor ingresado es inválido.",
             "required": "Este campo es requerido.",
             "blank": "Este campo no puede estar en blanco.",
             "null": "Este campo no puede ser nulo.",

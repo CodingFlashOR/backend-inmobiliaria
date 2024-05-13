@@ -24,7 +24,6 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
         required=True,
         max_length=SearcherUser.ADDRESS_MAX_LENGTH.value,
         error_messages={
-            "invalid": ERROR_MESSAGES["invalid"],
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
             ),
@@ -34,7 +33,6 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
         required=True,
         max_length=SearcherUser.PHONE_NUMBER_MAX_LENGTH.value,
         error_messages={
-            "invalid": ERROR_MESSAGES["invalid"],
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
             ),

@@ -22,7 +22,6 @@ class BaseUserSerializer(ErrorMessagesSerializer):
         required=True,
         max_length=SearcherUser.FULL_NAME_MAX_LENGTH.value,
         error_messages={
-            "invalid": ERROR_MESSAGES["invalid"],
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
             ),
@@ -39,7 +38,6 @@ class BaseUserSerializer(ErrorMessagesSerializer):
         required=True,
         max_length=SearcherUser.EMAIL_MAX_LENGTH.value,
         error_messages={
-            "invalid": ERROR_MESSAGES["invalid"],
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
             ),
@@ -59,7 +57,6 @@ class BaseUserSerializer(ErrorMessagesSerializer):
         min_length=SearcherUser.PASSWORD_MIN_LENGTH.value,
         style={"input_type": "password"},
         error_messages={
-            "invalid": ERROR_MESSAGES["invalid"],
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
             ),
