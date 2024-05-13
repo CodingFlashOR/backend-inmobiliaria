@@ -5,6 +5,9 @@ from rest_framework import status, exceptions
 from apps.users.infrastructure.serializers import SearcherUserSerializer
 from apps.users.infrastructure.db import UserRepository
 from apps.users.infrastructure.views.base import MappedAPIView
+from apps.users.infrastructure.schemas.searcher_user.views import (
+    CreateSearcherUserSchema,
+)
 from apps.users.applications import SearcherUserUsesCases
 from apps.exceptions import NotAuthenticated
 from typing import Dict, Any, List
@@ -55,7 +58,7 @@ class SearcherUserAPIView(MappedAPIView):
             content_type="application/json",
         )
 
-    # @ShelterPostSchema
+    @CreateSearcherUserSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
         """
         Handle POST requests for searcheruser registration.

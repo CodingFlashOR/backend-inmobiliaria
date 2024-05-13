@@ -3,6 +3,7 @@ from django.core.validators import RegexValidator
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from apps.users.infrastructure.db import UserRepository
+from apps.users.domain.constants import SearcherUser
 from apps.utils import ErrorMessagesSerializer, ERROR_MESSAGES
 from typing import Dict
 
@@ -19,8 +20,9 @@ class BaseUserSerializer(ErrorMessagesSerializer):
 
     full_name = serializers.CharField(
         required=True,
-        max_length=40,
+        max_length=SearcherUser.FULL_NAME_MAX_LENGTH.value,
         error_messages={
+            "invalid": ERROR_MESSAGES["invalid"],
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
             ),
@@ -35,8 +37,9 @@ class BaseUserSerializer(ErrorMessagesSerializer):
     )
     email = serializers.CharField(
         required=True,
-        max_length=40,
+        max_length=SearcherUser.EMAIL_MAX_LENGTH.value,
         error_messages={
+            "invalid": ERROR_MESSAGES["invalid"],
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
             ),
@@ -52,10 +55,11 @@ class BaseUserSerializer(ErrorMessagesSerializer):
     password = serializers.CharField(
         required=True,
         write_only=True,
-        max_length=20,
-        min_length=8,
+        max_length=SearcherUser.PASSWORD_MAX_LENGTH.value,
+        min_length=SearcherUser.PASSWORD_MIN_LENGTH.value,
         style={"input_type": "password"},
         error_messages={
+            "invalid": ERROR_MESSAGES["invalid"],
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
             ),
