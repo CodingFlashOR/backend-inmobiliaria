@@ -1,16 +1,11 @@
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework.request import Request
-from rest_framework.serializers import Serializer
 from rest_framework import status
-
-from typing import Dict, Any
-
 from apps.users.infrastructure.serializers import AuthenticationSerializer
 from apps.users.infrastructure.db import JWTRepository
 from apps.users.applications import Authentication
-from apps.users.schemas.authentication import ViewSchema
+from typing import Dict, Any, List
 
 
 class AuthenticationAPIView(TokenObtainPairView):
@@ -21,13 +16,13 @@ class AuthenticationAPIView(TokenObtainPairView):
     management system.
     """
 
-    authentication_classes = ()
-    serializer_class = AuthenticationSerializer
+    authentication_classes = []
+    permission_classes = []
     application_class = Authentication
 
     def _handle_valid_request(self, data: Dict[str, Any]) -> Response:
         tokens = self.application_class(
-            jwt_class=TokenObtainPairSerializer,
+            jwt_class=self.get_serializer_class(),
             jwt_repository=JWTRepository,
         ).authenticate_user(credentials=data)
 
@@ -38,18 +33,17 @@ class AuthenticationAPIView(TokenObtainPairView):
         )
 
     @staticmethod
-    def _handle_invalid_request(serializer: Serializer) -> Response:
+    def _handle_invalid_request(errors: List[Dict[str, List]]) -> Response:
 
         return Response(
             data={
                 "code": "invalid_request_data",
-                "detail": serializer.errors,
+                "detail": errors,
             },
             status=status.HTTP_400_BAD_REQUEST,
             content_type="application/json",
         )
 
-    @ViewSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
         """
         Handle POST requests for user authentication.
@@ -60,8 +54,8 @@ class AuthenticationAPIView(TokenObtainPairView):
         if it is not.
         """
 
-        serializer = self.serializer_class(data=request.data)
+        serializer = AuthenticationSerializer(data=request.data)
         if serializer.is_valid():
             return self._handle_valid_request(data=serializer.validated_data)
 
-        return self._handle_invalid_request(serializer=serializer)
+        return self._handle_invalid_request(errors=serializer.errors)
