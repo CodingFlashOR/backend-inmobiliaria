@@ -20,9 +20,12 @@ class MappedAPIView(generics.GenericAPIView):
     serializer_mapping = {}
 
     def get_authenticators(self):
-        authentication_classes = self.authentication_mapping[
-            self.request.method
-        ]
+        try:
+            authentication_classes = self.authentication_mapping[
+                self.request.method
+            ]
+        except AttributeError:
+            authentication_classes = []
 
         return [auth() for auth in authentication_classes]
 

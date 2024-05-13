@@ -1,7 +1,11 @@
 from rest_framework import serializers
 from phonenumber_field.serializerfields import PhoneNumberField
 from apps.users.infrastructure.db import UserRepository
-from .base import BaseUserSerializer
+from apps.users.infrastructure.serializers.base import BaseUserSerializer
+from apps.users.infrastructure.schemas.searcher_user.serializers import (
+    SearcherUserSerializerSchema,
+)
+from apps.users.domain.constants import SearcherUser
 from apps.users.models import UserRoles
 from apps.utils import ERROR_MESSAGES, ErrorMessagesSerializer
 
@@ -18,8 +22,9 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
 
     address = serializers.CharField(
         required=True,
-        max_length=90,
+        max_length=SearcherUser.ADDRESS_MAX_LENGTH.value,
         error_messages={
+            "invalid": ERROR_MESSAGES["invalid"],
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
             ),
@@ -27,7 +32,7 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
     )
     phone_number = PhoneNumberField(
         required=True,
-        max_length=25,
+        max_length=SearcherUser.PHONE_NUMBER_MAX_LENGTH.value,
         error_messages={
             "invalid": ERROR_MESSAGES["invalid"],
             "max_length": ERROR_MESSAGES["max_length"].format(
@@ -65,6 +70,7 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
         return value
 
 
+@SearcherUserSerializerSchema
 class SearcherUserSerializer(BaseUserSerializer):
     """
     Defines the fields that are required for the searcher user.
