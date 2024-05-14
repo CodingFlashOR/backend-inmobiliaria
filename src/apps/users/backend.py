@@ -1,11 +1,7 @@
 from rest_framework.request import Request
 from django.contrib.auth.backends import ModelBackend
-
-from typing import Optional
-
 from apps.users.infrastructure.db import UserRepository
 from apps.users.models import User
-from apps.exceptions import UserNotFoundError
 
 
 class EmailBackend(ModelBackend):
@@ -16,10 +12,14 @@ class EmailBackend(ModelBackend):
 
     def authenticate(
         self, request: Request, email: str, password: str
-    ) -> Optional[User]:
-        try:
-            user = UserRepository.get(email=email).first()
-        except UserNotFoundError:
+    ) -> User | None:
+        """
+        Authenticate a user with the given email and password.
+        """
+
+        user = UserRepository.get(email=email).first()
+
+        if not user:
             return None
 
         return user if user.check_password(raw_password=password) else None

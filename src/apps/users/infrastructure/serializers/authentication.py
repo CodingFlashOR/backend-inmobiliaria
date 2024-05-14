@@ -6,7 +6,8 @@ from rest_framework import serializers
 from django.core.validators import RegexValidator
 from apps.users.domain.constants import SearcherUser
 from apps.users.models import User
-from apps.utils import ErrorMessagesSerializer, ERROR_MESSAGES
+from apps.utils import ErrorMessagesSerializer
+from apps.constants import ERROR_MESSAGES
 
 
 class AuthenticationSerializer(ErrorMessagesSerializer):

@@ -1,174 +1,187 @@
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from apps.users.infrastructure.serializers.authentication import (
+    TokenObtainPairSerializer,
+)
+from apps.users.infrastructure.db import JWTRepository
+from apps.users.applications import JWTUsesCases
+from apps.users.models import User, JWT, JWTBlacklist, UserRoles
+from apps.exceptions import DatabaseConnectionError
+from apps.utils import decode_jwt
+from unittest.mock import Mock, patch
 import pytest
 
-from unittest.mock import Mock, patch
 
-from apps.users.applications import Authentication
-from apps.exceptions import UserInactiveError
-from apps.exceptions import DatabaseConnectionError
-from tests.users.factory import UserModelFactory, JWTFactory
-
-
+@pytest.mark.django_db
 class TestApplication:
     """
-    A test class for the `Authentication` application.
-
-    This class contains test methods to verify the behavior of the Authentication
-    application. It tests various scenarios such as successful authentication, error
-    handling, and exception cases.
+    A test class for the `JWTUsesCases` application. This class contains test methods
+    to verify the behavior of use cases for authenticating a user.
     """
 
-    application_class = Authentication
+    application_class = JWTUsesCases
 
-    @pytest.mark.parametrize(
-        "credentials",
-        [
-            {
-                "email": "email_1@exaplme.com",
-                "password": "123",
-            }
-        ],
-        ids=["valid credentials"],
-    )
-    @patch("apps.users.applications.authentication.authenticate")
-    @patch(
-        "apps.users.applications.authentication.Authentication._generate_tokens"
-    )
-    def test_auth(
-        self,
-        generate_tokens: Mock,
-        authenticate: Mock,
-        jwt_repository: Mock,
-        credentials,
-    ) -> None:
+    def test_authenticated_user(self) -> None:
+        # Creating a user
+        data = {
+            "full_name": "Nombre Apellido",
+            "email": "user1@email.com",
+            "password": "contraseña1234",
+            "confirm_password": "contraseña1234",
+            "profile_data": {
+                "address": "Residencia 1",
+                "phone_number": "+57 3123574898",
+            },
+        }
+        user = User.objects.create_user(
+            full_name=data["full_name"],
+            email=data["email"],
+            password=data["password"],
+            related_model_name=UserRoles.SEARCHER.value,
+            related_data=data["profile_data"],
+        )
+        user.is_active = True
+        user.save()
 
-        user = UserModelFactory.build(is_active=True)
-        access = JWTFactory.access(user=user)
-        refresh = JWTFactory.refresh(user=user)
-
-        # Mocking the methods
-        add_to_checklist: Mock = jwt_repository.add_to_checklist
-
-        # Setting the return values
-        authenticate.return_value = user
-        generate_tokens.return_value = (refresh["token"], access["token"])
-        add_to_checklist.return_value = None
+        # Asserting that the user does not exist in the database
+        assert JWT.objects.count() == 0
+        assert JWTBlacklist.objects.count() == 0
 
         tokens = self.application_class(
             jwt_class=TokenObtainPairSerializer,
-            jwt_repository=jwt_repository,
-        ).authenticate_user(credentials=credentials)
-
-        authenticate.assert_called_once_with(**credentials)
-        generate_tokens.assert_called_once_with(user=user)
-        add_to_checklist.assert_any_call(token=access["token"], user=user)
-        add_to_checklist.assert_any_call(token=refresh["token"], user=user)
-        assert tokens["access"] == access["token"]
-        assert tokens["refresh"] == refresh["token"]
-
-    @pytest.mark.parametrize(
-        "credentials, exeption, user_inactive",
-        [
-            (
-                {
-                    "email": "email_1@exaplme.com",
-                    "password": "123",
-                },
-                AuthenticationFailed,
-                False,
-            ),
-            (
-                {
-                    "email": "email_1@exaplme.com",
-                    "password": "123",
-                },
-                UserInactiveError,
-                True,
-            ),
-        ],
-        ids=["invalid credentials", "user inactive"],
-    )
-    @patch("apps.users.applications.authentication.authenticate")
-    @patch(
-        "apps.users.applications.authentication.Authentication._generate_tokens"
-    )
-    def test_auth_failed(
-        self,
-        generate_tokens: Mock,
-        authenticate: Mock,
-        jwt_repository: Mock,
-        credentials,
-        exeption,
-        user_inactive,
-    ) -> None:
-
-        # Mocking the methods
-        add_to_checklist: Mock = jwt_repository.add_to_checklist
-
-        # Setting the return values
-        if user_inactive:
-            authenticate.return_value = UserModelFactory.build(
-                email=credentials["email"], password=credentials["password"]
-            )
-            generate_tokens.return_value = ("abc", "abc")
-        else:
-            authenticate.return_value = None
-
-        with pytest.raises(exeption):
-            self.application_class(
-                jwt_class=TokenObtainPairSerializer,
-                jwt_repository=jwt_repository,
-            ).authenticate_user(credentials=credentials)
-
-        authenticate.assert_called_once_with(**credentials)
-        generate_tokens.assert_not_called()
-        add_to_checklist.assert_not_called()
-
-    @pytest.mark.parametrize(
-        "credentials",
-        [
-            {
-                "email": "email_1@exaplme.com",
-                "password": "123",
+            jwt_repository=JWTRepository,
+        ).authenticate_user(
+            credentials={
+                "email": data["email"],
+                "password": data["password"],
             }
-        ],
-        ids=["error conection"],
-    )
-    @patch("apps.users.applications.authentication.authenticate")
-    @patch(
-        "apps.users.applications.authentication.Authentication._generate_tokens"
-    )
-    def test_db_error(
-        self,
-        generate_tokens: Mock,
-        authenticate: Mock,
-        jwt_repository: Mock,
-        credentials,
-    ) -> None:
-
-        user = UserModelFactory.build(
-            is_active=True,
-            email=credentials["email"],
-            password=credentials["password"],
         )
-        access = JWTFactory.access(user=user)
-        refresh = JWTFactory.refresh(user=user)
 
+        access = tokens.get("access", False)
+        refresh = tokens.get("refresh", False)
+
+        # Asserting that the tokens were generated
+        assert access
+        assert refresh
+
+        access_payload = decode_jwt(token=access)
+        refresh_payload = decode_jwt(token=refresh)
+        access_obj = JWT.objects.filter(jti=access_payload["jti"]).first()
+        refresh_obj = JWT.objects.filter(jti=refresh_payload["jti"]).first()
+
+        # Asserting that the tokens were created
+        assert access_obj
+        assert refresh_obj
+        assert access_payload["role"] == UserRoles.SEARCHER.value
+        assert refresh_payload["role"] == UserRoles.SEARCHER.value
+
+        # Asserting that the tokens were created with the correct data
+        assert access_obj.user.uuid.__str__() == access_payload["user_uuid"]
+        assert access_obj.jti == access_payload["jti"]
+        assert access_obj.token == tokens["access"]
+        assert refresh_obj.user.uuid.__str__() == refresh_payload["user_uuid"]
+        assert refresh_obj.jti == refresh_payload["jti"]
+        assert refresh_obj.token == tokens["refresh"]
+
+    def test_if_credentials_invalid(self) -> None:
+        # Asserting that the user does not exist in the database
+        assert JWT.objects.count() == 0
+        assert JWTBlacklist.objects.count() == 0
+
+        with pytest.raises(AuthenticationFailed):
+            tokens = self.application_class(
+                jwt_class=TokenObtainPairSerializer,
+                jwt_repository=JWTRepository,
+            ).authenticate_user(
+                credentials={
+                    "email": "user1@email.com",
+                    "password": "contraseña1234",
+                }
+            )
+
+        # Asserting that the user does not exist in the database
+        assert JWT.objects.count() == 0
+        assert JWTBlacklist.objects.count() == 0
+
+    def test_if_inactive_user_account(self) -> None:
+        data = {
+            "full_name": "Nombre Apellido",
+            "email": "user1@email.com",
+            "password": "contraseña1234",
+            "confirm_password": "contraseña1234",
+            "profile_data": {
+                "address": "Residencia 1",
+                "phone_number": "+57 3123574898",
+            },
+        }
+
+        # Creating a user
+        user = User.objects.create_user(
+            full_name=data["full_name"],
+            email=data["email"],
+            password=data["password"],
+            related_model_name=UserRoles.SEARCHER.value,
+            related_data=data["profile_data"],
+        )
+
+        # Asserting that the user does not exist in the database
+        assert JWT.objects.count() == 0
+        assert JWTBlacklist.objects.count() == 0
+
+        with pytest.raises(AuthenticationFailed) as e:
+            tokens = self.application_class(
+                jwt_class=TokenObtainPairSerializer,
+                jwt_repository=JWTRepository,
+            ).authenticate_user(
+                credentials={
+                    "email": data["email"],
+                    "password": data["password"],
+                }
+            )
+
+        # Asserting that the exception data is correct
+        exception_info = e.value.get_full_details().get("detail")
+
+        assert exception_info.get("code") == "authentication_failed"
+        assert exception_info.get("message") == "Cuenta del usuario inactiva."
+
+        # Asserting that the user does not exist in the database
+        assert JWT.objects.count() == 0
+        assert JWTBlacklist.objects.count() == 0
+
+    @patch("apps.users.backend.UserRepository")
+    def test_exception_raised_db(
+        self, repository: Mock, jwt_repository: Mock
+    ) -> None:
         # Mocking the methods
-        add_to_checklist: Mock = jwt_repository.add_to_checklist
+        get: Mock = repository.get
 
         # Setting the return values
-        authenticate.return_value = user
-        generate_tokens.return_value = (refresh["token"], access["token"])
-        add_to_checklist.side_effect = DatabaseConnectionError
+        get.side_effect = DatabaseConnectionError
 
-        with pytest.raises(DatabaseConnectionError):
-            self.application_class(
+        # Asserting that the user does not exist in the database
+        assert JWT.objects.count() == 0
+        assert JWTBlacklist.objects.count() == 0
+
+        with pytest.raises(DatabaseConnectionError) as e:
+            tokend = self.application_class(
                 jwt_class=TokenObtainPairSerializer,
                 jwt_repository=jwt_repository,
-            ).authenticate_user(credentials=credentials)
+            ).authenticate_user(
+                credentials={
+                    "email": "user1@email.com",
+                    "password": "contraseña1234",
+                }
+            )
 
-        authenticate.assert_called_once_with(**credentials)
-        generate_tokens.assert_called_once_with(user=user)
-        add_to_checklist.assert_any_call(token=access["token"], user=user)
+        # Asserting that the exception data is correct
+        exception_info = e.value.get_full_details().get("detail")
+
+        assert exception_info.get("code") == "database_connection_error"
+        assert (
+            exception_info.get("message")
+            == "Unable to establish a connection with the database. Please try again later."
+        )
+
+        # Asserting that the user does not exist in the database
+        assert JWT.objects.count() == 0
+        assert JWTBlacklist.objects.count() == 0
