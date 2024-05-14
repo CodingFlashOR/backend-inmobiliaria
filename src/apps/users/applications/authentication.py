@@ -6,7 +6,7 @@ from apps.users.domain.abstractions import IJWTRepository, ITokenClass
 from typing import Dict
 
 
-class Authentication(JWTUseCaseBase):
+class JWTUsesCases(JWTUseCaseBase):
     """
     Use case that is responsible for authenticating the user.
 

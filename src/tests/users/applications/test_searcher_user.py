@@ -9,7 +9,7 @@ import pytest
 @pytest.mark.django_db
 class TestApplication:
     """
-    A test class for the SearcherUserUsesCases application. This class contains test
+    A test class for the `SearcherUserUsesCases` application. This class contains test
     methods to verify the behavior of use cases for a user with the `searcheruser`
     role.
     """

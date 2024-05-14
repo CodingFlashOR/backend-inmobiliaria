@@ -7,7 +7,8 @@ from apps.users.infrastructure.schemas.searcher_user.serializers import (
 )
 from apps.users.domain.constants import SearcherUser
 from apps.users.models import UserRoles
-from apps.utils import ERROR_MESSAGES, ErrorMessagesSerializer
+from apps.utils import ErrorMessagesSerializer
+from apps.constants import ERROR_MESSAGES
 
 
 class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
