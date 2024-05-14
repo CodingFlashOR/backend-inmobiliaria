@@ -2,7 +2,13 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
-from apps.users.infrastructure.serializers import AuthenticationSerializer
+from apps.users.infrastructure.schemas.authentication import (
+    AuthenticationSchema,
+)
+from apps.users.infrastructure.serializers import (
+    AuthenticationSerializer,
+    TokenObtainPairSerializer,
+)
 from apps.users.infrastructure.db import JWTRepository
 from apps.users.applications import JWTUsesCases
 from typing import Dict, Any, List
@@ -18,11 +24,12 @@ class AuthenticationAPIView(TokenObtainPairView):
 
     authentication_classes = []
     permission_classes = []
+    serializer_class = AuthenticationSerializer
     application_class = JWTUsesCases
 
     def _handle_valid_request(self, data: Dict[str, Any]) -> Response:
         tokens = self.application_class(
-            jwt_class=self.get_serializer_class(),
+            jwt_class=TokenObtainPairSerializer,
             jwt_repository=JWTRepository,
         ).authenticate_user(credentials=data)
 
@@ -44,6 +51,7 @@ class AuthenticationAPIView(TokenObtainPairView):
             content_type="application/json",
         )
 
+    @AuthenticationSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
         """
         Handle POST requests for user authentication.
@@ -54,7 +62,8 @@ class AuthenticationAPIView(TokenObtainPairView):
         if it is not.
         """
 
-        serializer = AuthenticationSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
+
         if serializer.is_valid():
             return self._handle_valid_request(data=serializer.validated_data)
 
