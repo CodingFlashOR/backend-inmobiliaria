@@ -13,6 +13,138 @@ info:
     name: MIT License
     url: https://opensource.org/licenses/MIT
 paths:
+  /api/v1/login/:
+    post:
+      operationId: authenticate_user
+      description: |-
+        Handle POST requests for user authentication.
+
+        This method allows authentication of a user. It waits for a POST request with
+        your credentials, validates the information, and then returns a response with
+        the authentication tokens if the data is valid or returns an error response
+        if it is not.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+            examples:
+              DataValid:
+                value:
+                  email: user1@email.com
+                  password: contraseña1234
+                summary: Valid credentials for a user.
+                description: |-
+                  Valid credentials for a user. The following validations will be applied:
+                  - **email:** This field is required and must not exceed 40 characters and must follow standard email format.
+                  - **password:** This field is required and should be between 8 and 20 characters. It should not be a common password or contain only numbers.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  access:
+                    type: string
+                  refresh:
+                    type: string
+              examples:
+                ResponseOk:
+                  value:
+                    access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzExMDU0MzYyLCJpYXQiOjE3MTEwNDcxNjIsImp0aSI6IjY0MTE2YzgyYjhmMDQzOWJhNTJkZGZmMzgyNzQ2ZTIwIiwidXNlcl9pZCI6IjJhNmI0NTNiLWZhMmItNDMxOC05YzM1LWIwZTk2ZTg5NGI2MyJ9.gfhWpy5rYY6P3Xrg0usS6j1KhEvF1HqWMiU7AaFkp9A
+                    refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A
+                  summary: User authenticated
+                  description: The user has been authenticated successfully and the
+                    access and refresh tokens are returned. The access token is used
+                    to authenticate the user in the application, while the refresh
+                    token is used to obtain a new access token, each of these tokens
+                    contains information about the user, such as the user's identifier,
+                    the type of token, the expiration date, and the date of issue.
+          description: '**(OK)** Authenticated user.'
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: object
+              examples:
+                InvalidData:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      email:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 40 caracteres.
+                      password:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 20 caracteres.
+                      - El valor ingresado debe tener al menos 8 caracteres.
+                  summary: Invalid data
+                  description: These are the possible error messages for each field.
+          description: '**(BAD_REQUEST)** The request data are invalid, error message(s)
+            are returned for each field that did not pass the validations.'
+        '401':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string
+              examples:
+                AuthenticationFailed:
+                  value:
+                    code: authentication_failed
+                    detail: Credenciales inválidas.
+                  summary: Credentials invalid
+                  description: The email or password provided is incorrect.
+                UserInactive:
+                  value:
+                    code: authentication_failed
+                    detail: Cuenta del usuario inactiva.
+                  summary: Inactive user account
+                  description: The user account is inactive.
+          description: |-
+            **(UNAUTHORIZED)** The user you are trying to authenticate is not authorized, this is due to some of the following reasons.
+            - Invalid credentials.
+            - The user's account has not been activated.
+        '500':
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                  code:
+                    type: string
+              examples:
+                DatabaseConnectionError:
+                  value:
+                    code: database_connection_error
+                    detail: Unable to establish a connection with the database. Please
+                      try again later.
+                  summary: Database connection error
+                  description: The connection to the database could not be established.
+          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
   /api/v1/searcher_user/:
     post:
       operationId: create_searcher_user
@@ -143,7 +275,7 @@ paths:
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
   /api/v1/user/jwt/refresh/:
     post:
-      operationId: user_jwt_refresh_create
+      operationId: api_v1_user_jwt_refresh_create
       description: |-
         Handle POST requests for token refresh.
 
@@ -301,132 +433,6 @@ paths:
                       try again later.
                   summary: Database connection error
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
-  /api/v1/user/login/:
-    post:
-      operationId: user_login_create
-      description: |-
-        Handle POST requests for user authentication.
-
-        This method allows authentication of a user. It waits for a POST request with
-        your credentials, validates the information, and then returns a response with
-        the authentication tokens if the data is valid or returns an error response
-        if it is not.
-      tags:
-      - Users
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AuthenticationRequest'
-            examples:
-              DataValid:
-                value:
-                  email: user1@example.com
-                  password: Aaa123456789
-                summary: User authentication
-                description: |-
-                  Valid credentials for a user. The following validations will be applied:
-                  - **Email:** Must be in a valid email format and no longer than 90 characters.
-                  - **Password:** Must be at least 8 characters and not more than 20 characters.
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AuthenticationRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/AuthenticationRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                properties:
-                  access:
-                    type: string
-                  refresh:
-                    type: string
-              examples:
-                ResponseOk:
-                  value:
-                    access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzExMDU0MzYyLCJpYXQiOjE3MTEwNDcxNjIsImp0aSI6IjY0MTE2YzgyYjhmMDQzOWJhNTJkZGZmMzgyNzQ2ZTIwIiwidXNlcl9pZCI6IjJhNmI0NTNiLWZhMmItNDMxOC05YzM1LWIwZTk2ZTg5NGI2MyJ9.gfhWpy5rYY6P3Xrg0usS6j1KhEvF1HqWMiU7AaFkp9A
-                    refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A
-                  summary: Valid request
-          description: '**(OK)** Authenticated user.'
-        '400':
-          content:
-            application/json:
-              schema:
-                properties:
-                  code:
-                    type: string
-                  detail:
-                    type: object
-              examples:
-                EmailInvalid:
-                  value:
-                    code: invalid_request_data
-                    detail:
-                      email:
-                      - Correo electrónico inválido.
-                      password:
-                      - La contraseña debe tener al menos 8 caracteres.
-                  summary: Invalid request data
-                DataInvalid:
-                  value:
-                    code: invalid_request_data
-                    detail:
-                      email:
-                      - Este campo es requerido.
-                      - Este campo no puede estar en blanco.
-                      - Este campo no puede ser nulo.
-                      password:
-                      - Este campo es requerido.
-                      - Este campo no puede estar en blanco.
-                      - Este campo no puede ser nulo.
-                  summary: Invalid request
-          description: '**(BAD_REQUEST)** The request data are invalid, error message(s)
-            are returned for each field that did not pass the validations.'
-        '401':
-          content:
-            application/json:
-              schema:
-                properties:
-                  code:
-                    type: string
-                  detail:
-                    type: string
-              examples:
-                AuthenticationFailed:
-                  value:
-                    code: authentication_failed
-                    detail: Correo o contraseña inválida.
-                  summary: Credentials invalid
-                UserInactive:
-                  value:
-                    code: authentication_failed
-                    detail: Cuenta del usuario inactiva.
-                  summary: User inactive
-          description: |-
-            **(UNAUTHORIZED)** The user you are trying to authenticate is not authorized, this is due to some of the following reasons.
-            - Invalid credentials.
-            - The user's account has not been activated.
-        '500':
-          content:
-            application/json:
-              schema:
-                properties:
-                  detail:
-                    type: string
-                  code:
-                    type: string
-              examples:
-                DatabaseConnectionError:
-                  value:
-                    code: database_connection_error
-                    detail: Unable to establish a connection with the database. Please
-                      try again later.
-                  summary: Database connection error
-          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
 components:
   schemas:
     AuthenticationRequest:
@@ -439,7 +445,7 @@ components:
           type: string
           minLength: 1
           pattern: ^([A-Za-z0-9]+[-_.])*[A-Za-z0-9]+@[A-Za-z]+(\.[A-Z|a-z]{2,4}){1,2}$
-          maxLength: 90
+          maxLength: 40
         password:
           type: string
           writeOnly: true
