@@ -4,7 +4,7 @@ from rest_framework.request import Request
 from rest_framework import status
 from apps.users.infrastructure.serializers import AuthenticationSerializer
 from apps.users.infrastructure.db import JWTRepository
-from apps.users.applications import Authentication
+from apps.users.applications import JWTUsesCases
 from typing import Dict, Any, List
 
 
@@ -18,7 +18,7 @@ class AuthenticationAPIView(TokenObtainPairView):
 
     authentication_classes = []
     permission_classes = []
-    application_class = Authentication
+    application_class = JWTUsesCases
 
     def _handle_valid_request(self, data: Dict[str, Any]) -> Response:
         tokens = self.application_class(

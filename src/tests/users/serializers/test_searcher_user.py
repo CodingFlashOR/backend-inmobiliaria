@@ -13,8 +13,7 @@ fake = Faker("es_CO")
 
 class TestSerializer:
     """
-    A class to test the SearcherUserSerializer. This class contains tests to validate
-    the operation of `Searcher UserSerializer`.
+    A class to test the `SearcherUserSerializer` class.
     """
 
     serializer_class = SearcherUserSerializer

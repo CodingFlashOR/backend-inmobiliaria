@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from jwt import DecodeError, ExpiredSignatureError
 
-from apps.users.infrastructure.utils import decode_jwt
 from apps.users.schemas.refresh_tokens import SerializerSchema
+from apps.utils import decode_jwt
 
 
 @SerializerSchema

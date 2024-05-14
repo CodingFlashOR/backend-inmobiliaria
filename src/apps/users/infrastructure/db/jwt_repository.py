@@ -1,10 +1,10 @@
 from rest_framework_simplejwt.utils import datetime_from_epoch
 from django.db.models import Q, QuerySet
 from django.db import OperationalError
-from apps.users.infrastructure.utils import decode_jwt
 from apps.users.domain.typing import JWToken
 from apps.users.models import User, JWT, JWTBlacklist
 from apps.exceptions import JWTNotFoundError, DatabaseConnectionError
+from apps.utils import decode_jwt
 
 
 class JWTRepository:

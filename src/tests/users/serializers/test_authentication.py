@@ -1,81 +1,103 @@
+from apps.users.infrastructure.serializers import AuthenticationSerializer
+from apps.users.domain.constants import SearcherUser
+from apps.constants import ERROR_MESSAGES
+from faker import Faker
+from typing import Dict
 import pytest
 
-from apps.users.infrastructure.serializers import AuthenticationSerializer
+
+fake = Faker("es_CO")
 
 
 class TestSerializer:
     """
-    A class to test the `AuthenticationSerializer`.
-
-    This class contains tests to validate the AuthenticationSerializer. It tests
-    various scenarios such as valid and invalid data.
+    A class to test the `AuthenticationSerializer` class.
     """
 
     serializer_class = AuthenticationSerializer
 
-    @pytest.mark.parametrize(
-        "data",
-        [
-            {
-                "email": "user@example.com",
-                "password": "Aaa123456789",
-            }
-        ],
-        ids=["valid data"],
-    )
-    def test_serializer_valid(self, data) -> None:
+    def test_correct_execution(self) -> None:
 
+        data = {
+            "email": "user1@email.com",
+            "password": "contraseña1234",
+        }
         serializer = self.serializer_class(data=data)
 
         assert serializer.is_valid()
-        assert serializer.initial_data["email"] == data["email"]
-        assert serializer.initial_data["password"] == data["password"]
-        assert serializer.validated_data["email"] == data["email"]
-        assert serializer.validated_data["password"] == data["password"]
+
+        for field, value in data.items():
+            assert serializer.validated_data[field] == value
 
     @pytest.mark.parametrize(
-        "data, error_message",
+        "data, error_messages",
         [
             (
-                {"email": "user@example", "password": "password123456"},
-                {"Correo electrónico inválido."},
-            ),
-            (
-                {"email": "user.com", "password": "password123456"},
-                {"Correo electrónico inválido."},
-            ),
-            (
-                {"email": "@user", "password": "password123456"},
-                {"Correo electrónico inválido."},
-            ),
-            (
-                {"email": "user@example.com", "password": "123456"},
-                {"La contraseña debe tener al menos 8 caracteres."},
-            ),
-            ({}, {"This field is required.", "This field is required."}),
-            (
-                {"email": "user.com", "password": "123456"},
+                {},
                 {
-                    "La contraseña debe tener al menos 8 caracteres.",
-                    "Correo electrónico inválido.",
+                    "email": [ERROR_MESSAGES["required"]],
+                    "password": [ERROR_MESSAGES["required"]],
+                },
+            ),
+            (
+                {
+                    "email": "useremail.com",
+                    "password": "contraseña1234",
+                },
+                {
+                    "email": [ERROR_MESSAGES["invalid"]],
+                },
+            ),
+            (
+                {
+                    "email": f"user{fake.random_number(digits=41)}@email.com",
+                    "password": fake.bothify(text=f"{'?#' * 11}"),
+                },
+                {
+                    "email": [
+                        ERROR_MESSAGES["max_length"].format(
+                            max_length=SearcherUser.EMAIL_MAX_LENGTH.value
+                        ),
+                    ],
+                    "password": [
+                        ERROR_MESSAGES["max_length"].format(
+                            max_length=SearcherUser.PASSWORD_MAX_LENGTH.value
+                        ),
+                    ],
+                },
+            ),
+            (
+                {
+                    "email": "user1@email.com",
+                    "password": fake.bothify(text=f"{'?#' * 3}"),
+                },
+                {
+                    "password": [
+                        ERROR_MESSAGES["min_length"].format(
+                            min_length=SearcherUser.PASSWORD_MIN_LENGTH.value
+                        ),
+                    ],
                 },
             ),
         ],
         ids=[
-            "email invalid",
-            "email invalid",
-            "email invalid",
-            "password invalid",
-            "missing email-password",
-            "email-password invalid",
+            "empty_data",
+            "invalid_data",
+            "max_length_data",
+            "min_length_data",
         ],
     )
-    def test_serializer_invalid(self, data, error_message) -> None:
+    def test_failed_execution(self, data: Dict, error_messages: Dict) -> None:
 
         serializer = self.serializer_class(data=data)
 
         assert not serializer.is_valid()
         assert serializer.validated_data == {}
-        error_password = set(serializer.errors.get("password", []))
-        error_email = set(serializer.errors.get("email", []))
-        assert error_password.union(error_email) == error_message
+
+        serializer_errors_formated = {
+            field: [str(error) for error in errors]
+            for field, errors in serializer.errors.items()
+        }
+
+        for field, message in error_messages.items():
+            assert serializer_errors_formated[field] == message
