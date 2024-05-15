@@ -1,3 +1,6 @@
 from .searcher_user import SearcherUserSerializer
-from .authentication import AuthenticationSerializer, TokenObtainPairSerializer
-from .refresh_token import RefreshTokenSerializer
+from .jwt import (
+    AuthenticationSerializer,
+    TokenObtainPairSerializer,
+    UpdateTokenSerializer,
+)

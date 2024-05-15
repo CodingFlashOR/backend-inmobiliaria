@@ -4,13 +4,15 @@ from rest_framework_simplejwt.serializers import (
 )
 from rest_framework import serializers
 from django.core.validators import RegexValidator
+from jwt import DecodeError, ExpiredSignatureError
 from apps.users.infrastructure.schemas.authentication import (
     AuthenticationSerializerSchema,
 )
 from apps.users.domain.constants import SearcherUser
 from apps.users.models import User
-from apps.utils import ErrorMessagesSerializer
+from apps.utils import ErrorMessagesSerializer, decode_jwt
 from apps.constants import ERROR_MESSAGES
+from typing import Dict, Any
 
 
 @AuthenticationSerializerSchema
@@ -65,3 +67,33 @@ class TokenObtainPairSerializer(BaseTokenSerializer):
         token["role"] = user.content_type.model_class().__name__.lower()
 
         return token
+
+
+class UpdateTokenSerializer(serializers.Serializer):
+    """
+    Handles the data for user token refresh. Checks that the provided access and
+    refresh tokens meet the necessary requirements.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._refresh_payload = None
+
+    refresh = serializers.CharField(required=True)
+
+    def validate_refresh(self, value: str) -> Dict[str, Any]:
+        try:
+            self._refresh_payload = decode_jwt(token=value)
+        except ExpiredSignatureError:
+            raise serializers.ValidationError(
+                detail="Token is expired.", code="token_error"
+            )
+        except DecodeError:
+            raise serializers.ValidationError(
+                detail="Token is invalid.", code="token_error"
+            )
+
+        return {
+            "token": value,
+            "payload": self._refresh_payload,
+        }
