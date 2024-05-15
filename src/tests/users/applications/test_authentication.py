@@ -1,5 +1,5 @@
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
-from apps.users.infrastructure.serializers.authentication import (
+from apps.users.infrastructure.serializers import (
     TokenObtainPairSerializer,
 )
 from apps.users.infrastructure.db import JWTRepository
