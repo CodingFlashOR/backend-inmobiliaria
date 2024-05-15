@@ -3,7 +3,7 @@ from django.db.models import Q, QuerySet
 from django.db import OperationalError
 from apps.users.domain.typing import JWToken
 from apps.users.models import User, JWT, JWTBlacklist
-from apps.exceptions import JWTNotFoundError, DatabaseConnectionError
+from apps.exceptions import DatabaseConnectionError
 from apps.utils import decode_jwt
 
 
@@ -30,7 +30,7 @@ class JWTRepository:
         return query
 
     @classmethod
-    def get(cls, **filters) -> JWT:
+    def get(cls, **filters) -> QuerySet[JWT]:
         """
         Retrieve a JWT from the database based on the provided filters.
 
@@ -42,36 +42,11 @@ class JWTRepository:
         """
 
         try:
-            token = cls.jwt_model.objects.filter(
-                cls._create_query(**filters)
-            ).first()
-        except OperationalError:
-            # In the future, a retry system will be implemented when the database is
-            # suddenly unavailable.
-            raise DatabaseConnectionError()
-
-        if not token:
-            raise JWTNotFoundError(
-                code="token_not_found",
-                detail=f'Token {filters.get("token", "")} not found.',
+            tokens = (
+                cls.jwt_model.objects.select_related("user")
+                .defer("date_joined")
+                .filter(cls._create_query(**filters))
             )
-
-        return token
-
-    @classmethod
-    def get_tokens_user(cls, **filters) -> QuerySet[JWT]:
-        """
-        Retrieve tokens for a user from the database based on the provided filters.
-
-        #### Parameters:
-        - filters: Keyword arguments that define the filters to apply.
-
-        #### Raises:
-        - DatabaseConnectionError: If there is an operational error with the database.
-        """
-
-        try:
-            tokens = cls.jwt_model.objects.filter(cls._create_query(**filters))
         except OperationalError:
             # In the future, a retry system will be implemented when the database is
             # suddenly unavailable.

@@ -66,23 +66,9 @@ class IJWTRepository(Protocol):
     """
 
     @classmethod
-    def get(cls, **filters) -> JWT:
+    def get(cls, **filters) -> QuerySet[JWT]:
         """
         Retrieve a JWT from the database based on the provided filters.
-
-        #### Parameters:
-        - filters: Keyword arguments that define the filters to apply.
-
-        #### Raises:
-        - DatabaseConnectionError: If there is an operational error with the database.
-        """
-
-        ...
-
-    @classmethod
-    def get_tokens_user(cls, **filters) -> QuerySet[JWT]:
-        """
-        Retrieve tokens for a user from the database based on the provided filters.
 
         #### Parameters:
         - filters: Keyword arguments that define the filters to apply.

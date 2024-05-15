@@ -1,6 +1,5 @@
 from rest_framework.exceptions import APIException
 from rest_framework import status
-
 from typing import Any, Dict, Optional, Union
 
 
@@ -32,7 +31,7 @@ class DetailDictMixin:
             detail_dict["detail"] = detail
         if code is not None:
             detail_dict["code"] = code
-        super().__init__(detail_dict)  # type: ignore
+        super().__init__(detail_dict)
 
 
 class DatabaseConnectionError(DetailDictMixin, APIException):
@@ -53,54 +52,18 @@ class DatabaseConnectionError(DetailDictMixin, APIException):
         super().__init__(detail=self.detail, code=self.code)
 
 
-class UserNotFoundError(DetailDictMixin, APIException):
+class ResourceNotFoundError(DetailDictMixin, APIException):
     """
-    Exception raised when a user is not found.
+    Exception raised when a requested resource is not found.
     """
 
     status_code = status.HTTP_404_NOT_FOUND
-    default_detail = "User not found."
-    default_code = "user_not_found"
-
-    def __init__(self, detail: str | Dict[str, Any] = None) -> None:
-        if isinstance(detail, dict):
-            self.detail = {"detail": detail or self.default_detail}
-        else:
-            self.detail = detail or self.default_detail
-        self.code = self.default_code
-        super().__init__(detail=self.detail, code=self.code)
-
-
-class UserInactiveError(DetailDictMixin, APIException):
-    """
-    Exception raised when a user is inactive.
-    """
-
-    status_code = status.HTTP_401_UNAUTHORIZED
-    default_detail = "User is inactive."
-    default_code = "user_inactive"
+    default_detail = "requested resource not found."
+    default_code = "resource_not_found"
 
     def __init__(
         self, detail: str | Dict[str, Any] = None, code: str = None
     ) -> None:
-        if isinstance(detail, dict):
-            self.detail = {"detail": detail or self.default_detail}
-        else:
-            self.detail = detail or self.default_detail
-        self.code = code or self.default_code
-        super().__init__(detail=self.detail, code=self.code)
-
-
-class JWTNotFoundError(DetailDictMixin, APIException):
-    """
-    Exception raised when a token is not found.
-    """
-
-    status_code = status.HTTP_404_NOT_FOUND
-    default_detail = "Token not found."
-    default_code = "token_not_found"
-
-    def __init__(self, detail: str | Dict[str, Any] = None, code: str = None):
         if isinstance(detail, dict):
             self.detail = {"detail": detail or self.default_detail}
         else:

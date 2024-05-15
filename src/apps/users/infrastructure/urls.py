@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     SearcherUserAPIView,
     AuthenticationAPIView,
-    RefreshTokenAPIView,
+    UpdateTokenAPIView,
 )
 
 
@@ -13,13 +13,13 @@ urlpatterns = [
         name="searcher_user",
     ),
     path(
-        route="login/",
+        route="token/login/",
         view=AuthenticationAPIView.as_view(),
         name="authenticate_user",
     ),
     path(
-        route="user/jwt/refresh/",
-        view=RefreshTokenAPIView.as_view(),
-        name="refresh_token",
+        route="token/update/",
+        view=UpdateTokenAPIView.as_view(),
+        name="update_token",
     ),
 ]
