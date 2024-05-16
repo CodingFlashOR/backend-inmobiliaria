@@ -13,4 +13,4 @@ jobs:
         with:
           options: "--check --diff --target-version=py310 --line-length=79"
           src: "./src/"
-          version: "~= 22.0"
+          version: "24.2.0"
