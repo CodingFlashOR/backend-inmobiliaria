@@ -1,3 +1,4 @@
+from rest_framework.fields import CharField
 from drf_spectacular.utils import (
     extend_schema,
     OpenApiResponse,
@@ -5,6 +6,9 @@ from drf_spectacular.utils import (
 )
 from apps.users.domain.constants import SearcherUser
 from apps.utils import ERROR_MESSAGES
+
+
+DEFAULT_ERROR_MESSAGES = CharField().error_messages
 
 
 AuthenticationSchema = extend_schema(
@@ -98,6 +102,112 @@ AuthenticationSchema = extend_schema(
                     value={
                         "code": "authentication_failed",
                         "detail": "Cuenta del usuario inactiva.",
+                    },
+                ),
+            ],
+        ),
+        500: OpenApiResponse(
+            description="**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.",
+            response={
+                "properties": {
+                    "detail": {"type": "string"},
+                    "code": {"type": "string"},
+                }
+            },
+            examples=[
+                OpenApiExample(
+                    name="database_connection_error",
+                    summary="Database connection error",
+                    description="The connection to the database could not be established.",
+                    value={
+                        "code": "database_connection_error",
+                        "detail": "Unable to establish a connection with the database. Please try again later.",
+                    },
+                ),
+            ],
+        ),
+    },
+)
+
+
+UpdateTokensSchema = extend_schema(
+    operation_id="update_tokens",
+    tags=["Users"],
+    responses={
+        200: OpenApiResponse(
+            description="**(OK)** New tokens are generated.",
+            response={
+                "properties": {
+                    "access": {"type": "string"},
+                    "refresh": {"type": "string"},
+                }
+            },
+            examples=[
+                OpenApiExample(
+                    name="response_ok",
+                    summary="New tokens generated",
+                    description="The new access and refresh tokens have been generated successfully, you can use these new tokens to keep the user authenticated.",
+                    value={
+                        "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw",
+                        "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg",
+                    },
+                ),
+            ],
+        ),
+        400: OpenApiResponse(
+            description="**(BAD_REQUEST)** The request data are invalid, error message(s) are returned for each field that did not pass the validations.",
+            response={
+                "properties": {
+                    "code": {"type": "string"},
+                    "detail": {"type": "object"},
+                }
+            },
+            examples=[
+                OpenApiExample(
+                    name="invalid_data",
+                    summary="Invalid data",
+                    description="These are the possible error messages for each field.",
+                    value={
+                        "code": "invalid_request_data",
+                        "detail": {
+                            "refresh": [
+                                DEFAULT_ERROR_MESSAGES["required"],
+                                DEFAULT_ERROR_MESSAGES["blank"],
+                                DEFAULT_ERROR_MESSAGES["null"],
+                                DEFAULT_ERROR_MESSAGES["invalid"],
+                                "Token is expired.",
+                                "Token is invalid.",
+                            ],
+                        },
+                    },
+                ),
+            ],
+        ),
+        401: OpenApiResponse(
+            description="**(UNAUTHORIZED)** The refresh token is not suitable for token update.",
+            response={
+                "properties": {
+                    "code": {"type": "string"},
+                    "detail": {"type": "string"},
+                }
+            },
+            examples=[
+                OpenApiExample(
+                    name="token_not_found",
+                    summary="Token not found",
+                    description="The refresh token provided does not exist.",
+                    value={
+                        "code": "token_not_found",
+                        "detail": "Token do not exist.",
+                    },
+                ),
+                OpenApiExample(
+                    name="token_error",
+                    summary="Token error",
+                    description="The token does not match the user's last tokens.",
+                    value={
+                        "code": "token_error",
+                        "detail": "The token does not match the user's last tokens.",
                     },
                 ),
             ],

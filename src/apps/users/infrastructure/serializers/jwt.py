@@ -5,8 +5,9 @@ from rest_framework_simplejwt.serializers import (
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 from jwt import DecodeError, ExpiredSignatureError
-from apps.users.infrastructure.schemas.authentication import (
+from apps.users.infrastructure.schemas.jwt import (
     AuthenticationSerializerSchema,
+    UpdateTokenSerializerSchema,
 )
 from apps.users.domain.constants import SearcherUser
 from apps.users.models import User
@@ -69,6 +70,7 @@ class TokenObtainPairSerializer(BaseTokenSerializer):
         return token
 
 
+@UpdateTokenSerializerSchema
 class UpdateTokenSerializer(serializers.Serializer):
     """
     Handles the data for user token refresh. Checks that the provided access and
