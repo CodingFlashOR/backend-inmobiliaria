@@ -8,9 +8,6 @@ class Token(models.Model):
     This model represents a token that is used in various user-related email
     communication, the token is a unique identifier that ensures the security and
     validity of the processes initiated.
-
-    It is used in scenarios where a user needs to interact with the system via email,
-    ensuring that the user is indeed the one who initiated the process.
     """
 
     uuid = models.UUIDField(db_column="uuid", default=uuid4, primary_key=True)
