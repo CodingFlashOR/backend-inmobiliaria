@@ -57,7 +57,7 @@ class JWTUsesCases:
 
         if not latest_tokens.first():
             raise ResourceNotFoundError(
-                code="token_not_found", detail="Tokens do not exist."
+                code="token_not_found", detail="Token do not exist."
             )
 
         for token in latest_tokens:

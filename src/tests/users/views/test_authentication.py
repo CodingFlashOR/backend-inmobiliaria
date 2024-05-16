@@ -37,6 +37,7 @@ class TestAPIViewPOSTMethod:
         user.is_active = True
         user.save()
 
+        # Simulating the request
         client, path = setUp
         response = client.post(
             path=path,
@@ -50,6 +51,7 @@ class TestAPIViewPOSTMethod:
         assert "refresh" in response.data
 
     def test_if_credentials_invalid(self, setUp: Tuple[Client, str]) -> None:
+        # Simulating the request
         client, path = setUp
         response = client.post(
             path=path,
@@ -82,6 +84,7 @@ class TestAPIViewPOSTMethod:
             related_data=data["profile_data"],
         )
 
+        # Simulating the request
         client, path = setUp
         response = client.post(
             path=path,
@@ -104,6 +107,7 @@ class TestAPIViewPOSTMethod:
         # Setting the return values
         get.side_effect = DatabaseConnectionError
 
+        # Simulating the request
         client, path = setUp
         response = client.post(
             path=path,

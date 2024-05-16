@@ -1,6 +1,5 @@
 from apps.users.infrastructure.serializers import SearcherUserSerializer
 from apps.users.models import User, SearcherUser
-from tests.users.factory import UserModelFactory, SearcherUserModelFactory
 from tests.utils import get_empty_queryset
 from unittest.mock import Mock, patch
 from typing import Dict
@@ -46,7 +45,6 @@ class TestSerializer:
     def test_correct_execution(
         self, repository_base: Mock, repository_searcher_user: Mock
     ) -> None:
-
         data = {
             "full_name": "Nombre Apellido",
             "email": "user1@email.com",
@@ -66,8 +64,10 @@ class TestSerializer:
         get.return_value = get_empty_queryset(model=User)
         get_profile_data.return_value = get_empty_queryset(model=SearcherUser)
 
+        # Instantiating the serializer
         serializer = self.serializer_class(data=data)
 
+        # Asserting the serializer is valid and the data is correct
         assert serializer.is_valid()
 
         profile_data = data.pop("profile_data")
@@ -79,8 +79,8 @@ class TestSerializer:
             assert serializer.validated_data["profile_data"][field] == value
 
     @pytest.mark.parametrize(
-        "data, error_messages",
-        [
+        argnames="data, error_messages",
+        argvalues=[
             (
                 {},
                 {
@@ -206,7 +206,6 @@ class TestSerializer:
         data: Dict,
         error_messages: Dict,
     ) -> None:
-
         # Mocking the methods
         get: Mock = repository_base.get
         get_profile_data: Mock = repository_searcher_user.get_profile_data
@@ -215,16 +214,18 @@ class TestSerializer:
         get.return_value = get_empty_queryset(model=User)
         get_profile_data.return_value = get_empty_queryset(model=SearcherUser)
 
+        # Instantiating the serializer
         serializer = self.serializer_class(data=data)
 
+        # Asserting the serializer is not valid and the data is correct
         assert not serializer.is_valid()
         assert serializer.validated_data == {}
 
         serializer_errors = serializer.errors.copy()
         profile_data_errors: Dict = serializer_errors.get("profile_data", None)
 
-        # If there are errors in data_profile, we assert them separately
         if isinstance(profile_data_errors, dict):
+            # If there are errors in data_profile, we assert them separately
             self.assert_errors_nested_field(
                 key="profile_data",
                 value=profile_data_errors,
@@ -245,8 +246,8 @@ class TestSerializer:
             assert serializer_errors_formated[field] == message
 
     @pytest.mark.parametrize(
-        "data, user_data_in_use, error_messages",
-        [
+        argnames="data, user_data_in_use, error_messages",
+        argvalues=[
             (
                 {
                     "full_name": "Nombre Apellido",
@@ -295,21 +296,20 @@ class TestSerializer:
         user_data_in_use: str,
         error_messages: Dict,
     ) -> None:
-
         # Mocking the methods
         get: Mock = repository_base.get
         get_profile_data: Mock = repository_searcher_user.get_profile_data
-        user = queryset.first
+        user: Mock = queryset.first
 
         # Setting the return values
         get.return_value = queryset
-        user.return_value = UserModelFactory.build(
-            **{user_data_in_use: data[user_data_in_use]}
-        )
+        user.return_value = User
         get_profile_data.return_value = get_empty_queryset(model=SearcherUser)
 
+        # Instantiating the serializer
         serializer = self.serializer_class(data=data)
 
+        # Asserting the serializer is not valid and the data is correct
         assert not serializer.is_valid()
         assert serializer.validated_data == {}
 
@@ -324,8 +324,8 @@ class TestSerializer:
         )
 
     @pytest.mark.parametrize(
-        "data, user_data_in_use, error_messages",
-        [
+        argnames="data, error_messages",
+        argvalues=[
             (
                 {
                     "full_name": "Nombre Apellido",
@@ -337,7 +337,6 @@ class TestSerializer:
                         "phone_number": "+57 3123574898",
                     },
                 },
-                "address",
                 {
                     "profile_data": {
                         "address": ["Esta dirección ya está en uso."],
@@ -355,7 +354,6 @@ class TestSerializer:
                         "phone_number": "+57 3123574898",
                     },
                 },
-                "phone_number",
                 {
                     "profile_data": {
                         "phone_number": [
@@ -377,24 +375,22 @@ class TestSerializer:
         repository_searcher_user: Mock,
         queryset: Mock,
         data: Dict,
-        user_data_in_use: str,
         error_messages: Dict,
     ) -> None:
-
         # Mocking the methods
         get: Mock = repository_base.get
         get_profile_data: Mock = repository_searcher_user.get_profile_data
-        user = queryset.first
+        user: Mock = queryset.first
 
         # Setting the return values
         get.return_value = get_empty_queryset(model=User)
         get_profile_data.return_value = queryset
-        user.return_value = SearcherUserModelFactory.build(
-            **{user_data_in_use: data["profile_data"][user_data_in_use]}
-        )
+        user.return_value = SearcherUser
 
+        # Instantiating the serializer
         serializer = self.serializer_class(data=data)
 
+        # Asserting the serializer is not valid and the data is correct
         assert not serializer.is_valid()
         assert serializer.validated_data == {}
 

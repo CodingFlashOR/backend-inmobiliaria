@@ -17,7 +17,6 @@ class TestApplication:
     application_class = SearcherUserUsesCases
 
     def test_user_created_successfully(self) -> None:
-
         data = {
             "full_name": "Nombre Apellido",
             "email": "user1@email.com",
@@ -36,6 +35,7 @@ class TestApplication:
             address=data["profile_data"]["address"]
         ).exists()
 
+        # Instantiating the application and calling the method
         self.application_class(user_repository=UserRepository).create_user(
             data=input_data
         )
@@ -47,7 +47,6 @@ class TestApplication:
         ).exists()
 
     def test_exception_raised_db(self, user_repository: Mock) -> None:
-
         data = {
             "full_name": "Nombre Apellido",
             "email": "user1@email.com",
@@ -66,6 +65,7 @@ class TestApplication:
         # Setting the return values
         create.side_effect = DatabaseConnectionError
 
+        # Instantiating the application and calling the method
         with pytest.raises(DatabaseConnectionError):
             self.application_class(
                 user_repository=user_repository
