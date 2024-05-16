@@ -1,4 +1,5 @@
 from django.db.models import QuerySet
+from apps.users.models import User
 from apps.emails.domain.typing import Token
 from apps.emails import models
 from typing import Protocol
@@ -33,6 +34,33 @@ class ITokenRepository(Protocol):
 
         #### Raises:
         - DatabaseConnectionError: If there is an operational error with the database.
+        """
+
+        ...
+
+
+class ITokenGenerator(Protocol):
+    """
+    ITokenGenerator is a protocol that defines the interface for a token generator.
+    """
+
+    def make_token(cls, user: User) -> str:
+        """
+        Generate a token for the given user and store it in the repository.
+
+        #### Parameters:
+        - user: A instance of the User model.
+        """
+
+        ...
+
+    def check_token(cls, user: User, token: Token) -> bool:
+        """
+        Check that a token is correct for a given user.
+
+        #### Parameters:
+        - user: A instance of the User model.
+        - token: Token to be checked.
         """
 
         ...
