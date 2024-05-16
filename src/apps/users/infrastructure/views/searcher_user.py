@@ -5,7 +5,7 @@ from rest_framework import status, exceptions
 from apps.users.infrastructure.serializers import SearcherUserSerializer
 from apps.users.infrastructure.db import UserRepository
 from apps.users.infrastructure.views.base import MappedAPIView
-from apps.users.infrastructure.schemas.searcher_user.views import (
+from apps.users.infrastructure.schemas.searcher_user import (
     CreateSearcherUserSchema,
 )
 from apps.users.applications import SearcherUserUsesCases

@@ -2,8 +2,9 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status, generics
-from apps.users.infrastructure.schemas.authentication import (
+from apps.users.infrastructure.schemas.jwt import (
     AuthenticationSchema,
+    UpdateTokensSchema,
 )
 from apps.users.infrastructure.serializers import (
     AuthenticationSerializer,
@@ -111,6 +112,7 @@ class UpdateTokenAPIView(generics.GenericAPIView):
             content_type="application/json",
         )
 
+    @UpdateTokensSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
         """
         Handle POST requests for token refresh.
