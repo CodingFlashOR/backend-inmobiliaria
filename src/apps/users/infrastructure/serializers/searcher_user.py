@@ -2,7 +2,7 @@ from rest_framework import serializers
 from phonenumber_field.serializerfields import PhoneNumberField
 from apps.users.infrastructure.db import UserRepository
 from apps.users.infrastructure.serializers.base import BaseUserSerializer
-from apps.users.infrastructure.schemas.searcher_user.serializers import (
+from apps.users.infrastructure.schemas.searcher_user import (
     SearcherUserSerializerSchema,
 )
 from apps.users.domain.constants import SearcherUser
