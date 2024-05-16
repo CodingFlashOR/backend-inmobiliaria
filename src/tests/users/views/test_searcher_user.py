@@ -44,7 +44,6 @@ class TestAPIViewPOSTMethod:
             assert profile_data_errors_formatted[field] == message
 
     def test_request_valid(self, setUp: Tuple[Client, str]) -> None:
-
         data = {
             "full_name": "Nombre Apellido",
             "email": "user1@email.com",
@@ -55,16 +54,19 @@ class TestAPIViewPOSTMethod:
                 "phone_number": "+57 3123574898",
             },
         }
+
+        # Simulating the request
         client, path = setUp
         response = client.post(
             path=path, data=data, content_type="application/json"
         )
 
+        # Asserting that response data is correct
         assert response.status_code == 201
 
     @pytest.mark.parametrize(
-        "data, error_messages",
-        [
+        argnames="data, error_messages",
+        argvalues=[
             (
                 {},
                 {
@@ -113,7 +115,7 @@ class TestAPIViewPOSTMethod:
                 {
                     "full_name": fake.bothify(text=f"{'?' * 41}"),
                     "email": f"user{fake.random_number(digits=41)}@email.com",
-                    "password": fake.bothify(text=f"{'?#' * 21}"),
+                    "password": fake.password(length=21, special_chars=True),
                     "profile_data": {
                         "address": fake.bothify(text=f"{'?' * 91}"),
                     },
@@ -182,12 +184,13 @@ class TestAPIViewPOSTMethod:
     def test_invalid_data(
         self, setUp: Tuple[Client, str], data: Dict, error_messages: Dict
     ) -> None:
-
+        # Simulating the request
         client, path = setUp
         response = client.post(
             path=path, data=data, content_type="application/json"
         )
 
+        # Asserting that response data is correct
         assert response.status_code == 400
         assert response.data["code"] == "invalid_request_data"
 
@@ -209,6 +212,7 @@ class TestAPIViewPOSTMethod:
             response_data_error.pop("profile_data")
             error_messages.pop("profile_data")
 
+        # Asserting that response data is correct
         response_data_error_formated = {
             field: [str(error) for error in errors]
             for field, errors in response_data_error.items()
@@ -218,8 +222,8 @@ class TestAPIViewPOSTMethod:
             assert response_data_error_formated[field] == message
 
     @pytest.mark.parametrize(
-        "data, user_data_in_use, error_messages",
-        [
+        argnames="data, user_data_in_use, error_messages",
+        argvalues=[
             (
                 {
                     "full_name": "Nombre Apellido",
@@ -262,8 +266,7 @@ class TestAPIViewPOSTMethod:
         user_data_in_use: str,
         error_messages: Dict,
     ) -> None:
-
-        # Creating the user in the database
+        # Creating a user
         User.objects.create_user(
             full_name=data["full_name"],
             email=data["email"],
@@ -272,11 +275,13 @@ class TestAPIViewPOSTMethod:
             related_data=data["profile_data"],
         )
 
+        # Simulating the request
         client, path = setUp
         response = client.post(
             path=path, data=data, content_type="application/json"
         )
 
+        # Asserting that response data is correct
         assert response.status_code == 400
         assert response.data["code"] == "invalid_request_data"
 
@@ -291,8 +296,8 @@ class TestAPIViewPOSTMethod:
         )
 
     @pytest.mark.parametrize(
-        "data, error_messages",
-        [
+        argnames="data, error_messages",
+        argvalues=[
             (
                 {
                     "full_name": "Nombre Apellido",
@@ -338,8 +343,7 @@ class TestAPIViewPOSTMethod:
         data: Dict,
         error_messages: Dict,
     ) -> None:
-
-        # Creating the user in the database
+        # Creating a user
         User.objects.create_user(
             full_name=data["full_name"],
             email=data["email"],
@@ -348,11 +352,13 @@ class TestAPIViewPOSTMethod:
             related_data=data["profile_data"],
         )
 
+        # Simulating the request
         client, path = setUp
         response = client.post(
             path=path, data=data, content_type="application/json"
         )
 
+        # Asserting that response data is correct
         assert response.status_code == 400
         assert response.data["code"] == "invalid_request_data"
 
