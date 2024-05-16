@@ -17,21 +17,23 @@ class TestSerializer:
     serializer_class = AuthenticationSerializer
 
     def test_correct_execution(self) -> None:
-
         data = {
             "email": "user1@email.com",
             "password": "contraseña1234",
         }
+
+        # Instantiating the serializer
         serializer = self.serializer_class(data=data)
 
+        # Asserting that the serializer is valid and the data is correct
         assert serializer.is_valid()
 
         for field, value in data.items():
             assert serializer.validated_data[field] == value
 
     @pytest.mark.parametrize(
-        "data, error_messages",
-        [
+        argnames="data, error_messages",
+        argvalues=[
             (
                 {},
                 {
@@ -88,9 +90,10 @@ class TestSerializer:
         ],
     )
     def test_failed_execution(self, data: Dict, error_messages: Dict) -> None:
-
+        # Instantiating the serializer
         serializer = self.serializer_class(data=data)
 
+        # Asserting that the serializer is not valid and the errors are correct
         assert not serializer.is_valid()
         assert serializer.validated_data == {}
 

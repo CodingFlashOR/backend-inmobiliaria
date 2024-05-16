@@ -107,7 +107,7 @@ class UpdateTokenAPIView(generics.GenericAPIView):
                 "code": "invalid_request_data",
                 "detail": errors,
             },
-            status=status.HTTP_401_UNAUTHORIZED,
+            status=status.HTTP_400_BAD_REQUEST,
             content_type="application/json",
         )
 

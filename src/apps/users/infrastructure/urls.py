@@ -20,6 +20,6 @@ urlpatterns = [
     path(
         route="token/update/",
         view=UpdateTokenAPIView.as_view(),
-        name="update_token",
+        name="update_tokens",
     ),
 ]
