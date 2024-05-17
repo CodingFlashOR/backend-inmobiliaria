@@ -14,7 +14,7 @@ class TokenGenerator(PasswordResetTokenGenerator):
     ensuring that the user is indeed the one who initiated the process.
     """
 
-    token_repository = TokenRepository
+    _token_repository = TokenRepository
 
     def _make_hash_value(self, user: User, timestamp: int) -> str:
         """
@@ -32,7 +32,7 @@ class TokenGenerator(PasswordResetTokenGenerator):
         Save the token in the database.
         """
 
-        self.token_repository.create(token=token)
+        self._token_repository.create(token=token)
 
     def make_token(self, user: User) -> str:
         """
