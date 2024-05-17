@@ -4,11 +4,15 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.sites.shortcuts import get_current_site
-from apps.emails.domain.abstractions import ITokenGenerator
+from apps.emails.domain.abstractions import ITokenGenerator, ITokenRepository
 from apps.emails.domain.typing import Token
 from apps.emails.domain.constants import SubjectsMail
 from apps.emails.paths import TEMPLATES
-from apps.emails.exceptions import AccountActivationError, SendingError
+from apps.emails.exceptions import (
+    AccountActivationError,
+    SendingError,
+    TokenError,
+)
 from apps.users.domain.abstractions import IUserRepository
 from apps.users.domain.typing import UserUUID
 from apps.users.models import User
@@ -25,25 +29,28 @@ class UserAccountActivation:
 
     def __init__(
         self,
-        user_repository: IUserRepository,
-        token_class: ITokenGenerator,
-        smtp_class: EmailMessage,
+        user_repository: IUserRepository = None,
+        token_repository: ITokenRepository = None,
+        token_class: ITokenGenerator = None,
+        smtp_class: EmailMessage = None,
     ) -> None:
         """
-        Initializes the use case with the given user repository, token generator, and
-        email message.
+        Initializes the UserAccountActivation class.
 
         #### Parameters:
         - user_repository: An interface that provides an abstraction of database
         operations related to a user.
+        - token_reposiroty: An interface that provides an abstraction of database
+        operations related to a token.
         - token_class: An interface that provides an abstraction of the token
         generator.
         - smtp_class: An interface that provides an abstraction of the email message.
         """
 
-        self.user_repository = user_repository
-        self.token_class = token_class
-        self.smtp_class = smtp_class
+        self._user_repository = user_repository
+        self._token_repository = token_repository
+        self._token_class = token_class
+        self._smtp_class = smtp_class
 
     def _get_message_data(
         self, user: User, token: Token, request: HttpRequest
@@ -91,7 +98,7 @@ class UserAccountActivation:
         - request: An instance of the HttpRequest class.
         """
 
-        email = self.smtp_class(
+        email = self._smtp_class(
             **self._get_message_data(user=user, token=token, request=request)
         )
         email.content_subtype = "html"
@@ -112,7 +119,7 @@ class UserAccountActivation:
         """
 
         try:
-            user = self.user_repository.get(uuid=user_uuid).first()
+            user = self._user_repository.get(uuid=user_uuid).first()
         except DatabaseConnectionError:
             raise SendingError(
                 detail={
@@ -142,5 +149,42 @@ class UserAccountActivation:
                 }
             )
 
-        token = self.token_class.make_token(user=user)
+        token = self._token_class.make_token(user=user)
         self._compose_and_dispatch(user, token, request)
+
+    def check_token(self, token: Token, user_uuid: UserUUID) -> None:
+        """
+        Check the token and activate the user account.
+
+        #### Parameters:
+        - token: A unique identifier that guarantees the security and validity of the
+        initiated process.
+        - user_uuid: A unique identifier for the user.
+
+        #### Raises:
+        - TokenError: The token is invalid or expired.
+        - ResourceNotFoundError: The user does not exist.
+        """
+
+        user = self._user_repository.get(uuid=user_uuid).first()
+
+        if not user:
+            raise ResourceNotFoundError(
+                detail="El usuario que solícita confirmar su correoelectrónico no existe. Te invitamos a registrarte en nuestra plataforma para que puedas disfrutar de nuestros servicvios."
+            )
+
+        token_obj = self._token_repository.get(token=token).first()
+
+        if token_obj.is_expired():
+            raise TokenError(
+                code="token_expired",
+                detail="El enlace de activación de tu cuenta ha expirado. Te invitamos a solicitar un nuevo enlace.",
+            )
+        elif not self._token_class.check_token(user=user, token=token):
+            raise TokenError(
+                code="token_invalid",
+                detail="El enlace de activación de tu cuenta ya ha sido utilizado. Te invitamos a iniciar sesión y disfrutar de nuestros servicios.",
+            )
+
+        user.is_active = True
+        user.save()
