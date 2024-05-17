@@ -21,4 +21,4 @@ def handle_user_registration(
         token_class=TokenGenerator(),
         smtp_class=EmailMessage,
     )
-    email.send_email(user_uuid=user.uuid, request=request)
+    email.send_email(user=user, request=request)

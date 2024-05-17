@@ -8,15 +8,11 @@ from apps.emails.domain.abstractions import ITokenGenerator, ITokenRepository
 from apps.emails.domain.typing import Token
 from apps.emails.domain.constants import SubjectsMail
 from apps.emails.paths import TEMPLATES
-from apps.emails.exceptions import (
-    AccountActivationError,
-    SendingError,
-    TokenError,
-)
+from apps.emails.exceptions import AccountActivationError, TokenError
 from apps.users.domain.abstractions import IUserRepository
 from apps.users.domain.typing import UserUUID
 from apps.users.models import User
-from apps.exceptions import ResourceNotFoundError, DatabaseConnectionError
+from apps.exceptions import ResourceNotFoundError
 from typing import Any, Dict
 from decouple import config
 
@@ -106,41 +102,19 @@ class UserAccountActivation:
         email.content_subtype = "html"
         email.send()
 
-    def send_email(self, user_uuid: UserUUID, request: HttpRequest) -> None:
+    def send_email(self, user: User, request: HttpRequest) -> None:
         """
         Send the account activation message for a user.
 
         #### Parameters:
-        - user_uuid: A unique identifier for the user.
+        - user: A instance of the User model.
         - request: An instance of the HttpRequest class.
 
         #### Raises:
-        - SendingError: An error occurred while sending the email.
-        - ResourceNotFoundError: The user does not exist.
         - AccountActivationError: The user is already active.
         """
 
-        try:
-            user = self._user_repository.get(uuid=user_uuid).first()
-        except DatabaseConnectionError:
-            raise SendingError(
-                detail={
-                    "message": "Se ha enviado un mensaje con un enlace de activación a tu correo electrónico. Por favor, verifica tu bandeja de entrada y sigue las instrucciones para activar tu cuenta. Si no encuentras el mensaje, revisa en la carpeta de spam."
-                }
-            )
-
-        if not user:
-            raise ResourceNotFoundError(
-                code="user_not_found",
-                detail={
-                    "message": "El usuario que solícita activar su cuenta no existe. Te invitamos a registrarte en nuestra plataforma.",
-                    "redirect": {
-                        "action": "Registrarse",
-                        "url": config("REGISTER_USER_URL"),
-                    },
-                },
-            )
-        elif user.is_active:
+        if user.is_active:
             raise AccountActivationError(
                 detail={
                     "message": "No se puede activar la cuenta, ya que el usuario ya está activo. Te invitamos a iniciar sesión y disfrutar de nuestros servicios.",
@@ -152,7 +126,7 @@ class UserAccountActivation:
             )
 
         token = self._token_class.make_token(user=user)
-        self._compose_and_dispatch(user, token, request)
+        self._compose_and_dispatch(user=user, token=token, request=request)
 
     def check_token(self, token: Token, user_uuid: UserUUID) -> None:
         """
