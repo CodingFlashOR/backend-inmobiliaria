@@ -4,8 +4,9 @@ from apps.users.domain.abstractions import (
     IJWTRepository,
     ITokenClass,
 )
-import pytest
+from apps.emails.utils import TokenGenerator
 from unittest.mock import Mock
+import pytest
 
 
 @pytest.fixture
@@ -42,3 +43,12 @@ def jwt_class() -> Mock:
     """
 
     return Mock(spec_set=ITokenClass, name="TokenClassMock")
+
+
+@pytest.fixture
+def token_generator() -> Mock:
+    """
+    Mock the `TokenGenerator` class.
+    """
+
+    return Mock(spec_set=TokenGenerator, name="TokenGeneratorMock")
