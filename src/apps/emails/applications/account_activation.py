@@ -6,7 +6,7 @@ from django.utils.encoding import force_bytes
 from django.contrib.sites.shortcuts import get_current_site
 from apps.emails.domain.abstractions import ITokenGenerator, ITokenRepository
 from apps.emails.domain.typing import Token
-from apps.emails.domain.constants import SubjectsMail
+from apps.emails.domain.constants import SubjectsMail, LOGIN_URL
 from apps.emails.paths import TEMPLATES
 from apps.emails.exceptions import AccountActivationError, TokenError
 from apps.users.domain.abstractions import IUserRepository
@@ -14,7 +14,6 @@ from apps.users.domain.typing import UserUUID
 from apps.users.models import User
 from apps.exceptions import ResourceNotFoundError
 from typing import Any, Dict
-from decouple import config
 
 
 class UserAccountActivation:
@@ -46,7 +45,7 @@ class UserAccountActivation:
         self._user_repository = user_repository
         self._token_repository = token_repository
         self._token_class = token_class
-        self._smtp_class = smtp_class
+        self.smtp_class = smtp_class
 
     def _get_message_data(
         self, user: User, token: Token, request: HttpRequest
@@ -96,7 +95,7 @@ class UserAccountActivation:
         - request: An instance of the HttpRequest class.
         """
 
-        email = self._smtp_class(
+        email = self.smtp_class(
             **self._get_message_data(user=user, token=token, request=request)
         )
         email.content_subtype = "html"
@@ -120,7 +119,7 @@ class UserAccountActivation:
                     "message": "No se puede activar la cuenta, ya que el usuario ya está activo. Te invitamos a iniciar sesión y disfrutar de nuestros servicios.",
                     "redirect": {
                         "action": "Iniciar sesión",
-                        "url": config("LOGIN_USER_URL"),
+                        "url": LOGIN_URL,
                     },
                 }
             )
