@@ -11,7 +11,7 @@ class IUserRepository(Protocol):
     """
 
     @classmethod
-    def create(cls, data: Dict[str, Any], role: str) -> None:
+    def create(cls, data: Dict[str, Any], role: str) -> User:
         """
         Inserts a new user into the database.
 

@@ -34,5 +34,6 @@ urlpatterns = [
         name="schema",
     ),
     path("admin/", admin.site.urls),
-    path("api/v1/users/", include("apps.users.infrastructure.urls")),
+    path("api/v1/user/", include("apps.users.infrastructure.urls")),
+    path("api/v1/email/", include("apps.emails.infrastructure.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

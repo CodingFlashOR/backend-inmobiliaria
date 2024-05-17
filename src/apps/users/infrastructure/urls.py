@@ -8,7 +8,7 @@ from .views import (
 
 urlpatterns = [
     path(
-        route="searcher_user/",
+        route="searcher/",
         view=SearcherUserAPIView.as_view(),
         name="searcher_user",
     ),

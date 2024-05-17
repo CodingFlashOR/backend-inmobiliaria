@@ -78,7 +78,9 @@ class UserAccountActivation:
                 context={
                     "email": user.email,
                     "domain": get_current_site(request),
-                    "user_idb64": urlsafe_base64_encode(force_bytes(user.id)),
+                    "user_uuidb64": urlsafe_base64_encode(
+                        force_bytes(user.uuid)
+                    ),
                     "token": token,
                 },
             ),
