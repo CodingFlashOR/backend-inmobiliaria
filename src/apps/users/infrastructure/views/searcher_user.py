@@ -40,9 +40,11 @@ class SearcherUserAPIView(MappedAPIView):
             raise NotAuthenticated(code=code, detail=message)
         raise exceptions.PermissionDenied(code=code, detail=message)
 
-    def _handle_valid_request(self, data: Dict[str, Any]) -> Response:
+    def _handle_valid_request(
+        self, data: Dict[str, Any], request: Request
+    ) -> Response:
         application = self.get_application_class()
-        application(data=data)
+        application(data=data, request=request)
 
         return Response(status=status.HTTP_201_CREATED)
 
@@ -72,6 +74,8 @@ class SearcherUserAPIView(MappedAPIView):
         serializer: Serializer = serializer_class(data=request.data)
 
         if serializer.is_valid():
-            return self._handle_valid_request(data=serializer.validated_data)
+            return self._handle_valid_request(
+                data=serializer.validated_data, request=request
+            )
 
         return self._handle_invalid_request(errors=serializer.errors)

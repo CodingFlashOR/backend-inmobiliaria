@@ -22,7 +22,7 @@ class TokenGenerator(PasswordResetTokenGenerator):
         """
 
         return (
-            six.text_type(user.id)
+            six.text_type(user.uuid)
             + six.text_type(timestamp)
             + six.text_type(user.is_active)
         )

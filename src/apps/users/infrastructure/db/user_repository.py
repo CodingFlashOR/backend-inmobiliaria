@@ -15,7 +15,7 @@ class UserRepository:
     model = User
 
     @classmethod
-    def create(cls, data: Dict[str, Any], role: str) -> None:
+    def create(cls, data: Dict[str, Any], role: str) -> User:
         """
         Inserts a new user into the database.
 
@@ -34,7 +34,7 @@ class UserRepository:
         user_manager: UserManager = cls.model.objects
 
         try:
-            user_manager.create_user(
+            user = user_manager.create_user(
                 full_name=full_name,
                 email=email,
                 password=password,
@@ -45,6 +45,8 @@ class UserRepository:
             # In the future, a retry system will be implemented when the database is
             # suddenly unavailable.
             raise DatabaseConnectionError()
+
+        return user
 
     @classmethod
     def get(cls, **filters) -> QuerySet[User]:
