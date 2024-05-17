@@ -1,6 +1,10 @@
+from django.test import RequestFactory
+from django.core import mail
 from apps.users.infrastructure.db import UserRepository
 from apps.users.applications import SearcherUserUsesCases
 from apps.users.models import User, SearcherUser
+from apps.emails.domain.constants import SubjectsMail
+from apps.emails.models import Token
 from apps.exceptions import DatabaseConnectionError
 from unittest.mock import Mock
 import pytest
@@ -37,7 +41,8 @@ class TestApplication:
 
         # Instantiating the application and calling the method
         self.application_class(user_repository=UserRepository).create_user(
-            data=input_data
+            data=input_data,
+            request=RequestFactory().post("/"),
         )
 
         # Asserting that the user was created successfully
@@ -45,6 +50,12 @@ class TestApplication:
         assert SearcherUser.objects.filter(
             address=data["profile_data"]["address"]
         ).exists()
+
+        # Asserting that the email was sent
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].subject == SubjectsMail.ACCOUNT_ACTIVATION.value
+        assert mail.outbox[0].to == [data["email"]]
+        assert Token.objects.count() == 1
 
     def test_exception_raised_db(self, user_repository: Mock) -> None:
         data = {
@@ -69,4 +80,8 @@ class TestApplication:
         with pytest.raises(DatabaseConnectionError):
             self.application_class(
                 user_repository=user_repository
-            ).create_user(data=input_data)
+            ).create_user(data=input_data, request=RequestFactory().post("/"))
+
+        # Asserting that the email was not sent
+        assert len(mail.outbox) == 0
+        assert Token.objects.count() == 0
