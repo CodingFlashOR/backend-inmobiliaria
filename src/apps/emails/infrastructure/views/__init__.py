@@ -1,1 +1,2 @@
-from .user_account_activation import UserAccountActivationView
+from .account_activation_token import AccountActivationTokenView
+from .account_activation import AccountActivationMessageAPIView

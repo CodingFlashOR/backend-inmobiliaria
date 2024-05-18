@@ -2,7 +2,17 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from apps.emails.infrastructure.db import TokenRepository
 from apps.emails.domain.typing import Token
 from apps.users.models import User
+import base64
 import six
+
+
+def decode_b64(s: str) -> str:
+    """
+    Decodes a base64-encoded string and returns the result as a string.
+    """
+
+    decoded_bytes = base64.b64decode(s)
+    return decoded_bytes.decode("utf-8")
 
 
 class TokenGenerator(PasswordResetTokenGenerator):

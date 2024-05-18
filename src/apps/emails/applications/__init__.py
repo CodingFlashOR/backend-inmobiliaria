@@ -1,1 +1,1 @@
-from .account_activation import UserAccountActivation
+from .account_activation import AccountActivation
