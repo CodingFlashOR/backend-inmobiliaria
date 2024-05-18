@@ -3,14 +3,12 @@
 > Este proyecto aun está en desarrollo.
 
 <div>
-    <a href="https://dev-inmobiliaria.netlify.app">
+    <a href="https://carlosandresaguirreariza.pythonanywhere.com/">
         <img src="/images/InmobiliariaBonplandBanner.png">
     </a>
 </div>
 
-Este proyecto hace parte de una iniciativa personal, esto implica que dicha inmobiliaria es una **institución ficticia**. El motivo que impulsa el desarrollo de este proyecto es el de mejorar mis habilidades técnicas en el desarrollo backend con Python, partiendo de lo más básico hasta temas avanzados como implementar un sistema de tareas en segundo plano o la implementación de patrones de arquitectura y de diseño. De esta manera se está simulando que la inmobiliaria es un cliente con una necesidad o problemática que desea solucionar a través de una aplicación web. Así comienza la iniciativa de este proyecto que parte del proceso de licitación de requerimientos, documentación, planificación, desarrollo y despliegue.
-
-En este repositorio encontrarás el código fuente de la API para la plataforma de gestión de inmobiliaria Bonpland.
+En este repositorio encontrarás el código fuente de la API para la plataforma de gestión de inmobiliaria Bonpland, puedes consultar la documentación completa [aquí](https://carlosandresaguirreariza.pythonanywhere.com/).
 
 ## 1. Descripción del proyecto
 
@@ -19,18 +17,18 @@ La inmobiliaria opera principalmente a través de sus oficinas físicas y busca 
 ### 1.1. Características de los usuarios
 El sistema de gestión de inmuebles contendrá dos tipos de usuarios:
 
-- **Buscadores de Propiedad:** Estos son los usuarios que están buscando comprar, alquilar o arrendar un inmueble. Son los clientes potenciales para las propiedades listadas en la inmobiliaria.
-- **Propietarios de Propiedad:** Estos son los propietarios de inmuebles que buscan vender, alquilar o arrendar sus propiedades a través de la inmobiliaria. Son los clientes que proporcionan el inventario de propiedades para la inmobiliaria.
-- **Administradores:** Son los individuos que manejan la plataforma online de la inmobiliaria, pueden ser empleados de la misma que se encargan de administrar la plataforma web y las necesidades de los clientes (buscadores de propiedad o propietarios de propiedad).
+- **Buscador de inmuebles:** Estos son los usuarios que están buscando comprar, alquilar o arrendar un inmueble. Son los clientes potenciales para las propiedades listadas en la inmobiliaria.
+- **Propietario de inmuebles:** Estos son los propietarios de inmuebles que buscan vender, alquilar o arrendar sus propiedades a través de la inmobiliaria. Son los clientes que proporcionan el inventario de propiedades para la inmobiliaria.
+- **Administrador:** Son los individuos que manejan la plataforma online de la inmobiliaria, pueden ser empleados de la misma que se encargan de administrar la plataforma web y las necesidades de los clientes (buscadores de propiedad o propietarios de propiedad).
 
 ### 1.2. Requerimientos funcionales
 - Registro de un usuarios.
 - Autenticación para usuarios.
 - Actualizar la información de un usuario.
 - Eliminar un usuario.
-- Restablecer contraseña.
 - Confirmar número telefónico.
 - Activación de cuenta de usuarios vía correo electrónico.
+- Restablecer contraseña vía correo electrónico.
 - Filtrado para la búsqueda de inmuebles.
 - Guardado de inmuebles para usuarios.
 - Funcionalidades para administradores.
@@ -107,7 +105,15 @@ Primero debes seguir las siguientes instrucciones y dependiendo de que manera qu
 - **Configurar variables de entorno:** Crea un archivo con el nombre _.env_ dentro del directorio _src_. En este archivo se definiran todas las variables de entorno de este proyecto. Las variables que se deben configurar son las siguientes.
 
     ```.env
+    # DJANGO
     KEY_DJANGO=<value>
+
+    # SMTP settings
+    EMAIL_HOST_USER=<tu correo electrónico>
+    EMAIL_HOST=smtp.gmail.com
+    EMAIL_HOST_PASSWORD=<contraseña de aplicación de tu correo>
+    EMAIL_PORT=587
+    EMAIL_USE_TLS=true
     ```
 
     El valor de la variable `KEY_DJANGO` lo puedes obtener ejecutando los siguientes comandos. Primero iniciamos el intérprete de Python.
@@ -115,11 +121,14 @@ Primero debes seguir las siguientes instrucciones y dependiendo de que manera qu
     ```bash
     python3
     ```
+
     El siguiente comando te va retornar el valor de `KEY_DJANGO` que deberas copiar en el archivo _.env_.
 
     ```bash
     from django.core.management.utils import get_random_secret_key; print(get_random_secret_key()); exit()
     ```
+
+    Para el envío de mensajes a través de correo electrónico tienes que tener una contraseña de aplicación que permita al sistema de gestión inmobiliario autenticarse y poder utilizar el servicio de mensajería.
 
 ### 3.1. Instalación manual
 
@@ -161,7 +170,7 @@ De esta manera podrás usar todas las funcionalidades que este proyecto tiene pa
 Para correr las pruebas del proyecto debes ejecutar el siguiente comando.
 
 ```bash
-pytest src/tests
+pytest src/tests/
 ```
 
 ## 5. Contributores
@@ -175,9 +184,12 @@ Si está interesado en contribuir a este proyecto, consulte nuestra guía [CONTR
 | [Documentación de la API](https://backend-inmobiliaria-dev-rgzp.2.us-1.fl0.io/api/schema/swagger-ui/) | Esta es la documentación para la API del proyecto, que incluye detalles sobre los endpoints disponibles y los datos que se pueden enviar y recibir. |
 
 ## 7. Repositorios relacionados
+- [Repositorio Principal](https://github.com/CodingFlashOR#11-inmobiliaria-bonpland).
 - [Repositorio Frontend](https://github.com/CodingFlashOR/frontend-inmobiliaria/tree/dev).
 
 ## 8. Colaboradores
+A continuación se presentan a las personas que están aportando al desarrollo de este proyecto.
+
 | Nombre | Enlaces | Roles | 
 |----------|:--------:|:--------:|
 | Yoana Avaro | <a href="https://www.linkedin.com/in/yoana-avaro/" target="_blank">LinkedIn</a> | Diseño UX/UI |
