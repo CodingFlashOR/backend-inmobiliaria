@@ -3,7 +3,7 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.sites.shortcuts import get_current_site
-from apps.emails.applications import UserAccountActivation
+from apps.emails.applications import AccountActivation
 from apps.emails.domain.constants import SubjectsMail
 from apps.emails.paths import TEMPLATES
 from apps.emails.exceptions import AccountActivationError
@@ -19,7 +19,7 @@ class TestApplicationSendMail:
     methods to verify the behavior of sending an email to activate a user account.
     """
 
-    application_class = UserAccountActivation
+    application_class = AccountActivation
 
     def test_send_success(self, token_generator: Mock) -> None:
         # Preparing the data

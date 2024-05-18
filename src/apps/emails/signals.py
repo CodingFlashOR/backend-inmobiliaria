@@ -1,7 +1,7 @@
 from django.http.request import HttpRequest
 from django.dispatch import receiver
 from django.core.mail import EmailMessage
-from apps.emails.applications import UserAccountActivation
+from apps.emails.applications import AccountActivation
 from apps.emails.utils import TokenGenerator
 from apps.users.infrastructure.db import UserRepository
 from apps.users.models import User
@@ -16,7 +16,7 @@ def handle_user_registration(
     This function is activated when a user-registered signal is sent. Generate an activation token and send an account activation email to the user.
     """
 
-    email = UserAccountActivation(
+    email = AccountActivation(
         user_repository=UserRepository,
         token_class=TokenGenerator(),
         smtp_class=EmailMessage,
