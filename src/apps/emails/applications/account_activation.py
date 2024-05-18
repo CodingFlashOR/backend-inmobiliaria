@@ -16,7 +16,7 @@ from apps.exceptions import ResourceNotFoundError
 from typing import Any, Dict
 
 
-class UserAccountActivation:
+class AccountActivation:
     """
     This class is responsible for sending an email to the user with a link to activate
     their account.

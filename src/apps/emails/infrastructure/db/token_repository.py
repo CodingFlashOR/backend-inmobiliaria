@@ -57,7 +57,7 @@ class TokenRepository:
 
         try:
             tokens = cls.model.objects.defer("date_joined").filter(
-                cls._create_query(filters)
+                cls._create_query(**filters)
             )
         except OperationalError:
             raise DatabaseConnectionError()

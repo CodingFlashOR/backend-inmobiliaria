@@ -35,11 +35,9 @@ class MappedAPIView(generics.GenericAPIView):
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self) -> Serializer:
-        serializer = self.serializer_mapping[self.request.method]
 
-        return serializer
+        return self.serializer_mapping[self.request.method]
 
     def get_application_class(self) -> Callable:
-        application_class = self.application_mapping[self.request.method]
 
-        return application_class
+        return self.application_mapping[self.request.method]

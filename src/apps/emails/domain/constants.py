@@ -4,6 +4,7 @@ from datetime import timedelta
 
 TOKEN_EXPIRATION = timedelta(minutes=30)
 LOGIN_URL = "/login"
+REGISTER_URL = "/register"
 
 
 class SubjectsMail(Enum):
