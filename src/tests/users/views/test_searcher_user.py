@@ -24,7 +24,7 @@ class TestAPIViewPOSTMethod:
 
     @staticmethod
     def _assert_errors_nested_field(
-        key: str, value: Dict, expected_errors: Dict
+        key: str, value: Dict, expected_errors: Dict[str, Dict]
     ) -> None:
         """
         This method asserts the errors of a nested field in the serializer.
@@ -45,11 +45,13 @@ class TestAPIViewPOSTMethod:
 
     def test_request_valid(self, setUp: Tuple[Client, str]) -> None:
         data = {
-            "full_name": "Nombre Apellido",
-            "email": "user1@email.com",
-            "password": "contraseña1234",
-            "confirm_password": "contraseña1234",
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+                "confirm_password": "contraseña1234",
+            },
             "profile_data": {
+                "full_name": "Nombre Apellido",
                 "address": "Residencia 1",
                 "phone_number": "+57 3123574898",
             },
@@ -70,23 +72,23 @@ class TestAPIViewPOSTMethod:
             (
                 {},
                 {
-                    "full_name": ["Este campo es requerido."],
-                    "email": ["Este campo es requerido."],
-                    "password": ["Este campo es requerido."],
-                    "confirm_password": ["Este campo es requerido."],
+                    "base_data": ["Este campo es requerido."],
                     "profile_data": ["Este campo es requerido."],
                 },
             ),
             (
                 {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña1234",
+                    "base_data": {
+                        "full_name": "Nombre Apellido",
+                        "email": "user1@email.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña1234",
+                    },
                     "profile_data": {},
                 },
                 {
                     "profile_data": {
+                        "full_name": ["Este campo es requerido."],
                         "address": ["Este campo es requerido."],
                         "phone_number": ["Este campo es requerido."],
                     },
@@ -94,44 +96,71 @@ class TestAPIViewPOSTMethod:
             ),
             (
                 {
-                    "full_name": "User123",
-                    "email": "useremail.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña1234",
+                    "base_data": {},
                     "profile_data": {
+                        "full_name": "Nombre Apellido",
+                        "address": "Residencia 1",
+                        "phone_number": "+57 3123574898",
+                    },
+                },
+                {
+                    "base_data": {
+                        "email": ["Este campo es requerido."],
+                        "password": ["Este campo es requerido."],
+                        "confirm_password": ["Este campo es requerido."],
+                    },
+                },
+            ),
+            (
+                {
+                    "base_data": {
+                        "email": "useremail.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña1234",
+                    },
+                    "profile_data": {
+                        "full_name": "User123",
                         "address": "Residencia 1",
                         "phone_number": "3123574898",
                     },
                 },
                 {
-                    "full_name": ["El valor ingresado es inválido."],
-                    "email": ["El valor ingresado es inválido."],
+                    "base_data": {
+                        "email": ["El valor ingresado es inválido."],
+                    },
                     "profile_data": {
+                        "full_name": ["El valor ingresado es inválido."],
                         "phone_number": ["El valor ingresado es inválido."],
                     },
                 },
             ),
             (
                 {
-                    "full_name": fake.bothify(text=f"{'?' * 41}"),
-                    "email": f"user{fake.random_number(digits=41)}@email.com",
-                    "password": fake.password(length=21, special_chars=True),
+                    "base_data": {
+                        "email": f"user{fake.random_number(digits=41)}@email.com",
+                        "password": fake.password(
+                            length=21, special_chars=True
+                        ),
+                    },
                     "profile_data": {
+                        "full_name": fake.bothify(text=f"{'?' * 41}"),
                         "address": fake.bothify(text=f"{'?' * 91}"),
                     },
                 },
                 {
-                    "full_name": [
-                        "El valor ingresado no puede tener más de 40 caracteres."
-                    ],
-                    "email": [
-                        "El valor ingresado no puede tener más de 40 caracteres."
-                    ],
-                    "password": [
-                        "El valor ingresado no puede tener más de 20 caracteres."
-                    ],
-                    "confirm_password": ["Este campo es requerido."],
+                    "base_data": {
+                        "email": [
+                            "El valor ingresado no puede tener más de 40 caracteres."
+                        ],
+                        "password": [
+                            "El valor ingresado no puede tener más de 20 caracteres."
+                        ],
+                        "confirm_password": ["Este campo es requerido."],
+                    },
                     "profile_data": {
+                        "full_name": [
+                            "El valor ingresado no puede tener más de 40 caracteres."
+                        ],
                         "address": [
                             "El valor ingresado no puede tener más de 90 caracteres."
                         ],
@@ -141,40 +170,49 @@ class TestAPIViewPOSTMethod:
             ),
             (
                 {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña5678",
+                    "base_data": {
+                        "email": "user1@email.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña5678",
+                    },
                     "profile_data": {
+                        "full_name": "Nombre Apellido",
                         "address": "Residencia 1",
                         "phone_number": "+57 3123574898",
                     },
                 },
                 {
-                    "confirm_password": ["Las contraseñas no coinciden."],
+                    "base_data": {
+                        "confirm_password": ["Las contraseñas no coinciden."],
+                    }
                 },
             ),
             (
                 {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": f"{fake.random_number(digits=10)}",
+                    "base_data": {
+                        "email": "user1@email.com",
+                        "password": f"{fake.random_number(digits=10)}",
+                    },
                     "profile_data": {
+                        "full_name": "Nombre Apellido",
                         "address": "Residencia 1",
                         "phone_number": "+57 3123574898",
                     },
                 },
                 {
-                    "password": [
-                        "La contraseña debe contener al menos una mayuscula o una minuscula."
-                    ],
-                    "confirm_password": ["Este campo es requerido."],
+                    "base_data": {
+                        "password": [
+                            "La contraseña debe contener al menos una mayuscula o una minuscula."
+                        ],
+                        "confirm_password": ["Este campo es requerido."],
+                    }
                 },
             ),
         ],
         ids=[
             "empty_data",
             "empty_profile_data",
+            "empty_base_data",
             "invalid_data",
             "max_length_data",
             "passwords_not_match",
@@ -182,7 +220,10 @@ class TestAPIViewPOSTMethod:
         ],
     )
     def test_invalid_data(
-        self, setUp: Tuple[Client, str], data: Dict, error_messages: Dict
+        self,
+        setUp: Tuple[Client, str],
+        data: Dict[str, Dict],
+        error_messages: Dict[str, Dict],
     ) -> None:
         # Simulating the request
         client, path = setUp
@@ -194,85 +235,63 @@ class TestAPIViewPOSTMethod:
         assert response.status_code == 400
         assert response.data["code"] == "invalid_request_data"
 
-        response_data_error: Dict = response.data["detail"].copy()
-        profile_data_errors: Dict = response_data_error.get(
-            "profile_data", None
+        errors: Dict = response.data["detail"].copy()
+        base_data_errors: Dict = errors.pop(key="base_data", default=None)
+        profile_data_errors: Dict = errors.pop(
+            key="profile_data", default=None
         )
 
-        # If there are errors in data_profile, we assert them separately
-        if isinstance(profile_data_errors, dict):
+        if isinstance(base_data_errors, dict):
+            self._assert_errors_nested_field(
+                key="base_data",
+                value=base_data_errors,
+                expected_errors=error_messages,
+            )
+        elif isinstance(profile_data_errors, dict):
             self._assert_errors_nested_field(
                 key="profile_data",
                 value=profile_data_errors,
                 expected_errors=error_messages,
             )
 
-            # Remove profile data errors from serializer errors and error_messages
-            # We do not want to create problems with the other assertions.
-            response_data_error.pop("profile_data")
-            error_messages.pop("profile_data")
-
-        # Asserting that response data is correct
-        response_data_error_formated = {
-            field: [str(error) for error in errors]
-            for field, errors in response_data_error.items()
-        }
-
-        for field, message in error_messages.items():
-            assert response_data_error_formated[field] == message
-
     @pytest.mark.parametrize(
-        argnames="data, user_data_in_use, error_messages",
+        argnames="data, error_messages",
         argvalues=[
             (
                 {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña1234",
+                    "base_data": {
+                        "email": "user1@email.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña1234",
+                    },
                     "profile_data": {
+                        "full_name": "Nombre Apellido",
                         "address": "Residencia 1",
                         "phone_number": "+57 3123574898",
                     },
                 },
-                "full_name",
                 {
-                    "full_name": ["Este nombre ya está en uso."],
-                },
-            ),
-            (
-                {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña1234",
-                    "profile_data": {
-                        "address": "Residencia 1",
-                        "phone_number": "+57 3123574898",
-                    },
-                },
-                "email",
-                {
-                    "email": ["Este correo electrónico ya está en uso."],
+                    "base_data": {
+                        "email": ["Este correo electrónico ya está en uso."],
+                    }
                 },
             ),
         ],
-        ids=["full_name_in_use", "email_in_use"],
+        ids=["email_in_use"],
     )
-    def test_user_data_used(
+    def test_base_data_used(
         self,
         setUp: Tuple[Client, str],
-        data: Dict,
-        user_data_in_use: str,
-        error_messages: Dict,
+        data: Dict[str, Dict],
+        error_messages: Dict[str, Dict],
     ) -> None:
         # Creating a user
-        User.objects.create_user(
-            full_name=data["full_name"],
-            email=data["email"],
-            password=data["password"],
+        base_data = data["base_data"].copy()
+        base_data.pop("confirm_password")
+        _ = User.objects.create_user(
+            base_data=base_data,
+            profile_data=data["profile_data"],
             related_model_name=UserRoles.SEARCHER.value,
-            related_data=data["profile_data"],
         )
 
         # Simulating the request
@@ -285,14 +304,10 @@ class TestAPIViewPOSTMethod:
         assert response.status_code == 400
         assert response.data["code"] == "invalid_request_data"
 
-        response_data_errors = {
-            field: [str(error) for error in errors]
-            for field, errors in response.data["detail"].items()
-        }
-
-        assert (
-            response_data_errors[user_data_in_use]
-            == error_messages[user_data_in_use]
+        self._assert_errors_nested_field(
+            key="base_data",
+            value=response.data["detail"]["base_data"],
+            expected_errors=error_messages,
         )
 
     @pytest.mark.parametrize(
@@ -300,11 +315,32 @@ class TestAPIViewPOSTMethod:
         argvalues=[
             (
                 {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña1234",
+                    "base_data": {
+                        "email": "user1@email.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña1234",
+                    },
                     "profile_data": {
+                        "full_name": "Nombre Apellido",
+                        "address": "Residencia 1",
+                        "phone_number": "+57 3123574898",
+                    },
+                },
+                {
+                    "profile_data": {
+                        "full_name": ["Este nombre ya está en uso."],
+                    },
+                },
+            ),
+            (
+                {
+                    "base_data": {
+                        "email": "user1@email.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña1234",
+                    },
+                    "profile_data": {
+                        "full_name": "Nombre Apellido",
                         "address": "Residencia 1",
                         "phone_number": "+57 3123574898",
                     },
@@ -317,11 +353,13 @@ class TestAPIViewPOSTMethod:
             ),
             (
                 {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña1234",
+                    "base_data": {
+                        "email": "user1@email.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña1234",
+                    },
                     "profile_data": {
+                        "full_name": "Nombre Apellido",
                         "address": "Residencia 1",
                         "phone_number": "+57 3123574898",
                     },
@@ -335,21 +373,21 @@ class TestAPIViewPOSTMethod:
                 },
             ),
         ],
-        ids=["address_in_use", "phone_number_in_use"],
+        ids=["full_name_in_use", "address_in_use", "phone_number_in_use"],
     )
     def test_profile_data_used(
         self,
         setUp: Tuple[Client, str],
-        data: Dict,
-        error_messages: Dict,
+        data: Dict[str, Dict],
+        error_messages: Dict[str, Dict],
     ) -> None:
         # Creating a user
-        User.objects.create_user(
-            full_name=data["full_name"],
-            email=data["email"],
-            password=data["password"],
+        base_data = data["base_data"].copy()
+        base_data.pop("confirm_password")
+        _ = User.objects.create_user(
+            base_data=base_data,
+            profile_data=data["profile_data"],
             related_model_name=UserRoles.SEARCHER.value,
-            related_data=data["profile_data"],
         )
 
         # Simulating the request

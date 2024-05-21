@@ -13,7 +13,138 @@ info:
     name: MIT License
     url: https://opensource.org/licenses/MIT
 paths:
-  /api/v1/login/:
+  /api/v1/user/searcher/:
+    post:
+      operationId: create_searcher_user
+      description: |-
+        Handle POST requests for searcheruser registration.
+
+        This method allows the registration of a new searcheruser. It waits for a POST
+        request with record data, validates the information, and then creates a new
+        record if the data is valid or returns an error response if it is not.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearcherUserRequest'
+            examples:
+              DataValid:
+                value:
+                  base_data:
+                    email: user1@email.com
+                    password: contraseña1234
+                    confirm_password: contraseña1234
+                  profile_data:
+                    full_name: Nombre Apellido
+                    address: Residencia 1
+                    phone_number: +57 3123574898
+                summary: Register a new user with role searcheruser.
+                description: "A valid user registration data. The following validations\
+                  \ will be applied:\n- **full_name:** This field is required, must\
+                  \ not exceed 40 characters, must not be in use, and must contain\
+                  \ letters and spaces.\n- **email:** This field is required and must\
+                  \ not exceed 40 characters, must follow standard email format, and\
+                  \ must not be in use.\n- **password:** This field is required and\
+                  \ should be between 8 and 20 characters. It should not be a common\
+                  \ password or contain only numbers. \n- **confirm_password:** This\
+                  \ field is required and should match the password field.\n- **address:**\
+                  \ This field is required, must not exceed 90 characters, and must\
+                  \ not be in use.\n- **phone_number:** This field is required, must\
+                  \ not exceed 25 characters, must follow the phone number format,\
+                  \ and must not be in use."
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SearcherUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SearcherUserRequest'
+        required: true
+      responses:
+        '201':
+          description: '**(CREATED)** User created correctly.'
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: object
+              examples:
+                InvalidData:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      base_data:
+                        email:
+                        - Este campo es requerido.
+                        - Este campo no puede estar en blanco.
+                        - Este campo no puede ser nulo.
+                        - El valor ingresado es inválido.
+                        - El valor ingresado no puede tener más de 40 caracteres.
+                        - Este correo electrónico ya está en uso.
+                        password:
+                        - Este campo es requerido.
+                        - Este campo no puede estar en blanco.
+                        - Este campo no puede ser nulo.
+                        - El valor ingresado es inválido.
+                        - El valor ingresado no puede tener más de 20 caracteres.
+                        - El valor ingresado debe tener al menos 8 caracteres.
+                        confirm_password:
+                        - Este campo es requerido.
+                        - Este campo no puede estar en blanco.
+                        - Este campo no puede ser nulo.
+                        - La contraseña debe contener al menos una mayuscula o una
+                          minuscula.
+                        - Esta contraseña es demasiado común.
+                        - Las contraseñas no coinciden.
+                      profile_data:
+                        full_name:
+                        - Este campo es requerido.
+                        - Este campo no puede estar en blanco.
+                        - Este campo no puede ser nulo.
+                        - El valor ingresado es inválido.
+                        - El valor ingresado no puede tener más de 40 caracteres.
+                        - Este nombre ya está en uso.
+                        address:
+                        - Este campo es requerido.
+                        - Este campo no puede estar en blanco.
+                        - Este campo no puede ser nulo.
+                        - El valor ingresado es inválido.
+                        - El valor ingresado no puede tener más de 90 caracteres.
+                        - Esta dirección ya está en uso.
+                        phone_number:
+                        - Este campo es requerido.
+                        - Este campo no puede estar en blanco.
+                        - Este campo no puede ser nulo.
+                        - El valor ingresado es inválido.
+                        - El valor ingresado no puede tener más de 25 caracteres.
+                        - Este número de teléfono ya está en uso.
+                  summary: Invalid data
+                  description: These are the possible error messages for each field.
+          description: '**(BAD_REQUEST)** The request data is invalid, error messages
+            are returned for each field that did not pass validations.'
+        '500':
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                  code:
+                    type: string
+              examples:
+                DatabaseConnectionError:
+                  value:
+                    code: database_connection_error
+                    detail: Unable to establish a connection with the database. Please
+                      try again later.
+                  summary: Database connection error
+          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
+  /api/v1/user/token/login/:
     post:
       operationId: authenticate_user
       description: |-
@@ -35,11 +166,11 @@ paths:
                 value:
                   email: user1@email.com
                   password: contraseña1234
-                summary: Valid credentials for a user.
+                summary: Valid data for the request.
                 description: |-
                   Valid credentials for a user. The following validations will be applied:
-                  - **email:** This field is required and must not exceed 40 characters and must follow standard email format.
-                  - **password:** This field is required and should be between 8 and 20 characters. It should not be a common password or contain only numbers.
+                  - **email:** This field is required.
+                  - **password:** This field is required.
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/AuthenticationRequest'
@@ -88,15 +219,10 @@ paths:
                       - Este campo es requerido.
                       - Este campo no puede estar en blanco.
                       - Este campo no puede ser nulo.
-                      - El valor ingresado es inválido.
-                      - El valor ingresado no puede tener más de 40 caracteres.
                       password:
                       - Este campo es requerido.
                       - Este campo no puede estar en blanco.
                       - Este campo no puede ser nulo.
-                      - El valor ingresado es inválido.
-                      - El valor ingresado no puede tener más de 20 caracteres.
-                      - El valor ingresado debe tener al menos 8 caracteres.
                   summary: Invalid data
                   description: These are the possible error messages for each field.
           description: '**(BAD_REQUEST)** The request data are invalid, error message(s)
@@ -145,56 +271,57 @@ paths:
                   summary: Database connection error
                   description: The connection to the database could not be established.
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
-  /api/v1/searcher_user/:
+  /api/v1/user/token/update/:
     post:
-      operationId: create_searcher_user
+      operationId: update_tokens
       description: |-
-        Handle POST requests for searcheruser registration.
+        Handle POST requests for token refresh.
 
-        This method allows the registration of a new searcheruser. It waits for a POST
-        request with record data, validates the information, and then creates a new
-        record if the data is valid or returns an error response if it is not.
+        This method allows refreshing of a user's tokens. It waits for a POST request
+        with the access and refresh tokens, validates the information, and then
+        returns a response with the new tokens if the data is valid or returns an
+        error response if it is not.
       tags:
       - Users
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SearcherUserRequest'
+              $ref: '#/components/schemas/UpdateTokenRequest'
             examples:
               DataValid:
                 value:
-                  full_name: Nombre Apellido
-                  email: user1@email.com
-                  password: contraseña1234
-                  confirm_password: contraseña1234
-                  profile_data:
-                    address: Residencia 1
-                    phone_number: +57 3123574898
-                summary: Register a new user with role **searcheruser**.
-                description: "A valid user registration data. The following validations\
-                  \ will be applied:\n- **full_name:** This field is required, must\
-                  \ not exceed 40 characters, must not be in use, and must contain\
-                  \ letters and spaces.\n- **email:** This field is required and must\
-                  \ not exceed 40 characters, must follow standard email format, and\
-                  \ must not be in use.\n- **password:** This field is required and\
-                  \ should be between 8 and 20 characters. It should not be a common\
-                  \ password or contain only numbers. \n- **confirm_password:** This\
-                  \ field is required and should match the password field.\n- **address:**\
-                  \ This field is required, must not exceed 90 characters, and must\
-                  \ not be in use.\n- **phone_number:** This field is required, must\
-                  \ not exceed 25 characters, must follow the phone number format,\
-                  \ and must not be in use."
+                  refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
+                summary: Valid data for the request.
+                description: |-
+                  Valid data for the request. The following validations will be applied:
+                  - **refresh:** must be a valid token and not expired.
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SearcherUserRequest'
+              $ref: '#/components/schemas/UpdateTokenRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SearcherUserRequest'
+              $ref: '#/components/schemas/UpdateTokenRequest'
         required: true
       responses:
-        '201':
-          description: '**(CREATED)** User created correctly.'
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  access:
+                    type: string
+                  refresh:
+                    type: string
+              examples:
+                ResponseOk:
+                  value:
+                    access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw
+                    refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
+                  summary: New tokens generated
+                  description: The new access and refresh tokens have been generated
+                    successfully, you can use these new tokens to keep the user authenticated.
+          description: '**(OK)** New tokens are generated.'
         '400':
           content:
             application/json:
@@ -209,178 +336,15 @@ paths:
                   value:
                     code: invalid_request_data
                     detail:
-                      full_name:
-                      - Este campo es requerido.
-                      - Este campo no puede estar en blanco.
-                      - Este campo no puede ser nulo.
-                      - El valor ingresado es inválido.
-                      - El valor ingresado no puede tener más de 40 caracteres.
-                      - Este nombre ya está en uso.
-                      email:
-                      - Este campo es requerido.
-                      - Este campo no puede estar en blanco.
-                      - Este campo no puede ser nulo.
-                      - El valor ingresado es inválido.
-                      - El valor ingresado no puede tener más de 40 caracteres.
-                      - Este correo electrónico ya está en uso.
-                      password:
-                      - Este campo es requerido.
-                      - Este campo no puede estar en blanco.
-                      - Este campo no puede ser nulo.
-                      - El valor ingresado es inválido.
-                      - El valor ingresado no puede tener más de 20 caracteres.
-                      - El valor ingresado debe tener al menos 8 caracteres.
-                      confirm_password:
-                      - Este campo es requerido.
-                      - Este campo no puede estar en blanco.
-                      - Este campo no puede ser nulo.
-                      - La contraseña debe contener al menos una mayuscula o una minuscula.
-                      - Esta contraseña es demasiado común.
-                      - Las contraseñas no coinciden.
-                      profile_data:
-                        address:
-                        - Este campo es requerido.
-                        - Este campo no puede estar en blanco.
-                        - Este campo no puede ser nulo.
-                        - El valor ingresado es inválido.
-                        - El valor ingresado no puede tener más de 90 caracteres.
-                        - Esta dirección ya está en uso.
-                        phone_number:
-                        - Este campo es requerido.
-                        - Este campo no puede estar en blanco.
-                        - Este campo no puede ser nulo.
-                        - El valor ingresado es inválido.
-                        - El valor ingresado no puede tener más de 25 caracteres.
-                        - Este número de teléfono ya está en uso.
+                      refresh:
+                      - This field is required.
+                      - This field may not be blank.
+                      - This field may not be null.
+                      - Not a valid string.
+                      - Token is expired.
+                      - Token is invalid.
                   summary: Invalid data
                   description: These are the possible error messages for each field.
-          description: '**(BAD_REQUEST)** The request data is invalid, error messages
-            are returned for each field that did not pass validations.'
-        '500':
-          content:
-            application/json:
-              schema:
-                properties:
-                  detail:
-                    type: string
-                  code:
-                    type: string
-              examples:
-                DatabaseConnectionError:
-                  value:
-                    code: database_connection_error
-                    detail: Unable to establish a connection with the database. Please
-                      try again later.
-                  summary: Database connection error
-          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
-  /api/v1/user/jwt/refresh/:
-    post:
-      operationId: api_v1_user_jwt_refresh_create
-      description: |-
-        Handle POST requests for token refresh.
-
-        This method allows refreshing of a user's tokens. It waits for a POST request
-        with the access and refresh tokens, validates the information, and then
-        returns a response with the new tokens if the data is valid or returns an
-        error response if it is not.
-      tags:
-      - Users
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RefreshTokenRequest'
-            examples:
-              DataValid:
-                value:
-                  access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzA2Mjk2MzI3LCJpYXQiOjE3MDYyODkxMjcsImp0aSI6IjQ0Zjg3MDdjZTdhOTQ0Y2RhYWRlNzlhMDg1OThiY2NkIiwidXNlcl9pZCI6IjUwNTI5MjBjLWE3ZDYtNDM4ZS1iZmQwLWVhNTUyMTM4ODM2YyJ9.-FPGYs1m-SDZDs3FJ3wlnqESVhcIg8oYAgKOFBD6Qic
-                  refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcwNjM3NTUyNywiaWF0IjoxNzA2Mjg5MTI3LCJqdGkiOiI3NzE5OGZmM2JkYWQ0MTk5YTExNjcwZGMwMzdmNTM0YyIsInVzZXJfaWQiOiI1MDUyOTIwYy1hN2Q2LTQzOGUtYmZkMC1lYTU1MjEzODgzNmMifQ.dfHpJRflOA1M2BmraxcW401EJvrTqU6HfbVmHHRkF2U
-                summary: JWT for user
-                description: |-
-                  Valid data for the request. The following validations will be applied:
-                  - **Access token:** must be a valid token and expired.
-                  - **Refresh token:** must be a valid token and not expired.
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/RefreshTokenRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/RefreshTokenRequest'
-        required: true
-      security:
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                properties:
-                  access:
-                    type: string
-                  refresh:
-                    type: string
-              examples:
-                ResponseOk:
-                  value:
-                    access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzExMDU0MzYyLCJpYXQiOjE3MTEwNDcxNjIsImp0aSI6IjY0MTE2YzgyYjhmMDQzOWJhNTJkZGZmMzgyNzQ2ZTIwIiwidXNlcl9pZCI6IjJhNmI0NTNiLWZhMmItNDMxOC05YzM1LWIwZTk2ZTg5NGI2MyJ9.gfhWpy5rYY6P3Xrg0usS6j1KhEvF1HqWMiU7AaFkp9A
-                    refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A
-                  summary: Valid request
-          description: '**(OK)** New user tokens.'
-        '400':
-          content:
-            application/json:
-              schema:
-                properties:
-                  code:
-                    type: string
-                  detail:
-                    type: object
-                    properties:
-                      access:
-                        type: array
-                        items:
-                          type: string
-                      refresh:
-                        type: array
-                        items:
-                          type: string
-              examples:
-                InvalidData1:
-                  value:
-                    code: invalid_request_data
-                    detail:
-                      access:
-                      - Token is not expired.
-                  summary: Access token not expired
-                InvalidData2:
-                  value:
-                    code: invalid_request_data
-                    detail:
-                      refresh:
-                      - Token is expired.
-                  summary: Refresh token expired
-                InvalidData3:
-                  value:
-                    code: invalid_request_data
-                    detail:
-                      access:
-                      - Token is invalid.
-                      refresh:
-                      - Token is invalid.
-                  summary: Invalid tokens
-                InvalidData4:
-                  value:
-                    code: invalid_request_data
-                    detail:
-                      access:
-                      - This field is required.
-                      - This field may not be blank.
-                      - This field may not be null.
-                      refresh:
-                      - This field is required.
-                      - This field may not be blank.
-                      - This field may not be null.
-                  summary: Invalid request data
           description: '**(BAD_REQUEST)** The request data are invalid, error message(s)
             are returned for each field that did not pass the validations.'
         '401':
@@ -391,31 +355,22 @@ paths:
                   code:
                     type: string
                   detail:
-                    type: string or object
+                    type: string
               examples:
-                UserNotFound:
-                  value:
-                    code: user_not_found
-                    detail: User 2a6b453b-fa2b-4318-9c35-b0e96e894b63 not found.
-                  summary: The user of the tokens was not found
                 TokenNotFound:
                   value:
                     code: token_not_found
-                    detail: Tokens do not exist.
-                  summary: The tokens were not foun
+                    detail: Token do not exist.
+                  summary: Token not found
+                  description: The refresh token provided does not exist.
                 TokenError:
                   value:
                     code: token_error
-                    detail:
-                      message: The token does not match the user's last tokens.
-                      token_type: Access
-                      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A
-                  summary: The tokens do not match the user's last tokens
-          description: |-
-            **(UNAUTHORIZED)** Tokens cannot be refreshed, this is due to one of the following reasons.
-            - The user of the tokens was not found.
-            - The tokens do not match the user's last tokens.
-            - The tokens were not found.
+                    detail: The token does not match the user's last tokens.
+                  summary: Token error
+                  description: The token does not match the user's last tokens.
+          description: '**(UNAUTHORIZED)** The refresh token is not suitable for token
+            update.'
         '500':
           content:
             application/json:
@@ -432,6 +387,7 @@ paths:
                     detail: Unable to establish a connection with the database. Please
                       try again later.
                   summary: Database connection error
+                  description: The connection to the database could not be established.
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
 components:
   schemas:
@@ -444,55 +400,16 @@ components:
         email:
           type: string
           minLength: 1
-          pattern: ^([A-Za-z0-9]+[-_.])*[A-Za-z0-9]+@[A-Za-z]+(\.[A-Z|a-z]{2,4}){1,2}$
-          maxLength: 40
         password:
           type: string
-          writeOnly: true
-          minLength: 8
-          maxLength: 20
+          minLength: 1
       required:
       - email
       - password
-    RefreshTokenRequest:
+    BaseUserRequest:
       type: object
-      description: |-
-        Handles the data for user token refresh. Checks that the provided access and
-        refresh tokens meet the necessary requirements.
+      description: Defines the fields that are required for the user.
       properties:
-        refresh:
-          type: string
-          minLength: 1
-        access:
-          type: string
-          minLength: 1
-      required:
-      - access
-      - refresh
-    SearcherUserProfileDataRequest:
-      type: object
-      description: Defines the fields that are required for the searcher user profile.
-      properties:
-        address:
-          type: string
-          minLength: 1
-          maxLength: 90
-        phone_number:
-          type: string
-          minLength: 1
-          maxLength: 25
-      required:
-      - address
-      - phone_number
-    SearcherUserRequest:
-      type: object
-      description: Defines the fields that are required for the searcher user.
-      properties:
-        full_name:
-          type: string
-          minLength: 1
-          pattern: ^[A-Za-z\s]+$
-          maxLength: 40
         email:
           type: string
           minLength: 1
@@ -507,14 +424,53 @@ components:
           type: string
           writeOnly: true
           minLength: 1
-        profile_data:
-          $ref: '#/components/schemas/SearcherUserProfileDataRequest'
       required:
       - confirm_password
       - email
-      - full_name
       - password
+    SearcherUserProfileDataRequest:
+      type: object
+      description: Defines the fields that are required for the searcher user profile.
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          pattern: ^[A-Za-z\s]+$
+          maxLength: 40
+        address:
+          type: string
+          minLength: 1
+          maxLength: 90
+        phone_number:
+          type: string
+          minLength: 1
+          maxLength: 25
+      required:
+      - address
+      - full_name
+      - phone_number
+    SearcherUserRequest:
+      type: object
+      description: Defines the fields that are required for the searcher user.
+      properties:
+        base_data:
+          $ref: '#/components/schemas/BaseUserRequest'
+        profile_data:
+          $ref: '#/components/schemas/SearcherUserProfileDataRequest'
+      required:
+      - base_data
       - profile_data
+    UpdateTokenRequest:
+      type: object
+      description: |-
+        Handles the data for user token refresh. Checks that the provided access and
+        refresh tokens meet the necessary requirements.
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
 tags:
 - name: Users
   description: It comprises all the endpoints that manage all the functionality related

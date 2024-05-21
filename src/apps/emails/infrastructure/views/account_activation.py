@@ -2,6 +2,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import generics, status
 from django.core.mail import EmailMessage
+from drf_spectacular.utils import extend_schema
 from apps.emails.applications import AccountActivation
 from apps.emails.utils import TokenGenerator
 from apps.users.infrastructure.db import UserRepository
@@ -16,6 +17,7 @@ class AccountActivationMessageAPIView(generics.GenericAPIView):
     permission_classes = []
     application_class = AccountActivation
 
+    @extend_schema(exclude=True)
     def get(self, request: Request, *args, **kwargs) -> Response:
         """
         Handle GET requests to send an account activation email to a user.

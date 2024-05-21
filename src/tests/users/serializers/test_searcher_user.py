@@ -18,7 +18,7 @@ class TestSerializer:
     serializer_class = SearcherUserSerializer
 
     @staticmethod
-    def assert_errors_nested_field(
+    def _assert_errors_nested_field(
         key: str, value: Dict, expected_errors: Dict
     ) -> None:
         """
@@ -46,11 +46,13 @@ class TestSerializer:
         self, repository_base: Mock, repository_searcher_user: Mock
     ) -> None:
         data = {
-            "full_name": "Nombre Apellido",
-            "email": "user1@email.com",
-            "password": "contraseña1234",
-            "confirm_password": "contraseña1234",
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+                "confirm_password": "contraseña1234",
+            },
             "profile_data": {
+                "full_name": "Nombre Apellido",
                 "address": "Residencia 1",
                 "phone_number": "+57 3123574898",
             },
@@ -70,10 +72,11 @@ class TestSerializer:
         # Asserting the serializer is valid and the data is correct
         assert serializer.is_valid()
 
+        base_data = data.pop("base_data")
         profile_data = data.pop("profile_data")
 
-        for field, value in data.items():
-            assert serializer.validated_data[field] == value
+        for field, value in base_data.items():
+            assert serializer.validated_data["base_data"][field] == value
 
         for field, value in profile_data.items():
             assert serializer.validated_data["profile_data"][field] == value
@@ -84,23 +87,23 @@ class TestSerializer:
             (
                 {},
                 {
-                    "full_name": ["Este campo es requerido."],
-                    "email": ["Este campo es requerido."],
-                    "password": ["Este campo es requerido."],
-                    "confirm_password": ["Este campo es requerido."],
+                    "base_data": ["Este campo es requerido."],
                     "profile_data": ["Este campo es requerido."],
                 },
             ),
             (
                 {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña1234",
+                    "base_data": {
+                        "full_name": "Nombre Apellido",
+                        "email": "user1@email.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña1234",
+                    },
                     "profile_data": {},
                 },
                 {
                     "profile_data": {
+                        "full_name": ["Este campo es requerido."],
                         "address": ["Este campo es requerido."],
                         "phone_number": ["Este campo es requerido."],
                     },
@@ -108,44 +111,71 @@ class TestSerializer:
             ),
             (
                 {
-                    "full_name": "User123",
-                    "email": "useremail.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña1234",
+                    "base_data": {},
                     "profile_data": {
+                        "full_name": "Nombre Apellido",
+                        "address": "Residencia 1",
+                        "phone_number": "+57 3123574898",
+                    },
+                },
+                {
+                    "base_data": {
+                        "email": ["Este campo es requerido."],
+                        "password": ["Este campo es requerido."],
+                        "confirm_password": ["Este campo es requerido."],
+                    },
+                },
+            ),
+            (
+                {
+                    "base_data": {
+                        "email": "useremail.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña1234",
+                    },
+                    "profile_data": {
+                        "full_name": "User123",
                         "address": "Residencia 1",
                         "phone_number": "3123574898",
                     },
                 },
                 {
-                    "full_name": ["El valor ingresado es inválido."],
-                    "email": ["El valor ingresado es inválido."],
+                    "base_data": {
+                        "email": ["El valor ingresado es inválido."],
+                    },
                     "profile_data": {
+                        "full_name": ["El valor ingresado es inválido."],
                         "phone_number": ["El valor ingresado es inválido."],
                     },
                 },
             ),
             (
                 {
-                    "full_name": fake.bothify(text=f"{'?' * 41}"),
-                    "email": f"user{fake.random_number(digits=41)}@email.com",
-                    "password": fake.bothify(text=f"{'?#' * 21}"),
+                    "base_data": {
+                        "email": f"user{fake.random_number(digits=41)}@email.com",
+                        "password": fake.password(
+                            length=21, special_chars=True
+                        ),
+                    },
                     "profile_data": {
+                        "full_name": fake.bothify(text=f"{'?' * 41}"),
                         "address": fake.bothify(text=f"{'?' * 91}"),
                     },
                 },
                 {
-                    "full_name": [
-                        "El valor ingresado no puede tener más de 40 caracteres."
-                    ],
-                    "email": [
-                        "El valor ingresado no puede tener más de 40 caracteres."
-                    ],
-                    "password": [
-                        "El valor ingresado no puede tener más de 20 caracteres."
-                    ],
-                    "confirm_password": ["Este campo es requerido."],
+                    "base_data": {
+                        "email": [
+                            "El valor ingresado no puede tener más de 40 caracteres."
+                        ],
+                        "password": [
+                            "El valor ingresado no puede tener más de 20 caracteres."
+                        ],
+                        "confirm_password": ["Este campo es requerido."],
+                    },
                     "profile_data": {
+                        "full_name": [
+                            "El valor ingresado no puede tener más de 40 caracteres."
+                        ],
                         "address": [
                             "El valor ingresado no puede tener más de 90 caracteres."
                         ],
@@ -155,40 +185,49 @@ class TestSerializer:
             ),
             (
                 {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña5678",
+                    "base_data": {
+                        "email": "user1@email.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña5678",
+                    },
                     "profile_data": {
+                        "full_name": "Nombre Apellido",
                         "address": "Residencia 1",
                         "phone_number": "+57 3123574898",
                     },
                 },
                 {
-                    "confirm_password": ["Las contraseñas no coinciden."],
+                    "base_data": {
+                        "confirm_password": ["Las contraseñas no coinciden."],
+                    }
                 },
             ),
             (
                 {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": f"{fake.random_number(digits=10)}",
+                    "base_data": {
+                        "email": "user1@email.com",
+                        "password": f"{fake.random_number(digits=10)}",
+                    },
                     "profile_data": {
+                        "full_name": "Nombre Apellido",
                         "address": "Residencia 1",
                         "phone_number": "+57 3123574898",
                     },
                 },
                 {
-                    "password": [
-                        "La contraseña debe contener al menos una mayuscula o una minuscula."
-                    ],
-                    "confirm_password": ["Este campo es requerido."],
+                    "base_data": {
+                        "password": [
+                            "La contraseña debe contener al menos una mayuscula o una minuscula."
+                        ],
+                        "confirm_password": ["Este campo es requerido."],
+                    }
                 },
             ),
         ],
         ids=[
             "empty_data",
             "empty_profile_data",
+            "empty_base_data",
             "invalid_data",
             "max_length_data",
             "passwords_not_match",
@@ -203,8 +242,8 @@ class TestSerializer:
         self,
         repository_base: Mock,
         repository_searcher_user: Mock,
-        data: Dict,
-        error_messages: Dict,
+        data: Dict[str, Dict],
+        error_messages: Dict[str, Dict],
     ) -> None:
         # Mocking the methods
         get: Mock = repository_base.get
@@ -221,80 +260,61 @@ class TestSerializer:
         assert not serializer.is_valid()
         assert serializer.validated_data == {}
 
-        serializer_errors = serializer.errors.copy()
-        profile_data_errors: Dict = serializer_errors.get("profile_data", None)
+        errors = serializer.errors.copy()
+        base_data_errors: Dict = errors.pop(key="base_data", default=None)
+        profile_data_errors: Dict = errors.pop(
+            key="profile_data", default=None
+        )
 
-        if isinstance(profile_data_errors, dict):
-            # If there are errors in data_profile, we assert them separately
-            self.assert_errors_nested_field(
+        if isinstance(base_data_errors, dict):
+            self._assert_errors_nested_field(
+                key="base_data",
+                value=base_data_errors,
+                expected_errors=error_messages,
+            )
+        elif isinstance(profile_data_errors, dict):
+            self._assert_errors_nested_field(
                 key="profile_data",
                 value=profile_data_errors,
                 expected_errors=error_messages,
             )
 
-            # Remove profile data errors from serializer errors and error_messages
-            # We do not want to create problems with the other assertions.
-            serializer_errors.pop("profile_data")
-            error_messages.pop("profile_data")
-
-        serializer_errors_formated = {
-            field: [str(error) for error in errors]
-            for field, errors in serializer_errors.items()
-        }
-
-        for field, message in error_messages.items():
-            assert serializer_errors_formated[field] == message
-
     @pytest.mark.parametrize(
-        argnames="data, user_data_in_use, error_messages",
+        argnames="data, error_messages",
         argvalues=[
             (
                 {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña1234",
+                    "base_data": {
+                        "email": "user1@email.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña1234",
+                    },
                     "profile_data": {
+                        "full_name": "Nombre Apellido",
                         "address": "Residencia 1",
                         "phone_number": "+57 3123574898",
                     },
                 },
-                "full_name",
                 {
-                    "full_name": ["Este nombre ya está en uso."],
-                },
-            ),
-            (
-                {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña1234",
-                    "profile_data": {
-                        "address": "Residencia 1",
-                        "phone_number": "+57 3123574898",
-                    },
-                },
-                "email",
-                {
-                    "email": ["Este correo electrónico ya está en uso."],
+                    "base_data": {
+                        "email": ["Este correo electrónico ya está en uso."],
+                    }
                 },
             ),
         ],
-        ids=["full_name_in_use", "email_in_use"],
+        ids=["email_in_use"],
     )
     @patch(
         "apps.users.infrastructure.serializers.searcher_user.UserRepository"
     )
     @patch("apps.users.infrastructure.serializers.base.UserRepository")
-    def test_user_data_used(
+    def test_base_data_used(
         self,
         repository_base: Mock,
         repository_searcher_user: Mock,
         queryset: Mock,
-        data: Dict,
-        user_data_in_use: str,
-        error_messages: Dict,
+        data: Dict[str, Dict],
+        error_messages: Dict[str, Dict],
     ) -> None:
         # Mocking the methods
         get: Mock = repository_base.get
@@ -313,14 +333,10 @@ class TestSerializer:
         assert not serializer.is_valid()
         assert serializer.validated_data == {}
 
-        serializer_errors_formated = {
-            field: [str(error) for error in errors]
-            for field, errors in serializer.errors.items()
-        }
-
-        assert (
-            serializer_errors_formated[user_data_in_use]
-            == error_messages[user_data_in_use]
+        self._assert_errors_nested_field(
+            key="base_data",
+            value=serializer.errors["base_data"],
+            expected_errors=error_messages,
         )
 
     @pytest.mark.parametrize(
@@ -328,11 +344,32 @@ class TestSerializer:
         argvalues=[
             (
                 {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña1234",
+                    "base_data": {
+                        "email": "user1@email.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña1234",
+                    },
                     "profile_data": {
+                        "full_name": "Nombre Apellido",
+                        "address": "Residencia 1",
+                        "phone_number": "+57 3123574898",
+                    },
+                },
+                {
+                    "profile_data": {
+                        "full_name": ["Este nombre ya está en uso."],
+                    },
+                },
+            ),
+            (
+                {
+                    "base_data": {
+                        "email": "user1@email.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña1234",
+                    },
+                    "profile_data": {
+                        "full_name": "Nombre Apellido",
                         "address": "Residencia 1",
                         "phone_number": "+57 3123574898",
                     },
@@ -345,11 +382,13 @@ class TestSerializer:
             ),
             (
                 {
-                    "full_name": "Nombre Apellido",
-                    "email": "user1@email.com",
-                    "password": "contraseña1234",
-                    "confirm_password": "contraseña1234",
+                    "base_data": {
+                        "email": "user1@email.com",
+                        "password": "contraseña1234",
+                        "confirm_password": "contraseña1234",
+                    },
                     "profile_data": {
+                        "full_name": "Nombre Apellido",
                         "address": "Residencia 1",
                         "phone_number": "+57 3123574898",
                     },
@@ -363,7 +402,7 @@ class TestSerializer:
                 },
             ),
         ],
-        ids=["address_in_use", "phone_number_in_use"],
+        ids=["full_name_in_use", "address_in_use", "phone_number_in_use"],
     )
     @patch(
         "apps.users.infrastructure.serializers.searcher_user.UserRepository"
@@ -374,8 +413,8 @@ class TestSerializer:
         repository_base: Mock,
         repository_searcher_user: Mock,
         queryset: Mock,
-        data: Dict,
-        error_messages: Dict,
+        data: Dict[str, Dict],
+        error_messages: Dict[str, Dict],
     ) -> None:
         # Mocking the methods
         get: Mock = repository_base.get
@@ -394,7 +433,7 @@ class TestSerializer:
         assert not serializer.is_valid()
         assert serializer.validated_data == {}
 
-        self.assert_errors_nested_field(
+        self._assert_errors_nested_field(
             key="profile_data",
             value=serializer.errors["profile_data"],
             expected_errors=error_messages,

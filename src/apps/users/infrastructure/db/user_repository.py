@@ -27,19 +27,13 @@ class UserRepository:
         - DatabaseConnectionError: If there is an operational error with the database.
         """
 
-        full_name = data.pop("full_name")
-        email = data.pop("email")
-        password = data.pop("password")
-        related_data = data.pop("profile_data")
         user_manager: UserManager = cls.model.objects
 
         try:
             user = user_manager.create_user(
-                full_name=full_name,
-                email=email,
-                password=password,
+                base_data=data["base_data"],
+                profile_data=data["profile_data"],
                 related_model_name=role,
-                related_data=related_data,
             )
         except OperationalError:
             # In the future, a retry system will be implemented when the database is
@@ -63,7 +57,13 @@ class UserRepository:
         try:
             user_list = (
                 cls.model.objects.select_related("content_type")
-                .defer("password", "last_login", "is_superuser", "date_joined")
+                .defer(
+                    "password",
+                    "last_login",
+                    "is_superuser",
+                    "is_staff",
+                    "date_joined",
+                )
                 .filter(**filters)
             )
         except OperationalError:
@@ -102,7 +102,9 @@ class UserRepository:
             )
 
         try:
-            related_data = related_model.objects.filter(**filters)
+            related_data = related_model.objects.defer("date_joined").filter(
+                **filters
+            )
         except OperationalError:
             # In the future, a retry system will be implemented when the database is
             # suddenly unavailable.

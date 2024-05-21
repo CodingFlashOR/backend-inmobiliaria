@@ -108,3 +108,20 @@ class NotAuthenticated(APIException, DetailDictMixin):
             self.detail = detail or self.default_detail
         self.code = code or self.default_code
         super().__init__(detail=self.detail, code=self.code)
+
+
+class PermissionDenied(APIException, DetailDictMixin):
+
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "You do not have permission to perform this action."
+    default_code = "permission_denied"
+
+    def __init__(
+        self, detail: str | Dict[str, Any] = None, code: str = None
+    ) -> None:
+        if isinstance(detail, dict):
+            self.detail = {"detail": detail or self.default_detail}
+        else:
+            self.detail = detail or self.default_detail
+        self.code = code or self.default_code
+        super().__init__(detail=self.detail, code=self.code)

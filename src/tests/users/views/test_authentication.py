@@ -18,21 +18,22 @@ class TestAPIViewPOSTMethod:
     def test_request_valid(self, setUp: Tuple[Client, str]) -> None:
         # Creating a user
         data = {
-            "full_name": "Nombre Apellido",
-            "email": "user1@email.com",
-            "password": "contraseña1234",
-            "confirm_password": "contraseña1234",
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+            },
             "profile_data": {
+                "full_name": "Nombre Apellido",
                 "address": "Residencia 1",
                 "phone_number": "+57 3123574898",
             },
         }
+        email = data["base_data"]["email"]
+        password = data["base_data"]["password"]
         user = User.objects.create_user(
-            full_name=data["full_name"],
-            email=data["email"],
-            password=data["password"],
+            base_data=data["base_data"],
+            profile_data=data["profile_data"],
             related_model_name=UserRoles.SEARCHER.value,
-            related_data=data["profile_data"],
         )
         user.is_active = True
         user.save()
@@ -41,7 +42,7 @@ class TestAPIViewPOSTMethod:
         client, path = setUp
         response = client.post(
             path=path,
-            data={"email": data["email"], "password": data["password"]},
+            data={"email": email, "password": password},
             content_type="application/json",
         )
 
@@ -67,28 +68,29 @@ class TestAPIViewPOSTMethod:
     def test_if_inactive_user_account(self, setUp: Tuple[Client, str]) -> None:
         # Creating a user
         data = {
-            "full_name": "Nombre Apellido",
-            "email": "user1@email.com",
-            "password": "contraseña1234",
-            "confirm_password": "contraseña1234",
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+            },
             "profile_data": {
+                "full_name": "Nombre Apellido",
                 "address": "Residencia 1",
                 "phone_number": "+57 3123574898",
             },
         }
-        user = User.objects.create_user(
-            full_name=data["full_name"],
-            email=data["email"],
-            password=data["password"],
+        email = data["base_data"]["email"]
+        password = data["base_data"]["password"]
+        _ = User.objects.create_user(
+            base_data=data["base_data"],
+            profile_data=data["profile_data"],
             related_model_name=UserRoles.SEARCHER.value,
-            related_data=data["profile_data"],
         )
 
         # Simulating the request
         client, path = setUp
         response = client.post(
             path=path,
-            data={"email": data["email"], "password": data["password"]},
+            data={"email": email, "password": password},
             content_type="application/json",
         )
 

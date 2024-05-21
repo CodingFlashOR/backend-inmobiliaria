@@ -1,7 +1,7 @@
 from rest_framework.serializers import Serializer
 from rest_framework.response import Response
 from rest_framework.request import Request
-from rest_framework import status, exceptions
+from rest_framework import status
 from apps.users.infrastructure.serializers import SearcherUserSerializer
 from apps.users.infrastructure.db import UserRepository
 from apps.users.infrastructure.views.base import MappedAPIView
@@ -9,7 +9,6 @@ from apps.users.infrastructure.schemas.searcher_user import (
     CreateSearcherUserSchema,
 )
 from apps.users.applications import SearcherUserUsesCases
-from apps.exceptions import NotAuthenticated
 from typing import Dict, Any, List
 
 
@@ -34,11 +33,6 @@ class SearcherUserAPIView(MappedAPIView):
     serializer_mapping = {
         "POST": SearcherUserSerializer,
     }
-
-    def permission_denied(self, request: Request, message=None, code=None):
-        if request.authenticators and not request.successful_authenticator:
-            raise NotAuthenticated(code=code, detail=message)
-        raise exceptions.PermissionDenied(code=code, detail=message)
 
     def _handle_valid_request(
         self, data: Dict[str, Any], request: Request

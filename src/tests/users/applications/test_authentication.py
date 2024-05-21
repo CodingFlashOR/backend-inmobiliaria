@@ -23,21 +23,22 @@ class TestApplication:
     def test_authenticated_user(self) -> None:
         # Creating a user
         data = {
-            "full_name": "Nombre Apellido",
-            "email": "user1@email.com",
-            "password": "contraseña1234",
-            "confirm_password": "contraseña1234",
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+            },
             "profile_data": {
+                "full_name": "Nombre Apellido",
                 "address": "Residencia 1",
                 "phone_number": "+57 3123574898",
             },
         }
+        email = data["base_data"]["email"]
+        password = data["base_data"]["password"]
         user = User.objects.create_user(
-            full_name=data["full_name"],
-            email=data["email"],
-            password=data["password"],
+            base_data=data["base_data"],
+            profile_data=data["profile_data"],
             related_model_name=UserRoles.SEARCHER.value,
-            related_data=data["profile_data"],
         )
         user.is_active = True
         user.save()
@@ -50,12 +51,7 @@ class TestApplication:
         tokens = self.application_class(
             jwt_class=TokenObtainPairSerializer,
             jwt_repository=JWTRepository,
-        ).authenticate_user(
-            credentials={
-                "email": data["email"],
-                "password": data["password"],
-            }
-        )
+        ).authenticate_user(credentials={"email": email, "password": password})
 
         # Asserting that the tokens were generated
         access = tokens.get("access", False)
@@ -105,24 +101,24 @@ class TestApplication:
         assert JWTBlacklist.objects.count() == 0
 
     def test_if_inactive_user_account(self) -> None:
+        # Creating a user
         data = {
-            "full_name": "Nombre Apellido",
-            "email": "user1@email.com",
-            "password": "contraseña1234",
-            "confirm_password": "contraseña1234",
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+            },
             "profile_data": {
+                "full_name": "Nombre Apellido",
                 "address": "Residencia 1",
                 "phone_number": "+57 3123574898",
             },
         }
-
-        # Creating a user
-        user = User.objects.create_user(
-            full_name=data["full_name"],
-            email=data["email"],
-            password=data["password"],
+        email = data["base_data"]["email"]
+        password = data["base_data"]["password"]
+        _ = User.objects.create_user(
+            base_data=data["base_data"],
+            profile_data=data["profile_data"],
             related_model_name=UserRoles.SEARCHER.value,
-            related_data=data["profile_data"],
         )
 
         # Asserting that the user does not exist in the database
@@ -131,14 +127,11 @@ class TestApplication:
 
         # Instantiating the application and calling the method
         with pytest.raises(AuthenticationFailed) as e:
-            tokens = self.application_class(
+            _ = self.application_class(
                 jwt_class=TokenObtainPairSerializer,
                 jwt_repository=JWTRepository,
             ).authenticate_user(
-                credentials={
-                    "email": data["email"],
-                    "password": data["password"],
-                }
+                credentials={"email": email, "password": password}
             )
 
         # Asserting that the exception data is correct
@@ -167,7 +160,7 @@ class TestApplication:
 
         # Instantiating the application and calling the method
         with pytest.raises(DatabaseConnectionError) as e:
-            tokend = self.application_class(
+            _ = self.application_class(
                 jwt_class=TokenObtainPairSerializer,
                 jwt_repository=jwt_repository,
             ).authenticate_user(

@@ -22,22 +22,24 @@ class TestApplication:
 
     def test_user_created_successfully(self) -> None:
         data = {
-            "full_name": "Nombre Apellido",
-            "email": "user1@email.com",
-            "password": "contraseña1234",
-            "confirm_password": "contraseña1234",
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+                "confirm_password": "contraseña1234",
+            },
             "profile_data": {
+                "full_name": "Nombre Apellido",
                 "address": "Residencia 1",
                 "phone_number": "+57 3123574898",
             },
         }
+        email = data["base_data"]["email"]
+        address = data["profile_data"]["address"]
         input_data = data.copy()
 
         # Asserting that the user does not exist in the database
-        assert not User.objects.filter(email=data["email"]).exists()
-        assert not SearcherUser.objects.filter(
-            address=data["profile_data"]["address"]
-        ).exists()
+        assert not User.objects.filter(email=email).exists()
+        assert not SearcherUser.objects.filter(address=address).exists()
 
         # Instantiating the application and calling the method
         self.application_class(user_repository=UserRepository).create_user(
@@ -46,24 +48,24 @@ class TestApplication:
         )
 
         # Asserting that the user was created successfully
-        assert User.objects.filter(email=data["email"]).exists()
-        assert SearcherUser.objects.filter(
-            address=data["profile_data"]["address"]
-        ).exists()
+        assert User.objects.filter(email=email).exists()
+        assert SearcherUser.objects.filter(address=address).exists()
 
         # Asserting that the email was sent
         assert len(mail.outbox) == 1
         assert mail.outbox[0].subject == SubjectsMail.ACCOUNT_ACTIVATION.value
-        assert mail.outbox[0].to == [data["email"]]
+        assert mail.outbox[0].to[0] == email
         assert Token.objects.count() == 1
 
     def test_exception_raised_db(self, user_repository: Mock) -> None:
         data = {
-            "full_name": "Nombre Apellido",
-            "email": "user1@email.com",
-            "password": "contraseña1234",
-            "confirm_password": "contraseña1234",
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+                "confirm_password": "contraseña1234",
+            },
             "profile_data": {
+                "full_name": "Nombre Apellido",
                 "address": "Residencia 1",
                 "phone_number": "+57 3123574898",
             },

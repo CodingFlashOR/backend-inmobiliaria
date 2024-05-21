@@ -9,10 +9,8 @@ class UserAdminPanel(admin.ModelAdmin):
 
     list_display = [
         "uuid",
-        "full_name",
         "email",
         "password",
-        "profile",
         "content_type",
         "is_staff",
         "is_superuser",
@@ -21,9 +19,8 @@ class UserAdminPanel(admin.ModelAdmin):
         "last_login",
     ]
     search_fields = [
-        "uuid",
         "email",
-        "profile",
+        "uuid",
         "is_active",
     ]
 
@@ -33,7 +30,13 @@ class SearcherUserAdminPanel(admin.ModelAdmin):
     Admin panel configuration for the SearcherUser model.
     """
 
-    list_display = ["uuid", "address", "phone_number"]
+    list_display = [
+        "uuid",
+        "full_name",
+        "address",
+        "phone_number",
+        "date_joined",
+    ]
     search_fields = ["uuid"]
 
 
