@@ -18,22 +18,6 @@ class BaseUserSerializer(ErrorMessagesSerializer):
         self._user_repository = UserRepository
         self.user = None
 
-    full_name = serializers.CharField(
-        required=True,
-        max_length=SearcherUser.FULL_NAME_MAX_LENGTH.value,
-        error_messages={
-            "max_length": ERROR_MESSAGES["max_length"].format(
-                max_length="{max_length}"
-            ),
-        },
-        validators=[
-            RegexValidator(
-                regex=r"^[A-Za-z\s]+$",
-                code="invalid_data",
-                message=ERROR_MESSAGES["invalid"],
-            ),
-        ],
-    )
     email = serializers.CharField(
         required=True,
         max_length=SearcherUser.EMAIL_MAX_LENGTH.value,
@@ -68,17 +52,6 @@ class BaseUserSerializer(ErrorMessagesSerializer):
     confirm_password = serializers.CharField(
         required=True, write_only=True, style={"input_type": "password"}
     )
-
-    def validate_full_name(self, value: str) -> str:
-        if not self.user:
-            self.user = self._user_repository.get(full_name=value)
-        if self.user.first():
-            raise serializers.ValidationError(
-                code="invalid_data",
-                detail=ERROR_MESSAGES["name_in_use"],
-            )
-
-        return value
 
     def validate_email(self, value: str) -> str:
         if not self.user:

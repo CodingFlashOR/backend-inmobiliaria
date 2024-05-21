@@ -191,7 +191,7 @@ SPECTACULAR_SETTINGS = {
         },
     ],
     "SERVE_INCLUDE_SCHEMA": False,
-    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAuthenticated"],
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
     "COMPONENT_SPLIT_REQUEST": True,
     "LICENSE": {
         "name": "MIT License",

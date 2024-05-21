@@ -30,51 +30,53 @@ CreateSearcherUserSchema = extend_schema(
                     value={
                         "code": "invalid_request_data",
                         "detail": {
-                            "full_name": [
-                                "Este campo es requerido.",
-                                "Este campo no puede estar en blanco.",
-                                "Este campo no puede ser nulo.",
-                                ERROR_MESSAGES["invalid"],
-                                ERROR_MESSAGES["max_length"].format(
-                                    max_length=SearcherUser.FULL_NAME_MAX_LENGTH.value,
-                                ),
-                                ERROR_MESSAGES["name_in_use"],
-                            ],
-                            "email": [
-                                "Este campo es requerido.",
-                                "Este campo no puede estar en blanco.",
-                                "Este campo no puede ser nulo.",
-                                ERROR_MESSAGES["invalid"],
-                                ERROR_MESSAGES["max_length"].format(
-                                    max_length=SearcherUser.EMAIL_MAX_LENGTH.value,
-                                ),
-                                ERROR_MESSAGES["email_in_use"],
-                            ],
-                            "password": [
-                                "Este campo es requerido.",
-                                "Este campo no puede estar en blanco.",
-                                "Este campo no puede ser nulo.",
-                                ERROR_MESSAGES["invalid"],
-                                ERROR_MESSAGES["max_length"].format(
-                                    max_length=SearcherUser.PASSWORD_MAX_LENGTH.value,
-                                ),
-                                ERROR_MESSAGES["min_length"].format(
-                                    min_length=SearcherUser.PASSWORD_MIN_LENGTH.value,
-                                ),
-                            ],
-                            "confirm_password": [
-                                "Este campo es requerido.",
-                                "Este campo no puede estar en blanco.",
-                                "Este campo no puede ser nulo.",
-                                ERROR_MESSAGES["password_no_upper_lower"],
-                                ERROR_MESSAGES["password_common"],
-                                ERROR_MESSAGES["password_mismatch"],
-                            ],
+                            "base_data": {
+                                "email": [
+                                    ERROR_MESSAGES["required"],
+                                    ERROR_MESSAGES["blank"],
+                                    ERROR_MESSAGES["null"],
+                                    ERROR_MESSAGES["invalid"],
+                                    ERROR_MESSAGES["max_length"].format(
+                                        max_length=SearcherUser.EMAIL_MAX_LENGTH.value,
+                                    ),
+                                    ERROR_MESSAGES["email_in_use"],
+                                ],
+                                "password": [
+                                    ERROR_MESSAGES["required"],
+                                    ERROR_MESSAGES["blank"],
+                                    ERROR_MESSAGES["null"],
+                                    ERROR_MESSAGES["invalid"],
+                                    ERROR_MESSAGES["max_length"].format(
+                                        max_length=SearcherUser.PASSWORD_MAX_LENGTH.value,
+                                    ),
+                                    ERROR_MESSAGES["min_length"].format(
+                                        min_length=SearcherUser.PASSWORD_MIN_LENGTH.value,
+                                    ),
+                                ],
+                                "confirm_password": [
+                                    ERROR_MESSAGES["required"],
+                                    ERROR_MESSAGES["blank"],
+                                    ERROR_MESSAGES["null"],
+                                    ERROR_MESSAGES["password_no_upper_lower"],
+                                    ERROR_MESSAGES["password_common"],
+                                    ERROR_MESSAGES["password_mismatch"],
+                                ],
+                            },
                             "profile_data": {
+                                "full_name": [
+                                    ERROR_MESSAGES["required"],
+                                    ERROR_MESSAGES["blank"],
+                                    ERROR_MESSAGES["null"],
+                                    ERROR_MESSAGES["invalid"],
+                                    ERROR_MESSAGES["max_length"].format(
+                                        max_length=SearcherUser.FULL_NAME_MAX_LENGTH.value,
+                                    ),
+                                    ERROR_MESSAGES["name_in_use"],
+                                ],
                                 "address": [
-                                    "Este campo es requerido.",
-                                    "Este campo no puede estar en blanco.",
-                                    "Este campo no puede ser nulo.",
+                                    ERROR_MESSAGES["required"],
+                                    ERROR_MESSAGES["blank"],
+                                    ERROR_MESSAGES["null"],
                                     ERROR_MESSAGES["invalid"],
                                     ERROR_MESSAGES["max_length"].format(
                                         max_length=SearcherUser.ADDRESS_MAX_LENGTH.value,
@@ -82,9 +84,9 @@ CreateSearcherUserSchema = extend_schema(
                                     ERROR_MESSAGES["address_in_use"],
                                 ],
                                 "phone_number": [
-                                    "Este campo es requerido.",
-                                    "Este campo no puede estar en blanco.",
-                                    "Este campo no puede ser nulo.",
+                                    ERROR_MESSAGES["required"],
+                                    ERROR_MESSAGES["blank"],
+                                    ERROR_MESSAGES["null"],
                                     ERROR_MESSAGES["invalid"],
                                     ERROR_MESSAGES["max_length"].format(
                                         max_length=SearcherUser.PHONE_NUMBER_MAX_LENGTH.value,

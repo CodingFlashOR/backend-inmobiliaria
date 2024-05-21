@@ -1,5 +1,5 @@
 from rest_framework_simplejwt.utils import datetime_from_epoch
-from django.db.models import Q, QuerySet
+from django.db.models import QuerySet
 from django.db import OperationalError
 from apps.users.domain.typing import JWToken
 from apps.users.models import User, JWT, JWTBlacklist
@@ -16,19 +16,6 @@ class JWTRepository:
     jwt_model = JWT
     blacklist_model = JWTBlacklist
 
-    @staticmethod
-    def _create_query(**filters) -> Q:
-        """
-        This method creates a query object based on the provided filters.
-        """
-
-        query = Q()
-
-        for field, value in filters.items():
-            query &= Q(**{field: value})
-
-        return query
-
     @classmethod
     def get(cls, **filters) -> QuerySet[JWT]:
         """
@@ -42,10 +29,8 @@ class JWTRepository:
         """
 
         try:
-            tokens = (
-                cls.jwt_model.objects.select_related("user")
-                .defer("date_joined")
-                .filter(cls._create_query(**filters))
+            tokens = cls.jwt_model.objects.defer("date_joined").filter(
+                **filters
             )
         except OperationalError:
             # In the future, a retry system will be implemented when the database is

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.core.validators import RegexValidator
 from phonenumber_field.serializerfields import PhoneNumberField
 from apps.users.infrastructure.db import UserRepository
 from apps.users.infrastructure.serializers.base import BaseUserSerializer
@@ -21,6 +22,23 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
         self._user_repository = UserRepository
         self.profile = None
 
+    full_name = serializers.CharField(
+        required=True,
+        max_length=SearcherUser.FULL_NAME_MAX_LENGTH.value,
+        error_messages={
+            "max_length": ERROR_MESSAGES["max_length"].format(
+                max_length="{max_length}"
+            ),
+        },
+        validators=[
+            RegexValidator(
+                regex=r"^[A-Za-z\s]+$",
+                code="invalid_data",
+                message=ERROR_MESSAGES["invalid"],
+            ),
+        ],
+    )
+
     address = serializers.CharField(
         required=True,
         max_length=SearcherUser.ADDRESS_MAX_LENGTH.value,
@@ -39,6 +57,19 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
             ),
         },
     )
+
+    def validate_full_name(self, value: str) -> str:
+        if not self.profile:
+            self.profile = self._user_repository.get_profile_data(
+                role=UserRoles.SEARCHER.value, full_name=value
+            )
+        if self.profile.first():
+            raise serializers.ValidationError(
+                code="invalid_data",
+                detail=ERROR_MESSAGES["name_in_use"],
+            )
+
+        return value
 
     def validate_address(self, value: str) -> str:
         if not self.profile:
@@ -70,9 +101,10 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
 
 
 @SearcherUserSerializerSchema
-class SearcherUserSerializer(BaseUserSerializer):
+class SearcherUserSerializer(ErrorMessagesSerializer):
     """
     Defines the fields that are required for the searcher user.
     """
 
+    base_data = BaseUserSerializer()
     profile_data = SearcherUserProfileDataSerializer()

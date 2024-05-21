@@ -1,12 +1,5 @@
 from apps.users.infrastructure.serializers import AuthenticationSerializer
-from apps.users.domain.constants import SearcherUser
 from apps.constants import ERROR_MESSAGES
-from faker import Faker
-from typing import Dict
-import pytest
-
-
-fake = Faker("es_CO")
 
 
 class TestSerializer:
@@ -31,67 +24,9 @@ class TestSerializer:
         for field, value in data.items():
             assert serializer.validated_data[field] == value
 
-    @pytest.mark.parametrize(
-        argnames="data, error_messages",
-        argvalues=[
-            (
-                {},
-                {
-                    "email": [ERROR_MESSAGES["required"]],
-                    "password": [ERROR_MESSAGES["required"]],
-                },
-            ),
-            (
-                {
-                    "email": "useremail.com",
-                    "password": "contraseña1234",
-                },
-                {
-                    "email": [ERROR_MESSAGES["invalid"]],
-                },
-            ),
-            (
-                {
-                    "email": f"user{fake.random_number(digits=41)}@email.com",
-                    "password": fake.bothify(text=f"{'?#' * 11}"),
-                },
-                {
-                    "email": [
-                        ERROR_MESSAGES["max_length"].format(
-                            max_length=SearcherUser.EMAIL_MAX_LENGTH.value
-                        ),
-                    ],
-                    "password": [
-                        ERROR_MESSAGES["max_length"].format(
-                            max_length=SearcherUser.PASSWORD_MAX_LENGTH.value
-                        ),
-                    ],
-                },
-            ),
-            (
-                {
-                    "email": "user1@email.com",
-                    "password": fake.bothify(text=f"{'?#' * 3}"),
-                },
-                {
-                    "password": [
-                        ERROR_MESSAGES["min_length"].format(
-                            min_length=SearcherUser.PASSWORD_MIN_LENGTH.value
-                        ),
-                    ],
-                },
-            ),
-        ],
-        ids=[
-            "empty_data",
-            "invalid_data",
-            "max_length_data",
-            "min_length_data",
-        ],
-    )
-    def test_failed_execution(self, data: Dict, error_messages: Dict) -> None:
+    def test_failed_execution(self) -> None:
         # Instantiating the serializer
-        serializer = self.serializer_class(data=data)
+        serializer = self.serializer_class(data={})
 
         # Asserting that the serializer is not valid and the errors are correct
         assert not serializer.is_valid()
@@ -102,5 +37,11 @@ class TestSerializer:
             for field, errors in serializer.errors.items()
         }
 
-        for field, message in error_messages.items():
-            assert serializer_errors_formated[field] == message
+        assert (
+            serializer_errors_formated["email"][0]
+            == ERROR_MESSAGES["required"]
+        )
+        assert (
+            serializer_errors_formated["password"][0]
+            == ERROR_MESSAGES["required"]
+        )

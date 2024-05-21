@@ -3,16 +3,13 @@ from rest_framework_simplejwt.serializers import (
     Token,
 )
 from rest_framework import serializers
-from django.core.validators import RegexValidator
 from jwt import DecodeError, ExpiredSignatureError
 from apps.users.infrastructure.schemas.jwt import (
     AuthenticationSerializerSchema,
     UpdateTokenSerializerSchema,
 )
-from apps.users.domain.constants import SearcherUser
 from apps.users.models import User
 from apps.utils import ErrorMessagesSerializer, decode_jwt
-from apps.constants import ERROR_MESSAGES
 from typing import Dict, Any
 
 
@@ -23,37 +20,8 @@ class AuthenticationSerializer(ErrorMessagesSerializer):
     password meet the necessary requirements.
     """
 
-    email = serializers.CharField(
-        required=True,
-        max_length=SearcherUser.EMAIL_MAX_LENGTH.value,
-        error_messages={
-            "max_length": ERROR_MESSAGES["max_length"].format(
-                max_length="{max_length}"
-            ),
-        },
-        validators=[
-            RegexValidator(
-                regex=r"^([A-Za-z0-9]+[-_.])*[A-Za-z0-9]+@[A-Za-z]+(\.[A-Z|a-z]{2,4}){1,2}$",
-                code="invalid_data",
-                message=ERROR_MESSAGES["invalid"],
-            ),
-        ],
-    )
-    password = serializers.CharField(
-        required=True,
-        write_only=True,
-        max_length=SearcherUser.PASSWORD_MAX_LENGTH.value,
-        min_length=SearcherUser.PASSWORD_MIN_LENGTH.value,
-        style={"input_type": "password"},
-        error_messages={
-            "max_length": ERROR_MESSAGES["max_length"].format(
-                max_length="{max_length}"
-            ),
-            "min_length": ERROR_MESSAGES["min_length"].format(
-                min_length="{min_length}"
-            ),
-        },
-    )
+    email = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
 
 
 class TokenObtainPairSerializer(BaseTokenSerializer):

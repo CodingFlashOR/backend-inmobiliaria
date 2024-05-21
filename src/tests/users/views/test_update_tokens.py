@@ -5,7 +5,7 @@ from apps.users.models import JWT, User, UserRoles
 from apps.exceptions import DatabaseConnectionError
 from tests.users.factory import JWTFactory
 from unittest.mock import Mock, patch
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 import pytest
 
 
@@ -24,21 +24,20 @@ class TestAPIView:
     def test_request_valid(self, setUp: Tuple[Client, str]) -> None:
         # Creating a user
         data = {
-            "full_name": "Nombre Apellido",
-            "email": "user1@email.com",
-            "password": "contraseña1234",
-            "confirm_password": "contraseña1234",
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+            },
             "profile_data": {
+                "full_name": "Nombre Apellido",
                 "address": "Residencia 1",
                 "phone_number": "+57 3123574898",
             },
         }
         user = User.objects.create_user(
-            full_name=data["full_name"],
-            email=data["email"],
-            password=data["password"],
+            base_data=data["base_data"],
+            profile_data=data["profile_data"],
             related_model_name=UserRoles.SEARCHER.value,
-            related_data=data["profile_data"],
         )
         user.is_active = True
         user.save()
@@ -88,7 +87,10 @@ class TestAPIView:
         ],
     )
     def test_request_invalid(
-        self, setUp: Tuple[Client, str], data: Dict, error_messages: Dict
+        self,
+        setUp: Tuple[Client, str],
+        data: Dict[str, str],
+        error_messages: Dict[str, List],
     ) -> None:
         # Simulating the request
         client, path = setUp
@@ -128,21 +130,20 @@ class TestAPIView:
     def test_if_token_not_match_user(self, setUp: Tuple[Client, str]) -> None:
         # Creating a user
         data = {
-            "full_name": "Nombre Apellido",
-            "email": "user1@email.com",
-            "password": "contraseña1234",
-            "confirm_password": "contraseña1234",
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+            },
             "profile_data": {
+                "full_name": "Nombre Apellido",
                 "address": "Residencia 1",
                 "phone_number": "+57 3123574898",
             },
         }
         user = User.objects.create_user(
-            full_name=data["full_name"],
-            email=data["email"],
-            password=data["password"],
+            base_data=data["base_data"],
+            profile_data=data["profile_data"],
             related_model_name=UserRoles.SEARCHER.value,
-            related_data=data["profile_data"],
         )
         user.is_active = True
         user.save()

@@ -26,21 +26,20 @@ class TestApplication:
     def test_updated_token(self) -> None:
         # Creating a user
         data = {
-            "full_name": "Nombre Apellido",
-            "email": "user1@email.com",
-            "password": "contraseña1234",
-            "confirm_password": "contraseña1234",
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+            },
             "profile_data": {
+                "full_name": "Nombre Apellido",
                 "address": "Residencia 1",
                 "phone_number": "+57 3123574898",
             },
         }
         user = User.objects.create_user(
-            full_name=data["full_name"],
-            email=data["email"],
-            password=data["password"],
+            base_data=data["base_data"],
+            profile_data=data["profile_data"],
             related_model_name=UserRoles.SEARCHER.value,
-            related_data=data["profile_data"],
         )
         user.is_active = True
         user.save()
@@ -98,21 +97,20 @@ class TestApplication:
     def test_if_token_not_found(self) -> None:
         # Creating a user
         data = {
-            "full_name": "Nombre Apellido",
-            "email": "user1@email.com",
-            "password": "contraseña1234",
-            "confirm_password": "contraseña1234",
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+            },
             "profile_data": {
+                "full_name": "Nombre Apellido",
                 "address": "Residencia 1",
                 "phone_number": "+57 3123574898",
             },
         }
         user = User.objects.create_user(
-            full_name=data["full_name"],
-            email=data["email"],
-            password=data["password"],
+            base_data=data["base_data"],
+            profile_data=data["profile_data"],
             related_model_name=UserRoles.SEARCHER.value,
-            related_data=data["profile_data"],
         )
         user.is_active = True
         user.save()
@@ -122,7 +120,7 @@ class TestApplication:
 
         # Instantiating the application
         with pytest.raises(ResourceNotFoundError):
-            tokens = self.application_class(
+            _ = self.application_class(
                 user_repository=UserRepository,
                 jwt_repository=JWTRepository,
                 jwt_class=TokenObtainPairSerializer,
@@ -137,21 +135,20 @@ class TestApplication:
     def test_if_token_not_match_user(self) -> None:
         # Creating a user
         data = {
-            "full_name": "Nombre Apellido",
-            "email": "user1@email.com",
-            "password": "contraseña1234",
-            "confirm_password": "contraseña1234",
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+            },
             "profile_data": {
+                "full_name": "Nombre Apellido",
                 "address": "Residencia 1",
                 "phone_number": "+57 3123574898",
             },
         }
         user = User.objects.create_user(
-            full_name=data["full_name"],
-            email=data["email"],
-            password=data["password"],
+            base_data=data["base_data"],
+            profile_data=data["profile_data"],
             related_model_name=UserRoles.SEARCHER.value,
-            related_data=data["profile_data"],
         )
         user.is_active = True
         user.save()
@@ -172,7 +169,7 @@ class TestApplication:
 
         # Instantiating the application
         with pytest.raises(JWTError):
-            tokens = self.application_class(
+            _ = self.application_class(
                 user_repository=UserRepository,
                 jwt_repository=JWTRepository,
                 jwt_class=TokenObtainPairSerializer,
@@ -198,7 +195,7 @@ class TestApplication:
 
         # Instantiating the application
         with pytest.raises(DatabaseConnectionError):
-            tokend = self.application_class(
+            _ = self.application_class(
                 jwt_class=TokenObtainPairSerializer,
                 jwt_repository=jwt_repository,
             ).authenticate_user(

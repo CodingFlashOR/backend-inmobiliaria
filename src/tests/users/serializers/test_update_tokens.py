@@ -1,6 +1,6 @@
 from apps.users.infrastructure.serializers import UpdateTokenSerializer
 from tests.users.factory import JWTFactory
-from typing import Dict
+from typing import Dict, List
 import pytest
 
 
@@ -46,7 +46,9 @@ class TestSerializer:
             "token_expired",
         ],
     )
-    def test_failed_execution(self, data: Dict, error_messages: Dict) -> None:
+    def test_failed_execution(
+        self, data: Dict[str, str], error_messages: Dict[str, List]
+    ) -> None:
         # Instantiating the serializer
         serializer = self.serializer_class(data=data)
 
