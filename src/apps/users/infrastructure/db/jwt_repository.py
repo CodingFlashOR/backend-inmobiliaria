@@ -29,8 +29,10 @@ class JWTRepository:
         """
 
         try:
-            tokens = cls.jwt_model.objects.defer("date_joined").filter(
-                **filters
+            tokens = (
+                cls.jwt_model.objects.select_related("user")
+                .defer("date_joined")
+                .filter(**filters)
             )
         except OperationalError:
             # In the future, a retry system will be implemented when the database is

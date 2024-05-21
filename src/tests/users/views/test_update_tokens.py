@@ -6,6 +6,7 @@ from apps.exceptions import DatabaseConnectionError
 from tests.users.factory import JWTFactory
 from unittest.mock import Mock, patch
 from typing import Tuple, Dict, List
+from uuid import uuid4
 import pytest
 
 
@@ -43,19 +44,33 @@ class TestAPIView:
         user.save()
 
         # Creating the token
-        refresh = JWTFactory.refresh(user=user)
+        refresh_data = JWTFactory.refresh(
+            user_uuid=user.uuid.__str__(), exp=False
+        )
+        access_data = JWTFactory.access(
+            user_uuid=user.uuid.__str__(), exp=True
+        )
         JWT.objects.create(
             user=user,
-            jti=refresh["payload"]["jti"],
-            token=refresh["token"],
-            expires_at=datetime_from_epoch(ts=refresh["payload"]["exp"]),
+            jti=access_data["payload"]["jti"],
+            token=access_data["token"],
+            expires_at=datetime_from_epoch(ts=access_data["payload"]["exp"]),
+        )
+        JWT.objects.create(
+            user=user,
+            jti=refresh_data["payload"]["jti"],
+            token=refresh_data["token"],
+            expires_at=datetime_from_epoch(ts=refresh_data["payload"]["exp"]),
         )
 
         # Simulating the request
         client, path = setUp
         response = client.post(
             path=path,
-            data={"refresh": refresh["token"]},
+            data={
+                "refresh": refresh_data["token"],
+                "access": access_data["token"],
+            },
             content_type="application/json",
         )
 
@@ -69,21 +84,45 @@ class TestAPIView:
         argvalues=[
             (
                 {},
-                {"refresh": ["This field is required."]},
+                {
+                    "refresh": ["This field is required."],
+                    "access": ["This field is required."],
+                },
             ),
             (
-                {"refresh": JWTFactory.refresh_invalid()},
-                {"refresh": ["Token is invalid."]},
+                {
+                    "refresh": JWTFactory.refresh_invalid(),
+                    "access": JWTFactory.access_invalid(),
+                },
+                {
+                    "refresh": ["Token is invalid."],
+                    "access": ["Token is invalid."],
+                },
             ),
             (
-                {"refresh": JWTFactory.refresh_exp().get("token")},
-                {"refresh": ["Token is expired."]},
+                {
+                    "refresh": JWTFactory.refresh(exp=True).get("token"),
+                },
+                {
+                    "access": ["This field is required."],
+                    "refresh": ["Token is expired."],
+                },
+            ),
+            (
+                {
+                    "access": JWTFactory.access(exp=False).get("token"),
+                },
+                {
+                    "refresh": ["This field is required."],
+                    "access": ["Token is not expired."],
+                },
             ),
         ],
         ids=[
             "empty_data",
-            "token_invalid",
-            "token_expired",
+            "tokens_invalid",
+            "refresh_expired",
+            "access_not_expired",
         ],
     )
     def test_request_invalid(
@@ -113,21 +152,7 @@ class TestAPIView:
         for field, message in error_messages.items():
             assert response_errors_formated[field] == message
 
-    def test_if_token_not_found(self, setUp: Tuple[Client, str]) -> None:
-        # Simulating the request
-        client, path = setUp
-        response = client.post(
-            path=path,
-            data={"refresh": JWTFactory.refresh().get("token")},
-            content_type="application/json",
-        )
-
-        # Asserting that response data is correct
-        assert response.status_code == 404
-        assert response.data["code"] == "token_not_found"
-        assert response.data["detail"] == "Token do not exist."
-
-    def test_if_token_not_match_user(self, setUp: Tuple[Client, str]) -> None:
+    def test_if_jwt_not_found(self, setUp: Tuple[Client, str]) -> None:
         # Creating a user
         data = {
             "base_data": {
@@ -148,20 +173,83 @@ class TestAPIView:
         user.is_active = True
         user.save()
 
-        # Creating the tokens
-        refresh = JWTFactory.refresh(user=user)
-        JWT.objects.create(
-            user=user,
-            jti=refresh["payload"]["jti"],
-            token=refresh["token"],
-            expires_at=datetime_from_epoch(ts=refresh["payload"]["exp"]),
+        # Creating the token
+        refresh_data = JWTFactory.refresh(
+            user_uuid=user.uuid.__str__(), exp=False
+        )
+        access_data = JWTFactory.access(
+            user_uuid=user.uuid.__str__(), exp=True
         )
 
         # Simulating the request
         client, path = setUp
         response = client.post(
             path=path,
-            data={"refresh": JWTFactory.refresh(user=user).get("token")},
+            data={
+                "refresh": refresh_data["token"],
+                "access": access_data["token"],
+            },
+            content_type="application/json",
+        )
+
+        # Asserting that response data is correct
+        assert response.status_code == 404
+        assert response.data["code"] == "token_not_found"
+        assert response.data["detail"] == "JSON Web Tokens not found."
+
+    def test_if_jwt_not_match_user(self, setUp: Tuple[Client, str]) -> None:
+        # Creating a user
+        data = {
+            "base_data": {
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+            },
+            "profile_data": {
+                "full_name": "Nombre Apellido",
+                "address": "Residencia 1",
+                "phone_number": "+57 3123574898",
+            },
+        }
+        user = User.objects.create_user(
+            base_data=data["base_data"],
+            profile_data=data["profile_data"],
+            related_model_name=UserRoles.SEARCHER.value,
+        )
+        user.is_active = True
+        user.save()
+
+        # Creating the token
+        refresh_data = JWTFactory.refresh(
+            user_uuid=user.uuid.__str__(), exp=False
+        )
+        access_data = JWTFactory.access(
+            user_uuid=user.uuid.__str__(), exp=True
+        )
+        JWT.objects.create(
+            user=user,
+            jti=access_data["payload"]["jti"],
+            token=access_data["token"],
+            expires_at=datetime_from_epoch(ts=access_data["payload"]["exp"]),
+        )
+        JWT.objects.create(
+            user=user,
+            jti=refresh_data["payload"]["jti"],
+            token=refresh_data["token"],
+            expires_at=datetime_from_epoch(ts=refresh_data["payload"]["exp"]),
+        )
+
+        # Simulating the request
+        client, path = setUp
+        response = client.post(
+            path=path,
+            data={
+                "refresh": JWTFactory.refresh(
+                    user_uuid=user.uuid.__str__(), exp=False
+                ).get("token"),
+                "access": JWTFactory.access(
+                    user_uuid=user.uuid.__str__(), exp=True
+                ).get("token"),
+            },
             content_type="application/json",
         )
 
@@ -170,7 +258,33 @@ class TestAPIView:
         assert response.data["code"] == "token_error"
         assert (
             response.data["detail"]
-            == "The token does not match the user's last tokens."
+            == "The JSON Web Tokens does not match the user's last tokens."
+        )
+
+    def test_if_user_not_found(self, setUp: Tuple[Client, str]) -> None:
+        user_uuid = uuid4().__str__()
+
+        # Simulating the request
+        client, path = setUp
+        response = client.post(
+            path=path,
+            data={
+                "refresh": JWTFactory.refresh(
+                    user_uuid=user_uuid, exp=False
+                ).get("token"),
+                "access": JWTFactory.access(user_uuid=user_uuid, exp=True).get(
+                    "token"
+                ),
+            },
+            content_type="application/json",
+        )
+
+        # Asserting that response data is correct
+        assert response.status_code == 404
+        assert response.data["code"] == "user_not_found"
+        assert (
+            response.data["detail"]
+            == "The JSON Web Token user does not exist."
         )
 
     @patch("apps.users.infrastructure.views.jwt.UserRepository")
@@ -187,7 +301,9 @@ class TestAPIView:
         client, path = setUp
         response = client.post(
             path=path,
-            data={"refresh": JWTFactory.refresh().get("token")},
+            data=JWTFactory.access_and_refresh(
+                exp_access=True, exp_refresh=False
+            ).get("tokens"),
             content_type="application/json",
         )
 
