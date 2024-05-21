@@ -12,38 +12,65 @@ class TestSerializer:
     serializer_class = UpdateTokenSerializer
 
     def test_correct_execution(self) -> None:
-        # Creating the token
-        refresh = JWTFactory.refresh().get("token")
-
+        data = JWTFactory.access_and_refresh(
+            exp_access=True, exp_refresh=False
+        )
         # Instantiating the serializer
-        serializer = self.serializer_class(data={"refresh": refresh})
+        serializer = self.serializer_class(data=data["tokens"])
 
         # Check if the serializer is valid
         assert serializer.is_valid()
 
         # Check if the serializer has the correct validated data
-        assert serializer.validated_data["refresh"]["token"] == refresh
+        for key, value in data["payloads"]["access"].items():
+            assert serializer.validated_data["access"][key] == value
+        for key, value in data["payloads"]["refresh"].items():
+            assert serializer.validated_data["refresh"][key] == value
 
     @pytest.mark.parametrize(
         argnames="data, error_messages",
         argvalues=[
             (
                 {},
-                {"refresh": ["This field is required."]},
+                {
+                    "refresh": ["This field is required."],
+                    "access": ["This field is required."],
+                },
             ),
             (
-                {"refresh": JWTFactory.refresh_invalid()},
-                {"refresh": ["Token is invalid."]},
+                {
+                    "refresh": JWTFactory.refresh_invalid(),
+                    "access": JWTFactory.access_invalid(),
+                },
+                {
+                    "refresh": ["Token is invalid."],
+                    "access": ["Token is invalid."],
+                },
             ),
             (
-                {"refresh": JWTFactory.refresh_exp().get("token")},
-                {"refresh": ["Token is expired."]},
+                {
+                    "refresh": JWTFactory.refresh(exp=True).get("token"),
+                },
+                {
+                    "access": ["This field is required."],
+                    "refresh": ["Token is expired."],
+                },
+            ),
+            (
+                {
+                    "access": JWTFactory.access(exp=False).get("token"),
+                },
+                {
+                    "refresh": ["This field is required."],
+                    "access": ["Token is not expired."],
+                },
             ),
         ],
         ids=[
             "empty_data",
-            "token_invalid",
-            "token_expired",
+            "tokens_invalid",
+            "refresh_expired",
+            "access_not_expired",
         ],
     )
     def test_failed_execution(

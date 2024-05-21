@@ -1,5 +1,4 @@
 from rest_framework_simplejwt.utils import aware_utcnow, datetime_to_epoch
-from django.contrib.contenttypes.models import ContentType
 from settings.environments.base import SIMPLE_JWT
 from apps.users.domain.constants import (
     ACCESS_TOKEN_LIFETIME,
@@ -10,7 +9,7 @@ from apps.users.domain.typing import (
     RefreshToken,
     JWTPayload,
 )
-from apps.users.models import User, UserRoles
+from apps.users.models import UserRoles
 from datetime import datetime
 from faker import Faker
 from jwt import encode
@@ -28,7 +27,7 @@ class JWTFactory:
 
     @staticmethod
     def _get_payload(
-        token_type: str, exp: datetime, user: User = None
+        token_type: str, exp: datetime, user_uuid: str, role: str
     ) -> JWTPayload:
         """
         This method returns the payload for a token.
@@ -36,7 +35,8 @@ class JWTFactory:
         #### Parameters:
         - token_type: The type of token to create.
         - exp: The expiration date of the token.
-        - user: An instance of the User model.
+        - user_uuid: The UUID of the user.
+        - role: The role of the user.
         """
 
         return {
@@ -44,12 +44,8 @@ class JWTFactory:
             "exp": datetime_to_epoch(exp),
             "iat": datetime_to_epoch(aware_utcnow()),
             "jti": uuid4().hex,
-            "user_uuid": str(user.uuid) if user else uuid4().__str__(),
-            "role": (
-                user.content_type.model_class().__name__.lower()
-                if user
-                else UserRoles.SEARCHER.value
-            ),
+            "user_uuid": user_uuid,
+            "role": role,
         }
 
     @classmethod
@@ -57,7 +53,8 @@ class JWTFactory:
         cls,
         token_type: str,
         exp: datetime,
-        user: User = None,
+        user_uuid: str,
+        role: str,
     ) -> Dict[str, Any]:
         """
         This method creates a token with the provided parameters, returning the token and the payload.
@@ -65,10 +62,13 @@ class JWTFactory:
         #### Parameters:
         - token_type: The type of token to create.
         - exp: The expiration date of the token.
-        - user: An instance of the User model.
+        - user_uuid: The UUID of the user.
+        - role: The role of the user.
         """
 
-        payload = cls._get_payload(token_type=token_type, exp=exp, user=user)
+        payload = cls._get_payload(
+            token_type=token_type, exp=exp, user_uuid=user_uuid, role=role
+        )
         token = encode(
             payload=payload,
             key=SIMPLE_JWT["SIGNING_KEY"],
@@ -78,64 +78,108 @@ class JWTFactory:
         return {"token": token, "payload": payload}
 
     @classmethod
-    def access(cls, user: User = None) -> Dict[str, Any]:
+    def access(
+        cls, exp: bool, user_uuid: str = None, role: str = None
+    ) -> Dict[str, Any]:
         """
         Creates an access token.
 
         #### Parameters:
-        - user: An instance of the User model.
+        - user_uuid: The UUID of the user.
+        - role: The role of the user.
+        - expired: If the token should be expired.
         """
+
+        exp_token = (
+            aware_utcnow() - ACCESS_TOKEN_LIFETIME
+            if exp
+            else aware_utcnow() + ACCESS_TOKEN_LIFETIME
+        )
 
         return cls._create(
             token_type="access",
-            exp=aware_utcnow() + ACCESS_TOKEN_LIFETIME,
-            user=user,
+            user_uuid=user_uuid if user_uuid else uuid4().__str__(),
+            role=role if role else UserRoles.SEARCHER.value,
+            exp=exp_token,
         )
 
     @classmethod
-    def refresh(cls, user: User = None) -> Dict[str, Any]:
+    def refresh(
+        cls, exp: bool, user_uuid: str = None, role: str = None
+    ) -> Dict[str, Any]:
         """
         Creates a refresh token.
 
         #### Parameters:
-        - user: An instance of the User model.
+        - user_uuid: The UUID of the user.
+        - role: The role of the user.
+        - expired: If the token should be expired.
         """
+
+        exp_token = (
+            aware_utcnow() - REFRESH_TOKEN_LIFETIME
+            if exp
+            else aware_utcnow() + REFRESH_TOKEN_LIFETIME
+        )
 
         return cls._create(
             token_type="refresh",
-            exp=aware_utcnow() + REFRESH_TOKEN_LIFETIME,
-            user=user,
+            user_uuid=user_uuid if user_uuid else uuid4().__str__(),
+            role=role if role else UserRoles.SEARCHER.value,
+            exp=exp_token,
         )
 
     @classmethod
-    def access_exp(cls, user: User = None) -> Dict[str, Any]:
+    def access_and_refresh(
+        cls,
+        exp_access: bool,
+        exp_refresh: bool,
+        user_uuid: str = None,
+        role: str = None,
+    ) -> Dict[str, Any]:
         """
-        Creates an access token that is already expired.
+        Creates an access and a refresh token.
 
         #### Parameters:
-        - user: An instance of the User model.
+        - user_uuid: The UUID of the user.
+        - role: The role of the user.
+        - expired: If the token should be expired.
         """
 
-        return cls._create(
+        exp_access = (
+            aware_utcnow() - ACCESS_TOKEN_LIFETIME
+            if exp_access
+            else aware_utcnow() + ACCESS_TOKEN_LIFETIME
+        )
+        exp_refresh = (
+            aware_utcnow() - REFRESH_TOKEN_LIFETIME
+            if exp_refresh
+            else aware_utcnow() + REFRESH_TOKEN_LIFETIME
+        )
+        user_uuid = user_uuid if user_uuid else uuid4().__str__()
+        access_data = cls._create(
             token_type="access",
-            exp=aware_utcnow() - ACCESS_TOKEN_LIFETIME,
-            user=user,
+            role=role if role else UserRoles.SEARCHER.value,
+            user_uuid=user_uuid,
+            exp=exp_access,
         )
-
-    @classmethod
-    def refresh_exp(cls, user: User = None) -> Dict[str, Any]:
-        """
-        Creates a refresh token that is already expired.
-
-        #### Parameters:
-        - user: An instance of the User model.
-        """
-
-        return cls._create(
+        refresh_data = cls._create(
             token_type="refresh",
-            exp=aware_utcnow() - REFRESH_TOKEN_LIFETIME,
-            user=user,
+            role=role if role else UserRoles.SEARCHER.value,
+            user_uuid=user_uuid,
+            exp=exp_refresh,
         )
+
+        return {
+            "tokens": {
+                "access": access_data["token"],
+                "refresh": refresh_data["token"],
+            },
+            "payloads": {
+                "access": access_data["payload"],
+                "refresh": refresh_data["payload"],
+            },
+        }
 
     @staticmethod
     def access_invalid() -> AccessToken:

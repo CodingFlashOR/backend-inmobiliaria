@@ -29,64 +29,87 @@ class JWTUsesCases:
         user_repository: IUserRepository = None,
     ) -> None:
         """
-        Initializes the use cases with the given repositories and classes.
+        Initializes the JWTUsesCases instance with the necessary dependencies.
 
         #### Parameters:
-        - jwt_class: An interface that provides an abstraction of the JWT token
-        generation.
-        - jwt_repository: An interface that provides an abstraction of database
-        operations related to a JWT token.
-        - user_repository: An interface that provides an abstraction of database
-        operations related to a user.
+        - jwt_class: An interface that provides an abstraction for JWT token
+        generation. This is used to create new JWT tokens for users.
+        - jwt_repository: An interface that provides an abstraction for database
+        operations related to JWT tokens. This is used to fetch, store, and manage JWT
+        tokens in the database.
+        - user_repository: An interface that provides an abstraction for database
+        operations related to users. This is used to fetch and manage user data in the
+        database.
         """
 
         self._user_repository = user_repository
         self._jwt_repository = jwt_repository
         self._jwt_class = jwt_class
 
-    def _is_token_recent(self, payload: JWTPayload, user: User) -> JWT:
+    def _is_token_recent(
+        self,
+        user: User,
+        access_payload: JWTPayload,
+        refresh_payload: JWTPayload,
+    ) -> List[JWT]:
         """
-        Checks if the tokens provided are the last generated tokens of the user.
+        Verifies if the tokens provided are the last generated tokens of the user.
 
         #### Parameters:
-        - payload: The payload of the refresh token.
+        - access_payload: The payload of the access token.
+        - refresh_payload: The payload of the refresh token.
         - user: An instance of the User model.
+
+        #### Raises:
+        - ResourceNotFoundError: If the tokens do not exist.
+        - JWTError: If the tokens do not match the user's last tokens.
         """
 
         latest_tokens = self._jwt_repository.get(user=user)[:2]
 
-        if not latest_tokens.first():
+        if latest_tokens.count() < 2:
             raise ResourceNotFoundError(
-                code="token_not_found", detail="Token do not exist."
+                code="token_not_found", detail="JSON Web Tokens not found."
             )
 
-        for token in latest_tokens:
-            if payload["jti"] == token.jti:
-                return token
+        payload_jtis = {access_payload["jti"], refresh_payload["jti"]}
+        token_jtis = {token.jti for token in latest_tokens}
 
-        raise JWTError(
-            code="token_error",
-            detail="The token does not match the user's last tokens.",
-        )
+        if not payload_jtis.issubset(token_jtis):
+            raise JWTError(
+                code="token_error",
+                detail="The JSON Web Tokens does not match the user's last tokens.",
+            )
+
+        return latest_tokens
 
     def _generate_tokens(self, user: User) -> Tuple[RefreshToken, AccessToken]:
+        """
+        Generate a access and refresh token for the given user.
+        """
+
         refresh = self._jwt_class.get_token(user=user)
         access = refresh.access_token
 
         return str(refresh), str(access)
 
-    def _add_tokens_to_checklist(
-        self, user: User, tokens: List[JWToken]
-    ) -> None:
+    def _add_tokens_checklist(self, user: User, tokens: List[JWToken]) -> None:
+        """
+        Add the tokens to the user's checklist.
+        """
+
         for token in tokens:
             self._jwt_repository.add_to_checklist(
                 token=token,
                 user=user,
             )
 
-    def _add_tokens_to_blacklist(self, tokens: List[JWT]) -> None:
-        for token in tokens:
-            self._jwt_repository.add_to_blacklist(token=token)
+    def _add_tokens_blacklist(self, token: JWT) -> None:
+        """
+        Add the token to the blacklist.
+        """
+
+        self._jwt_repository.add_to_blacklist(token=token)
 
     def authenticate_user(
         self, credentials: Dict[str, str]
@@ -117,25 +140,73 @@ class JWTUsesCases:
             )
 
         refresh, access = self._generate_tokens(user=user)
-        self._add_tokens_to_checklist(tokens=[access, refresh], user=user)
+        self._add_tokens_checklist(tokens=[access, refresh], user=user)
 
         return {"access": access, "refresh": refresh}
 
-    def update_tokens(self, payload: JWTPayload) -> Dict[str, JWToken]:
+    def update_tokens(self, data: Dict[str, JWTPayload]) -> Dict[str, JWToken]:
         """
         Update the user's access and refresh tokens.
 
         #### Parameters:
-        - payload: The payload of the refresh token.
+        - data: A dictionary containing the access and refresh token payloads.
+
+        #### Raises:
+        - ResourceNotFoundError: If the user does not exist.
         """
 
-        user = self._user_repository.get(uuid=payload["user_uuid"]).first()
-        token = self._is_token_recent(
-            payload=payload,
+        user = self._user_repository.get(
+            uuid=data["access"]["user_uuid"]
+        ).first()
+
+        if not user:
+            raise ResourceNotFoundError(
+                code="user_not_found",
+                detail="The JSON Web Token user does not exist.",
+            )
+
+        tokens = self._is_token_recent(
+            access_payload=data["access"],
+            refresh_payload=data["refresh"],
             user=user,
         )
+
+        for token in tokens:
+            if not token.is_expired():
+                self._add_tokens_blacklist(token=token)
+
         refresh, access = self._generate_tokens(user=user)
-        self._add_tokens_to_checklist(tokens=[access, refresh], user=user)
-        self._add_tokens_to_blacklist(tokens=[token])
+        self._add_tokens_checklist(tokens=[access, refresh], user=user)
 
         return {"access": access, "refresh": refresh}
+
+    def logout_user(self, data: Dict[str, JWTPayload]) -> None:
+        """
+        Logout a user by adding the remaining tokens to expire to the blacklist.
+
+        #### Parameters:
+        - data: A dictionary containing the access and refresh token payloads.
+
+        #### Raises:
+        - ResourceNotFoundError: If the user does not exist.
+        """
+
+        user = self._user_repository.get(
+            uuid=data["access"]["user_uuid"]
+        ).first()
+
+        if not user:
+            raise ResourceNotFoundError(
+                code="user_not_found",
+                detail="The JSON Web Token user does not exist.",
+            )
+
+        tokens = self._is_token_recent(
+            access_payload=data["access"],
+            refresh_payload=data["refresh"],
+            user=user,
+        )
+
+        for token in tokens:
+            if not token.is_expired():
+                self._add_tokens_blacklist(token=token)

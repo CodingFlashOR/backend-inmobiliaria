@@ -85,14 +85,12 @@ class UpdateTokenAPIView(generics.GenericAPIView):
     serializer_class = UpdateTokenSerializer
     application_class = JWTUsesCases
 
-    def _handle_valid_request(self, token_data: Dict[str, Any]) -> Response:
+    def _handle_valid_request(self, data: Dict[str, Any]) -> Response:
         tokens = self.application_class(
             jwt_class=TokenObtainPairSerializer,
             jwt_repository=JWTRepository,
             user_repository=UserRepository,
-        ).update_tokens(
-            payload=token_data["payload"],
-        )
+        ).update_tokens(data=data)
 
         return Response(
             data=tokens,
@@ -126,8 +124,6 @@ class UpdateTokenAPIView(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
 
         if serializer.is_valid():
-            return self._handle_valid_request(
-                token_data=serializer.validated_data["refresh"]
-            )
+            return self._handle_valid_request(data=serializer.validated_data)
 
         return self._handle_invalid_request(errors=serializer.errors)

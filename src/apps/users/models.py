@@ -5,6 +5,7 @@ from django.contrib.auth.models import (
 )
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from uuid import uuid4
@@ -226,6 +227,10 @@ class JWT(models.Model):
         verbose_name = "JWT"
         verbose_name_plural = "JWT's"
         ordering = ["-date_joined"]
+
+    def is_expired(self) -> bool:
+
+        return self.expires_at < timezone.now()
 
     def __str__(self) -> str:
 

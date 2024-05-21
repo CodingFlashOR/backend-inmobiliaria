@@ -41,15 +41,12 @@ class TokenObtainPairSerializer(BaseTokenSerializer):
 @UpdateTokenSerializerSchema
 class UpdateTokenSerializer(serializers.Serializer):
     """
-    Handles the data for user token refresh. Checks that the provided access and
-    refresh tokens meet the necessary requirements.
+    Handles data to refresh tokens or logout of a user. Check that the tokens provided
+    are valid and belong to the same user.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._refresh_payload = None
-
     refresh = serializers.CharField(required=True)
+    access = serializers.CharField(required=True)
 
     def validate_refresh(self, value: str) -> Dict[str, Any]:
         try:
@@ -63,7 +60,34 @@ class UpdateTokenSerializer(serializers.Serializer):
                 detail="Token is invalid.", code="token_error"
             )
 
-        return {
-            "token": value,
-            "payload": self._refresh_payload,
-        }
+        return self._refresh_payload
+
+    def validate_access(self, value: str) -> Dict[str, Any]:
+        try:
+            decode_jwt(token=value)
+        except ExpiredSignatureError:
+            self._access_payload = decode_jwt(
+                token=value, options={"verify_exp": False}
+            )
+
+            return self._access_payload
+        except DecodeError:
+            raise serializers.ValidationError(
+                detail="Token is invalid.", code="token_error"
+            )
+
+        raise serializers.ValidationError(
+            detail="Token is not expired.", code="token_error"
+        )
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        if (
+            self._refresh_payload["user_uuid"]
+            != self._access_payload["user_uuid"]
+        ):
+            raise serializers.ValidationError(
+                code="token_error",
+                detail="Tokens do not match the same user.",
+            )
+
+        return attrs
