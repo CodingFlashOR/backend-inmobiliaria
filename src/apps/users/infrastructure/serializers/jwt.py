@@ -42,9 +42,9 @@ class TokenObtainPairSerializer(BaseTokenSerializer):
         return token
 
 
-class UpdateLogoutSerializer(serializers.Serializer):
+class BaseUpdateLogoutSerializer(serializers.Serializer):
     """
-    Handles data to refresh tokens or logout of a user.
+    Base class for the serializers that update or logout a user.
     """
 
     refresh = serializers.CharField(required=True)
@@ -82,10 +82,9 @@ class UpdateLogoutSerializer(serializers.Serializer):
 
 
 @UpdateTokenSerializerSchema
-class UpdateTokenSerializer(UpdateLogoutSerializer):
+class UpdateTokenSerializer(BaseUpdateLogoutSerializer):
     """
-    Handles data to refresh tokens or logout of a user. Check that the tokens provided
-    are valid and belong to the same user.
+    Handles data to refresh tokens of a user.
     """
 
     def validate_access(self, value: str) -> Dict[str, Any]:
@@ -107,10 +106,10 @@ class UpdateTokenSerializer(UpdateLogoutSerializer):
         )
 
 
-class LogoutSerializer(UpdateLogoutSerializer):
+class LogoutSerializer(BaseUpdateLogoutSerializer):
     """
-    Handles data to refresh tokens or logout of a user. Check that the tokens provided
-    are valid and belong to the same user.
+    Handles data to logout user.
+
     """
 
     def validate_access(self, value: str) -> Dict[str, Any]:
