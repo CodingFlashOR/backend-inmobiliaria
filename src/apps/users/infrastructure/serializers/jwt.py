@@ -7,6 +7,7 @@ from jwt import DecodeError, ExpiredSignatureError
 from apps.users.infrastructure.schemas.jwt import (
     AuthenticationSerializerSchema,
     UpdateTokenSerializerSchema,
+    LogoutSerializerSchema,
 )
 from apps.users.models import User
 from apps.utils import ErrorMessagesSerializer, decode_jwt
@@ -106,6 +107,7 @@ class UpdateTokenSerializer(BaseUpdateLogoutSerializer):
         )
 
 
+@LogoutSerializerSchema
 class LogoutSerializer(BaseUpdateLogoutSerializer):
     """
     Handles data to logout user.

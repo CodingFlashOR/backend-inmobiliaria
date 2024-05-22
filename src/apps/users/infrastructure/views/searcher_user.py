@@ -14,7 +14,7 @@ from typing import Dict, Any, List
 
 class SearcherUserAPIView(MappedAPIView):
     """
-    API view for managing operations for users with `searcheruser roles`.
+    API view for managing operations for users with `searcheruser role`.
 
     It uses a mapping approach to determine the appropriate application logic,
     permissions, and serializers based on the HTTP method of the incoming request.
@@ -59,9 +59,10 @@ class SearcherUserAPIView(MappedAPIView):
         """
         Handle POST requests for searcheruser registration.
 
-        This method allows the registration of a new searcheruser. It waits for a POST
-        request with record data, validates the information, and then creates a new
-        record if the data is valid or returns an error response if it is not.
+        This method allows the registration of a new seacher user, waiting for a POST
+        request with the registration data. A successful registration will consist of
+        saving the user's information in the database and sending a message to the
+        user's email with a link that will allow them to activate their account.
         """
 
         serializer_class = self.get_serializer_class()
