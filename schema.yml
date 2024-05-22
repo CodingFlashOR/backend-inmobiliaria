@@ -19,9 +19,10 @@ paths:
       description: |-
         Handle POST requests for searcheruser registration.
 
-        This method allows the registration of a new searcheruser. It waits for a POST
-        request with record data, validates the information, and then creates a new
-        record if the data is valid or returns an error response if it is not.
+        This method allows the registration of a new seacher user, waiting for a POST
+        request with the registration data. A successful registration will consist of
+        saving the user's information in the database and sending a message to the
+        user's email with a link that will allow them to activate their account.
       tags:
       - Users
       requestBody:
@@ -150,10 +151,10 @@ paths:
       description: |-
         Handle POST requests for user authentication.
 
-        This method allows authentication of a user. It waits for a POST request with
-        your credentials, validates the information, and then returns a response with
-        the authentication tokens if the data is valid or returns an error response
-        if it is not.
+        This method allows authentication of a user, waits for a POST request with
+        their credentials. Successful authentication will consist of creating the
+        user's JSON Web Tokens if their credentials are valid and their account is
+        active.
       tags:
       - Users
       requestBody:
@@ -271,16 +272,115 @@ paths:
                   summary: Database connection error
                   description: The connection to the database could not be established.
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
+  /api/v1/user/token/logout/:
+    post:
+      operationId: logout_user
+      description: |-
+        Handle POST requests for user logout.
+
+        This method allows you to log out a user. Wait for a POST request with the
+        access and update JSON Web Tokens. A successful logout will consist of
+        invalidating the tokens by adding them to the blacklist if they have not yet
+        expired.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+            examples:
+              DataValid:
+                value:
+                  access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw
+                  refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
+                summary: Valid data for the request.
+                description: |-
+                  Valid data for the request. The following validations will be applied:
+                  - **refresh:** This field is require, must be a valid token and not expired.
+                  - **access:** This field is require and must be a valid token.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      responses:
+        '200':
+          description: '**(OK)** Successfully closed session.'
+        '401':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string
+              examples:
+                TokenError:
+                  value:
+                    code: token_error
+                    detail: The JSON Web Tokens does not match the user's last tokens.
+                  summary: Token error
+                  description: The provided JSON Web Tokens do not match the user's
+                    last generated tokens.
+          description: '**(UNAUTHORIZED)** The user''s JSON Web Token is not valid
+            for logout.'
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string
+              examples:
+                TokenNotFound:
+                  value:
+                    code: token_not_found
+                    detail: JSON Web Tokens not found.
+                  summary: Token not found
+                  description: The JSON Web Tokens provided do not exist in the database.
+                UserNotFound:
+                  value:
+                    code: user_not_found
+                    detail: The JSON Web Token user does not exist.
+                  summary: User not found
+                  description: The user in the provided JSON Web Tokens does not exist
+                    in the database.
+          description: '**(NOT_FOUND)** Some resources necessary for this process
+            were not found in the database.'
+        '500':
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                  code:
+                    type: string
+              examples:
+                DatabaseConnectionError:
+                  value:
+                    code: database_connection_error
+                    detail: Unable to establish a connection with the database. Please
+                      try again later.
+                  summary: Database connection error
+                  description: The connection to the database could not be established.
+          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
   /api/v1/user/token/update/:
     post:
       operationId: update_tokens
       description: |-
         Handle POST requests for token refresh.
 
-        This method allows refreshing of a user's tokens. It waits for a POST request
-        with the access and refresh tokens, validates the information, and then
-        returns a response with the new tokens if the data is valid or returns an
-        error response if it is not.
+        This method allows updating the JSON Web Tokens of an authenticated user,
+        waiting for a POST request with the access and update tokens. A successful
+        refresh will consist of creating new tokens to keep the user authenticated and
+        invalidating the previous refresh token by adding it to the blacklist.
       tags:
       - Users
       requestBody:
@@ -343,6 +443,13 @@ paths:
                       - Not a valid string.
                       - Token is expired.
                       - Token is invalid.
+                      access:
+                      - This field is required.
+                      - This field may not be blank.
+                      - This field may not be null.
+                      - Not a valid string.
+                      - Token is invalid.
+                      - Token is not expired.
                   summary: Invalid data
                   description: These are the possible error messages for each field.
           description: '**(BAD_REQUEST)** The request data are invalid, error message(s)
@@ -357,20 +464,40 @@ paths:
                   detail:
                     type: string
               examples:
-                TokenNotFound:
-                  value:
-                    code: token_not_found
-                    detail: Token do not exist.
-                  summary: Token not found
-                  description: The refresh token provided does not exist.
                 TokenError:
                   value:
                     code: token_error
-                    detail: The token does not match the user's last tokens.
+                    detail: The JSON Web Tokens does not match the user's last tokens.
                   summary: Token error
-                  description: The token does not match the user's last tokens.
-          description: '**(UNAUTHORIZED)** The refresh token is not suitable for token
-            update.'
+                  description: The provided JSON Web Tokens do not match the user's
+                    last generated tokens.
+          description: '**(UNAUTHORIZED)** The user''s JSON Web Token is not valid
+            for logout.'
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string
+              examples:
+                TokenNotFound:
+                  value:
+                    code: token_not_found
+                    detail: JSON Web Tokens not found.
+                  summary: Token not found
+                  description: The JSON Web Tokens provided do not exist in the database.
+                UserNotFound:
+                  value:
+                    code: user_not_found
+                    detail: The JSON Web Token user does not exist.
+                  summary: User not found
+                  description: The user in the provided JSON Web Tokens does not exist
+                    in the database.
+          description: '**(NOT_FOUND)** Some resources necessary for this process
+            were not found in the database.'
         '500':
           content:
             application/json:
@@ -428,6 +555,19 @@ components:
       - confirm_password
       - email
       - password
+    LogoutRequest:
+      type: object
+      description: Handles data to logout user.
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+        access:
+          type: string
+          minLength: 1
+      required:
+      - access
+      - refresh
     SearcherUserProfileDataRequest:
       type: object
       description: Defines the fields that are required for the searcher user profile.
@@ -462,14 +602,16 @@ components:
       - profile_data
     UpdateTokenRequest:
       type: object
-      description: |-
-        Handles the data for user token refresh. Checks that the provided access and
-        refresh tokens meet the necessary requirements.
+      description: Handles data to refresh tokens of a user.
       properties:
         refresh:
           type: string
           minLength: 1
+        access:
+          type: string
+          minLength: 1
       required:
+      - access
       - refresh
 tags:
 - name: Users

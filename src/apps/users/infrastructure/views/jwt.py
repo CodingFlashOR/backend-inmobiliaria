@@ -5,6 +5,7 @@ from rest_framework import status, generics
 from apps.users.infrastructure.schemas.jwt import (
     AuthenticationSchema,
     UpdateTokensSchema,
+    LogoutSchema,
 )
 from apps.users.infrastructure.serializers import (
     AuthenticationSerializer,
@@ -59,10 +60,10 @@ class AuthenticationAPIView(TokenObtainPairView):
         """
         Handle POST requests for user authentication.
 
-        This method allows authentication of a user. It waits for a POST request with
-        your credentials, validates the information, and then returns a response with
-        the authentication tokens if the data is valid or returns an error response
-        if it is not.
+        This method allows authentication of a user, waits for a POST request with
+        their credentials. Successful authentication will consist of creating the
+        user's JSON Web Tokens if their credentials are valid and their account is
+        active.
         """
 
         serializer = self.serializer_class(data=request.data)
@@ -114,10 +115,10 @@ class UpdateTokenAPIView(generics.GenericAPIView):
         """
         Handle POST requests for token refresh.
 
-        This method allows refreshing of a user's tokens. It waits for a POST request
-        with the access and refresh tokens, validates the information, and then
-        returns a response with the new tokens if the data is valid or returns an
-        error response if it is not.
+        This method allows updating the JSON Web Tokens of an authenticated user,
+        waiting for a POST request with the access and update tokens. A successful
+        refresh will consist of creating new tokens to keep the user authenticated and
+        invalidating the previous refresh token by adding it to the blacklist.
         """
 
         serializer = self.serializer_class(data=request.data)
@@ -162,13 +163,15 @@ class LogoutAPIView(generics.GenericAPIView):
             content_type="application/json",
         )
 
+    @LogoutSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
         """
         Handle POST requests for user logout.
 
-        This method allows logging out a user. It waits for a POST request with the
-        access and refresh token, validates the information, and then returns a
-        response if the data is valid or returns an error response if it is not.
+        This method allows you to log out a user. Wait for a POST request with the
+        access and update JSON Web Tokens. A successful logout will consist of
+        invalidating the tokens by adding them to the blacklist if they have not yet
+        expired.
         """
 
         serializer = self.serializer_class(data=request.data)

@@ -166,13 +166,41 @@ UpdateTokensSchema = extend_schema(
                                 "Token is expired.",
                                 "Token is invalid.",
                             ],
+                            "access": [
+                                DEFAULT_ERROR_MESSAGES["required"],
+                                DEFAULT_ERROR_MESSAGES["blank"],
+                                DEFAULT_ERROR_MESSAGES["null"],
+                                DEFAULT_ERROR_MESSAGES["invalid"],
+                                "Token is invalid.",
+                                "Token is not expired.",
+                            ],
                         },
                     },
                 ),
             ],
         ),
         401: OpenApiResponse(
-            description="**(UNAUTHORIZED)** The refresh token is not suitable for token update.",
+            description="**(UNAUTHORIZED)** The user's JSON Web Token is not valid for logout.",
+            response={
+                "properties": {
+                    "code": {"type": "string"},
+                    "detail": {"type": "string"},
+                }
+            },
+            examples=[
+                OpenApiExample(
+                    name="token_error",
+                    summary="Token error",
+                    description="The provided JSON Web Tokens do not match the user's last generated tokens.",
+                    value={
+                        "code": "token_error",
+                        "detail": "The JSON Web Tokens does not match the user's last tokens.",
+                    },
+                ),
+            ],
+        ),
+        404: OpenApiResponse(
+            description="**(NOT_FOUND)** Some resources necessary for this process were not found in the database.",
             response={
                 "properties": {
                     "code": {"type": "string"},
@@ -183,19 +211,99 @@ UpdateTokensSchema = extend_schema(
                 OpenApiExample(
                     name="token_not_found",
                     summary="Token not found",
-                    description="The refresh token provided does not exist.",
+                    description="The JSON Web Tokens provided do not exist in the database.",
                     value={
                         "code": "token_not_found",
-                        "detail": "Token do not exist.",
+                        "detail": "JSON Web Tokens not found.",
                     },
                 ),
                 OpenApiExample(
+                    name="user_not_found",
+                    summary="User not found",
+                    description="The user in the provided JSON Web Tokens does not exist in the database.",
+                    value={
+                        "code": "user_not_found",
+                        "detail": "The JSON Web Token user does not exist.",
+                    },
+                ),
+            ],
+        ),
+        500: OpenApiResponse(
+            description="**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.",
+            response={
+                "properties": {
+                    "detail": {"type": "string"},
+                    "code": {"type": "string"},
+                }
+            },
+            examples=[
+                OpenApiExample(
+                    name="database_connection_error",
+                    summary="Database connection error",
+                    description="The connection to the database could not be established.",
+                    value={
+                        "code": "database_connection_error",
+                        "detail": "Unable to establish a connection with the database. Please try again later.",
+                    },
+                ),
+            ],
+        ),
+    },
+)
+
+
+LogoutSchema = extend_schema(
+    operation_id="logout_user",
+    tags=["Users"],
+    responses={
+        200: OpenApiResponse(
+            description="**(OK)** Successfully closed session.",
+        ),
+        401: OpenApiResponse(
+            description="**(UNAUTHORIZED)** The user's JSON Web Token is not valid for logout.",
+            response={
+                "properties": {
+                    "code": {"type": "string"},
+                    "detail": {"type": "string"},
+                }
+            },
+            examples=[
+                OpenApiExample(
                     name="token_error",
                     summary="Token error",
-                    description="The token does not match the user's last tokens.",
+                    description="The provided JSON Web Tokens do not match the user's last generated tokens.",
                     value={
                         "code": "token_error",
-                        "detail": "The token does not match the user's last tokens.",
+                        "detail": "The JSON Web Tokens does not match the user's last tokens.",
+                    },
+                ),
+            ],
+        ),
+        404: OpenApiResponse(
+            description="**(NOT_FOUND)** Some resources necessary for this process were not found in the database.",
+            response={
+                "properties": {
+                    "code": {"type": "string"},
+                    "detail": {"type": "string"},
+                }
+            },
+            examples=[
+                OpenApiExample(
+                    name="token_not_found",
+                    summary="Token not found",
+                    description="The JSON Web Tokens provided do not exist in the database.",
+                    value={
+                        "code": "token_not_found",
+                        "detail": "JSON Web Tokens not found.",
+                    },
+                ),
+                OpenApiExample(
+                    name="user_not_found",
+                    summary="User not found",
+                    description="The user in the provided JSON Web Tokens does not exist in the database.",
+                    value={
+                        "code": "user_not_found",
+                        "detail": "The JSON Web Token user does not exist.",
                     },
                 ),
             ],
