@@ -32,17 +32,19 @@ class TokenObtainPairSerializer(BaseTokenSerializer):
 
     @classmethod
     def get_token(cls, user: User) -> Token:
+        """
+        Generates the access and refresh tokens for the user.
+        """
+
         token = cls.token_class.for_user(user)
         token["role"] = user.content_type.model_class().__name__.lower()
 
         return token
 
 
-@UpdateTokenSerializerSchema
-class UpdateTokenSerializer(serializers.Serializer):
+class UpdateLogoutSerializer(serializers.Serializer):
     """
-    Handles data to refresh tokens or logout of a user. Check that the tokens provided
-    are valid and belong to the same user.
+    Handles data to refresh tokens or logout of a user.
     """
 
     refresh = serializers.CharField(required=True)
@@ -62,6 +64,30 @@ class UpdateTokenSerializer(serializers.Serializer):
 
         return self._refresh_payload
 
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Check that the refresh and access tokens belong to the same user.
+        """
+
+        if (
+            self._refresh_payload["user_uuid"]
+            != self._access_payload["user_uuid"]
+        ):
+            raise serializers.ValidationError(
+                code="token_error",
+                detail={"access": ["Tokens do not match the same user."]},
+            )
+
+        return attrs
+
+
+@UpdateTokenSerializerSchema
+class UpdateTokenSerializer(UpdateLogoutSerializer):
+    """
+    Handles data to refresh tokens or logout of a user. Check that the tokens provided
+    are valid and belong to the same user.
+    """
+
     def validate_access(self, value: str) -> Dict[str, Any]:
         try:
             decode_jwt(token=value)
@@ -80,14 +106,21 @@ class UpdateTokenSerializer(serializers.Serializer):
             detail="Token is not expired.", code="token_error"
         )
 
-    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
-        if (
-            self._refresh_payload["user_uuid"]
-            != self._access_payload["user_uuid"]
-        ):
+
+class LogoutSerializer(UpdateLogoutSerializer):
+    """
+    Handles data to refresh tokens or logout of a user. Check that the tokens provided
+    are valid and belong to the same user.
+    """
+
+    def validate_access(self, value: str) -> Dict[str, Any]:
+        try:
+            self._access_payload = decode_jwt(
+                token=value, options={"verify_exp": False}
+            )
+        except DecodeError:
             raise serializers.ValidationError(
-                code="token_error",
-                detail="Tokens do not match the same user.",
+                detail="Token is invalid.", code="token_error"
             )
 
-        return attrs
+        return self._access_payload

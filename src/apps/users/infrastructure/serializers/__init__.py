@@ -3,4 +3,5 @@ from .jwt import (
     AuthenticationSerializer,
     TokenObtainPairSerializer,
     UpdateTokenSerializer,
+    LogoutSerializer,
 )
