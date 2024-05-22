@@ -1,2 +1,2 @@
 from .searcher_user import SearcherUserAPIView
-from .jwt import AuthenticationAPIView, UpdateTokenAPIView
+from .jwt import AuthenticationAPIView, UpdateTokenAPIView, LogoutAPIView

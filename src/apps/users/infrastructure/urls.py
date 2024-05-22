@@ -3,6 +3,7 @@ from .views import (
     SearcherUserAPIView,
     AuthenticationAPIView,
     UpdateTokenAPIView,
+    LogoutAPIView,
 )
 
 
@@ -21,5 +22,10 @@ urlpatterns = [
         route="token/update/",
         view=UpdateTokenAPIView.as_view(),
         name="update_tokens",
+    ),
+    path(
+        route="token/logout/",
+        view=LogoutAPIView.as_view(),
+        name="logout_user",
     ),
 ]
