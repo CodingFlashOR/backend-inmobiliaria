@@ -29,38 +29,30 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SearcherUserRequest'
+              $ref: '#/components/schemas/SearcherUserRegisterRequest'
             examples:
               DataValid:
                 value:
-                  base_data:
-                    email: user1@email.com
-                    password: contraseña1234
-                    confirm_password: contraseña1234
-                  profile_data:
-                    full_name: Nombre Apellido
-                    address: Residencia 1
-                    phone_number: +57 3123574898
+                  full_name: Nombre Apellido
+                  email: user1@email.com
+                  password: contraseña1234
+                  confirm_password: contraseña1234
                 summary: Register a new user with role searcheruser.
                 description: "A valid user registration data. The following validations\
                   \ will be applied:\n- **full_name:** This field is required, must\
-                  \ not exceed 40 characters, must not be in use, and must contain\
-                  \ letters and spaces.\n- **email:** This field is required and must\
-                  \ not exceed 40 characters, must follow standard email format, and\
-                  \ must not be in use.\n- **password:** This field is required and\
-                  \ should be between 8 and 20 characters. It should not be a common\
-                  \ password or contain only numbers. \n- **confirm_password:** This\
-                  \ field is required and should match the password field.\n- **address:**\
-                  \ This field is required, must not exceed 90 characters, and must\
-                  \ not be in use.\n- **phone_number:** This field is required, must\
-                  \ not exceed 25 characters, must follow the phone number format,\
-                  \ and must not be in use."
+                  \ not exceed 40 characters and must contain letters and spaces.\n\
+                  - **email:** This field is required and must not exceed 40 characters,\
+                  \ must follow standard email format, and must not be in use.\n-\
+                  \ **password:** This field is required and should be between 8 and\
+                  \ 20 characters. It should not be a common password or contain only\
+                  \ numbers. \n- **confirm_password:** This field is required and\
+                  \ should match the password field."
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SearcherUserRequest'
+              $ref: '#/components/schemas/SearcherUserRegisterRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SearcherUserRequest'
+              $ref: '#/components/schemas/SearcherUserRegisterRequest'
         required: true
       responses:
         '201':
@@ -79,51 +71,34 @@ paths:
                   value:
                     code: invalid_request_data
                     detail:
-                      base_data:
-                        email:
-                        - Este campo es requerido.
-                        - Este campo no puede estar en blanco.
-                        - Este campo no puede ser nulo.
-                        - El valor ingresado es inválido.
-                        - El valor ingresado no puede tener más de 40 caracteres.
-                        - Este correo electrónico ya está en uso.
-                        password:
-                        - Este campo es requerido.
-                        - Este campo no puede estar en blanco.
-                        - Este campo no puede ser nulo.
-                        - El valor ingresado es inválido.
-                        - El valor ingresado no puede tener más de 20 caracteres.
-                        - El valor ingresado debe tener al menos 8 caracteres.
-                        confirm_password:
-                        - Este campo es requerido.
-                        - Este campo no puede estar en blanco.
-                        - Este campo no puede ser nulo.
-                        - La contraseña debe contener al menos una mayuscula o una
-                          minuscula.
-                        - Esta contraseña es demasiado común.
-                        - Las contraseñas no coinciden.
-                      profile_data:
-                        full_name:
-                        - Este campo es requerido.
-                        - Este campo no puede estar en blanco.
-                        - Este campo no puede ser nulo.
-                        - El valor ingresado es inválido.
-                        - El valor ingresado no puede tener más de 40 caracteres.
-                        - Este nombre ya está en uso.
-                        address:
-                        - Este campo es requerido.
-                        - Este campo no puede estar en blanco.
-                        - Este campo no puede ser nulo.
-                        - El valor ingresado es inválido.
-                        - El valor ingresado no puede tener más de 90 caracteres.
-                        - Esta dirección ya está en uso.
-                        phone_number:
-                        - Este campo es requerido.
-                        - Este campo no puede estar en blanco.
-                        - Este campo no puede ser nulo.
-                        - El valor ingresado es inválido.
-                        - El valor ingresado no puede tener más de 25 caracteres.
-                        - Este número de teléfono ya está en uso.
+                      full_name:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 40 caracteres.
+                      - Este nombre ya está en uso.
+                      email:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 40 caracteres.
+                      - Este correo electrónico ya está en uso.
+                      password:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 20 caracteres.
+                      - El valor ingresado debe tener al menos 8 caracteres.
+                      confirm_password:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - La contraseña debe contener al menos una mayuscula o una minuscula.
+                      - Esta contraseña es demasiado común.
+                      - Las contraseñas no coinciden.
                   summary: Invalid data
                   description: These are the possible error messages for each field.
           description: '**(BAD_REQUEST)** The request data is invalid, error messages
@@ -533,9 +508,22 @@ components:
       required:
       - email
       - password
-    BaseUserRequest:
+    LogoutRequest:
       type: object
-      description: Defines the fields that are required for the user.
+      description: Handles data to logout user.
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+        access:
+          type: string
+          minLength: 1
+      required:
+      - access
+      - refresh
+    SearcherUserRegisterRequest:
+      type: object
+      description: Defines the fields that are required for the searcher user registration.
       properties:
         email:
           type: string
@@ -551,55 +539,16 @@ components:
           type: string
           writeOnly: true
           minLength: 1
-      required:
-      - confirm_password
-      - email
-      - password
-    LogoutRequest:
-      type: object
-      description: Handles data to logout user.
-      properties:
-        refresh:
-          type: string
-          minLength: 1
-        access:
-          type: string
-          minLength: 1
-      required:
-      - access
-      - refresh
-    SearcherUserProfileDataRequest:
-      type: object
-      description: Defines the fields that are required for the searcher user profile.
-      properties:
         full_name:
           type: string
           minLength: 1
           pattern: ^[A-Za-z\s]+$
           maxLength: 40
-        address:
-          type: string
-          minLength: 1
-          maxLength: 90
-        phone_number:
-          type: string
-          minLength: 1
-          maxLength: 25
       required:
-      - address
+      - confirm_password
+      - email
       - full_name
-      - phone_number
-    SearcherUserRequest:
-      type: object
-      description: Defines the fields that are required for the searcher user.
-      properties:
-        base_data:
-          $ref: '#/components/schemas/BaseUserRequest'
-        profile_data:
-          $ref: '#/components/schemas/SearcherUserProfileDataRequest'
-      required:
-      - base_data
-      - profile_data
+      - password
     UpdateTokenRequest:
       type: object
       description: Handles data to refresh tokens of a user.
