@@ -1,8 +1,7 @@
-from rest_framework_simplejwt.tokens import Token
 from django.db.models import QuerySet, Model
-from .typing import JWToken
+from .typing import JWToken, AccessToken, RefreshToken
 from apps.users.models import User, JWT
-from typing import Dict, Any, Protocol, Optional
+from typing import Dict, Any, Tuple, Protocol, Optional
 
 
 class IUserRepository(Protocol):
@@ -68,7 +67,8 @@ class IJWTRepository(Protocol):
     @classmethod
     def get(cls, **filters) -> QuerySet[JWT]:
         """
-        Retrieve a JWT from the database based on the provided filters.
+        Retrieve a JWT from the database based on the provided filters and limits the
+        result to the last 2 records.
 
         #### Parameters:
         - filters: Keyword arguments that define the filters to apply.
@@ -121,12 +121,13 @@ class ITokenClass(Protocol):
     JWT class.
     """
 
-    def get_token(self, user: User) -> Token:
+    @classmethod
+    def get_token(cls, user: User) -> Tuple[AccessToken, RefreshToken]:
         """
-        This method should return a JWT token for the given user.
+        Generates the JSON WEB Tokens for the user and saves them to the database.
 
         #### Parameters:
-        - user: The user for which to generate the token.
+        - user: An instance of the User model for which to generate the tokens.
         """
 
         ...

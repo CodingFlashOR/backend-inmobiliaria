@@ -1,10 +1,9 @@
 from rest_framework_simplejwt.utils import datetime_from_epoch
 from django.db.models import QuerySet
 from django.db import OperationalError
-from apps.users.domain.typing import JWToken
+from apps.users.domain.typing import JWToken, JWTPayload
 from apps.users.models import User, JWT, JWTBlacklist
 from apps.exceptions import DatabaseConnectionError
-from apps.utils import decode_jwt
 
 
 class JWTRepository:
@@ -19,7 +18,8 @@ class JWTRepository:
     @classmethod
     def get(cls, **filters) -> QuerySet[JWT]:
         """
-        Retrieve a JWT from the database based on the provided filters.
+        Retrieve a JWT from the database based on the provided filters and limits the
+        result to the last 2 records.
 
         #### Parameters:
         - filters: Keyword arguments that define the filters to apply.
@@ -33,6 +33,7 @@ class JWTRepository:
                 cls.jwt_model.objects.select_related("user")
                 .defer("date_joined")
                 .filter(**filters)
+                .order_by("-date_joined")[:2]
             )
         except OperationalError:
             # In the future, a retry system will be implemented when the database is
@@ -42,7 +43,9 @@ class JWTRepository:
         return tokens
 
     @classmethod
-    def add_to_checklist(cls, token: JWToken, user: User) -> None:
+    def add_to_checklist(
+        cls, token: JWToken, payload: JWTPayload, user: User
+    ) -> None:
         """
         Associate a JSON Web Token with a user by adding it to the checklist.
 
@@ -51,13 +54,12 @@ class JWTRepository:
 
         #### Parameters:
         - token: A JWToken.
+        - payload: The payload of the token.
         - user: An instance of the User model.
 
         #### Raises:
         - DatabaseConnectionError: If there is an operational error with the database.
         """
-
-        payload = decode_jwt(token=token)
 
         try:
             cls.jwt_model.objects.create(

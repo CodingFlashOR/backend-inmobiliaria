@@ -1,11 +1,6 @@
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate
-from apps.users.domain.typing import (
-    AccessToken,
-    RefreshToken,
-    JWToken,
-    JWTPayload,
-)
+from apps.users.domain.typing import JWToken, JWTPayload
 from apps.users.domain.abstractions import (
     IJWTRepository,
     ITokenClass,
@@ -13,7 +8,7 @@ from apps.users.domain.abstractions import (
 )
 from apps.users.models import User, JWT
 from apps.exceptions import JWTError, ResourceNotFoundError
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 
 class JWTUsesCases:
@@ -65,7 +60,7 @@ class JWTUsesCases:
         - JWTError: If the tokens do not match the user's last tokens.
         """
 
-        latest_tokens = self._jwt_repository.get(user=user)[:2]
+        latest_tokens = self._jwt_repository.get(user=user)
 
         if latest_tokens.count() < 2:
             raise ResourceNotFoundError(
@@ -82,34 +77,6 @@ class JWTUsesCases:
             )
 
         return latest_tokens
-
-    def _generate_tokens(self, user: User) -> Tuple[RefreshToken, AccessToken]:
-        """
-        Generate a access and refresh token for the given user.
-        """
-
-        refresh = self._jwt_class.get_token(user=user)
-        access = refresh.access_token
-
-        return str(refresh), str(access)
-
-    def _add_tokens_checklist(self, user: User, tokens: List[JWToken]) -> None:
-        """
-        Add the tokens to the user's checklist.
-        """
-
-        for token in tokens:
-            self._jwt_repository.add_to_checklist(
-                token=token,
-                user=user,
-            )
-
-    def _add_tokens_blacklist(self, token: JWT) -> None:
-        """
-        Add the token to the blacklist.
-        """
-
-        self._jwt_repository.add_to_blacklist(token=token)
 
     def authenticate_user(
         self, credentials: Dict[str, str]
@@ -139,8 +106,7 @@ class JWTUsesCases:
                 detail="Cuenta del usuario inactiva.",
             )
 
-        refresh, access = self._generate_tokens(user=user)
-        self._add_tokens_checklist(tokens=[access, refresh], user=user)
+        access, refresh = self._jwt_class.get_token(user=user)
 
         return {"access": access, "refresh": refresh}
 
@@ -173,10 +139,9 @@ class JWTUsesCases:
 
         for token in tokens:
             if not token.is_expired():
-                self._add_tokens_blacklist(token=token)
+                self._jwt_repository.add_to_blacklist(token=token)
 
-        refresh, access = self._generate_tokens(user=user)
-        self._add_tokens_checklist(tokens=[access, refresh], user=user)
+        access, refresh = self._jwt_class.get_token(user=user)
 
         return {"access": access, "refresh": refresh}
 
@@ -209,4 +174,4 @@ class JWTUsesCases:
 
         for token in tokens:
             if not token.is_expired():
-                self._add_tokens_blacklist(token=token)
+                self._jwt_repository.add_to_blacklist(token=token)

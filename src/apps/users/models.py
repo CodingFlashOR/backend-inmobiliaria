@@ -232,7 +232,6 @@ class JWT(models.Model):
         db_table = "jwt"
         verbose_name = "JWT"
         verbose_name_plural = "JWT's"
-        ordering = ["-date_joined"]
 
     def is_expired(self) -> bool:
         """
