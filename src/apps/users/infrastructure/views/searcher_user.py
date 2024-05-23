@@ -2,11 +2,13 @@ from rest_framework.serializers import Serializer
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
-from apps.users.infrastructure.serializers import SearcherUserSerializer
+from apps.users.infrastructure.serializers import (
+    SearcherUserRegisterSerializer,
+)
 from apps.users.infrastructure.db import UserRepository
 from apps.users.infrastructure.views.base import MappedAPIView
 from apps.users.infrastructure.schemas.searcher_user import (
-    CreateSearcherUserSchema,
+    SearcherUserRegisterMethodSchema,
 )
 from apps.users.applications import SearcherUserUsesCases
 from typing import Dict, Any, List
@@ -31,7 +33,7 @@ class SearcherUserAPIView(MappedAPIView):
         "POST": [],
     }
     serializer_mapping = {
-        "POST": SearcherUserSerializer,
+        "POST": SearcherUserRegisterSerializer,
     }
 
     def _handle_valid_request(
@@ -54,7 +56,7 @@ class SearcherUserAPIView(MappedAPIView):
             content_type="application/json",
         )
 
-    @CreateSearcherUserSchema
+    @SearcherUserRegisterMethodSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
         """
         Handle POST requests for searcheruser registration.

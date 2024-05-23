@@ -7,7 +7,7 @@ from apps.users.domain.constants import SearcherUser
 from apps.utils import ERROR_MESSAGES
 
 
-CreateSearcherUserSchema = extend_schema(
+SearcherUserRegisterMethodSchema = extend_schema(
     operation_id="create_searcher_user",
     tags=["Users"],
     responses={
@@ -30,70 +30,45 @@ CreateSearcherUserSchema = extend_schema(
                     value={
                         "code": "invalid_request_data",
                         "detail": {
-                            "base_data": {
-                                "email": [
-                                    ERROR_MESSAGES["required"],
-                                    ERROR_MESSAGES["blank"],
-                                    ERROR_MESSAGES["null"],
-                                    ERROR_MESSAGES["invalid"],
-                                    ERROR_MESSAGES["max_length"].format(
-                                        max_length=SearcherUser.EMAIL_MAX_LENGTH.value,
-                                    ),
-                                    ERROR_MESSAGES["email_in_use"],
-                                ],
-                                "password": [
-                                    ERROR_MESSAGES["required"],
-                                    ERROR_MESSAGES["blank"],
-                                    ERROR_MESSAGES["null"],
-                                    ERROR_MESSAGES["invalid"],
-                                    ERROR_MESSAGES["max_length"].format(
-                                        max_length=SearcherUser.PASSWORD_MAX_LENGTH.value,
-                                    ),
-                                    ERROR_MESSAGES["min_length"].format(
-                                        min_length=SearcherUser.PASSWORD_MIN_LENGTH.value,
-                                    ),
-                                ],
-                                "confirm_password": [
-                                    ERROR_MESSAGES["required"],
-                                    ERROR_MESSAGES["blank"],
-                                    ERROR_MESSAGES["null"],
-                                    ERROR_MESSAGES["password_no_upper_lower"],
-                                    ERROR_MESSAGES["password_common"],
-                                    ERROR_MESSAGES["password_mismatch"],
-                                ],
-                            },
-                            "profile_data": {
-                                "full_name": [
-                                    ERROR_MESSAGES["required"],
-                                    ERROR_MESSAGES["blank"],
-                                    ERROR_MESSAGES["null"],
-                                    ERROR_MESSAGES["invalid"],
-                                    ERROR_MESSAGES["max_length"].format(
-                                        max_length=SearcherUser.FULL_NAME_MAX_LENGTH.value,
-                                    ),
-                                    ERROR_MESSAGES["name_in_use"],
-                                ],
-                                "address": [
-                                    ERROR_MESSAGES["required"],
-                                    ERROR_MESSAGES["blank"],
-                                    ERROR_MESSAGES["null"],
-                                    ERROR_MESSAGES["invalid"],
-                                    ERROR_MESSAGES["max_length"].format(
-                                        max_length=SearcherUser.ADDRESS_MAX_LENGTH.value,
-                                    ),
-                                    ERROR_MESSAGES["address_in_use"],
-                                ],
-                                "phone_number": [
-                                    ERROR_MESSAGES["required"],
-                                    ERROR_MESSAGES["blank"],
-                                    ERROR_MESSAGES["null"],
-                                    ERROR_MESSAGES["invalid"],
-                                    ERROR_MESSAGES["max_length"].format(
-                                        max_length=SearcherUser.PHONE_NUMBER_MAX_LENGTH.value,
-                                    ),
-                                    ERROR_MESSAGES["phone_in_use"],
-                                ],
-                            },
+                            "full_name": [
+                                ERROR_MESSAGES["required"],
+                                ERROR_MESSAGES["blank"],
+                                ERROR_MESSAGES["null"],
+                                ERROR_MESSAGES["invalid"],
+                                ERROR_MESSAGES["max_length"].format(
+                                    max_length=SearcherUser.FULL_NAME_MAX_LENGTH.value,
+                                ),
+                            ],
+                            "email": [
+                                ERROR_MESSAGES["required"],
+                                ERROR_MESSAGES["blank"],
+                                ERROR_MESSAGES["null"],
+                                ERROR_MESSAGES["invalid"],
+                                ERROR_MESSAGES["max_length"].format(
+                                    max_length=SearcherUser.EMAIL_MAX_LENGTH.value,
+                                ),
+                                ERROR_MESSAGES["email_in_use"],
+                            ],
+                            "password": [
+                                ERROR_MESSAGES["required"],
+                                ERROR_MESSAGES["blank"],
+                                ERROR_MESSAGES["null"],
+                                ERROR_MESSAGES["invalid"],
+                                ERROR_MESSAGES["max_length"].format(
+                                    max_length=SearcherUser.PASSWORD_MAX_LENGTH.value,
+                                ),
+                                ERROR_MESSAGES["min_length"].format(
+                                    min_length=SearcherUser.PASSWORD_MIN_LENGTH.value,
+                                ),
+                            ],
+                            "confirm_password": [
+                                ERROR_MESSAGES["required"],
+                                ERROR_MESSAGES["blank"],
+                                ERROR_MESSAGES["null"],
+                                ERROR_MESSAGES["password_no_upper_lower"],
+                                ERROR_MESSAGES["password_common"],
+                                ERROR_MESSAGES["password_mismatch"],
+                            ],
                         },
                     },
                 ),

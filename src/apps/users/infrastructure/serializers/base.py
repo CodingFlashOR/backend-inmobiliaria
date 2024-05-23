@@ -10,13 +10,12 @@ from typing import Dict
 
 class BaseUserSerializer(ErrorMessagesSerializer):
     """
-    Defines the fields that are required for the user.
+    Defines the base data of a user.
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._user_repository = UserRepository
-        self.user = None
 
     email = serializers.CharField(
         required=True,
@@ -54,9 +53,13 @@ class BaseUserSerializer(ErrorMessagesSerializer):
     )
 
     def validate_email(self, value: str) -> str:
-        if not self.user:
-            self.user = self._user_repository.get(email=value)
-        if self.user.first():
+        """
+        Validate that the email is not in use.
+        """
+
+        user_queryset = self._user_repository.get(email=value)
+
+        if user_queryset.first():
             raise serializers.ValidationError(
                 code="invalid_data",
                 detail=ERROR_MESSAGES["email_in_use"],
@@ -65,6 +68,11 @@ class BaseUserSerializer(ErrorMessagesSerializer):
         return value
 
     def validate_password(self, value: str) -> str:
+        """
+        Validate that the password is not a common password and has at least one
+        uppercase and one lowercase letter.
+        """
+
         try:
             validate_password(value)
         except ValidationError:

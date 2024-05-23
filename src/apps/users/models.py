@@ -150,6 +150,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         ordering = ["is_active", "-date_joined"]
 
     def __str__(self):
+        """
+        Return the string representation of the model.
+        """
 
         return self.email
 
@@ -166,15 +169,15 @@ class SearcherUser(models.Model):
     address = models.CharField(
         db_column="address",
         max_length=90,
-        null=False,
-        blank=False,
+        null=True,
+        blank=True,
         unique=True,
     )
     phone_number = PhoneNumberField(
         db_column="phone_number",
         max_length=25,
-        null=False,
-        blank=False,
+        null=True,
+        blank=True,
         unique=True,
     )
     date_joined = models.DateTimeField(
@@ -188,6 +191,9 @@ class SearcherUser(models.Model):
         ordering = ["-date_joined"]
 
     def __str__(self):
+        """
+        Return the string representation of the model.
+        """
 
         return self.uuid.__str__()
 
@@ -229,10 +235,16 @@ class JWT(models.Model):
         ordering = ["-date_joined"]
 
     def is_expired(self) -> bool:
+        """
+        Check if the token is expired.
+        """
 
         return self.expires_at < timezone.now()
 
     def __str__(self) -> str:
+        """
+        Return the string representation of the model.
+        """
 
         return "Token for {} ({})".format(
             self.user,
@@ -263,8 +275,11 @@ class JWTBlacklist(models.Model):
         ordering = ["-date_joined"]
 
     def __str__(self) -> str:
+        """
+        Return the string representation of the model.
+        """
 
-        return f"Blacklisted token for {self.token.user}"
+        return f"Blacklisted token for {self.token}"
 
 
 class UserRoles(Enum):

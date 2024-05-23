@@ -24,9 +24,7 @@ class SearcherUserUsesCases:
 
         self._user_repository = user_repository
 
-    def create_user(
-        self, data: Dict[str, Dict[str, Any]], request: Request
-    ) -> None:
+    def create_user(self, data: Dict[str, Any], request: Request) -> None:
         """
         Create a new user with the given data.
 
@@ -36,8 +34,16 @@ class SearcherUserUsesCases:
         incoming request.
         """
 
-        data["base_data"].pop("confirm_password")
         user = self._user_repository.create(
-            data=data, role=UserRoles.SEARCHER.value
+            data={
+                "base_data": {
+                    "email": data["email"],
+                    "password": data["password"],
+                },
+                "profile_data": {
+                    "full_name": data["full_name"],
+                },
+            },
+            role=UserRoles.SEARCHER.value,
         )
         self._signal.send(sender=__name__, user=user, request=request)

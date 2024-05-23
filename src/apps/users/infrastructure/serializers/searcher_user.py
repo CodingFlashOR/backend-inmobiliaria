@@ -4,7 +4,7 @@ from phonenumber_field.serializerfields import PhoneNumberField
 from apps.users.infrastructure.db import UserRepository
 from apps.users.infrastructure.serializers.base import BaseUserSerializer
 from apps.users.infrastructure.schemas.searcher_user import (
-    SearcherUserSerializerSchema,
+    SearcherUserRegisterSerializerSchema,
 )
 from apps.users.domain.constants import SearcherUser
 from apps.users.models import UserRoles
@@ -20,7 +20,7 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._user_repository = UserRepository
-        self.profile = None
+        self.profile_queryset = None
 
     full_name = serializers.CharField(
         required=True,
@@ -32,13 +32,12 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
         },
         validators=[
             RegexValidator(
-                regex=r"^[A-Za-z\s]+$",
+                regex=r"^[A-Za-zñÑ\s]+$",
                 code="invalid_data",
                 message=ERROR_MESSAGES["invalid"],
             ),
         ],
     )
-
     address = serializers.CharField(
         required=True,
         max_length=SearcherUser.ADDRESS_MAX_LENGTH.value,
@@ -59,11 +58,11 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
     )
 
     def validate_full_name(self, value: str) -> str:
-        if not self.profile:
-            self.profile = self._user_repository.get_profile_data(
+        if not self.profile_queryset:
+            self.profile_queryset = self._user_repository.get_profile_data(
                 role=UserRoles.SEARCHER.value, full_name=value
             )
-        if self.profile.first():
+        elif self.profile_queryset.first():
             raise serializers.ValidationError(
                 code="invalid_data",
                 detail=ERROR_MESSAGES["name_in_use"],
@@ -72,12 +71,12 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
         return value
 
     def validate_address(self, value: str) -> str:
-        if not self.profile:
-            self.profile = self._user_repository.get_profile_data(
+        if not self.profile_queryset:
+            self.profile_queryset = self._user_repository.get_profile_data(
                 role=UserRoles.SEARCHER.value,
                 address=value,
             )
-        if self.profile.first():
+        elif self.profile_queryset.first():
             raise serializers.ValidationError(
                 code="invalid_data",
                 detail=ERROR_MESSAGES["address_in_use"],
@@ -86,12 +85,12 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
         return value
 
     def validate_phone_number(self, value: str) -> str:
-        if not self.profile:
-            self.profile = self._user_repository.get_profile_data(
+        if not self.profile_queryset:
+            self.profile_queryset = self._user_repository.get_profile_data(
                 role=UserRoles.SEARCHER.value,
                 phone_number=value,
             )
-        if self.profile.first():
+        elif self.profile_queryset.first():
             raise serializers.ValidationError(
                 code="invalid_data",
                 detail=ERROR_MESSAGES["phone_in_use"],
@@ -100,7 +99,6 @@ class SearcherUserProfileDataSerializer(ErrorMessagesSerializer):
         return value
 
 
-@SearcherUserSerializerSchema
 class SearcherUserSerializer(ErrorMessagesSerializer):
     """
     Defines the fields that are required for the searcher user.
@@ -108,3 +106,27 @@ class SearcherUserSerializer(ErrorMessagesSerializer):
 
     base_data = BaseUserSerializer()
     profile_data = SearcherUserProfileDataSerializer()
+
+
+@SearcherUserRegisterSerializerSchema
+class SearcherUserRegisterSerializer(BaseUserSerializer):
+    """
+    Defines the fields that are required for the searcher user registration.
+    """
+
+    full_name = serializers.CharField(
+        required=True,
+        max_length=SearcherUser.FULL_NAME_MAX_LENGTH.value,
+        error_messages={
+            "max_length": ERROR_MESSAGES["max_length"].format(
+                max_length="{max_length}"
+            ),
+        },
+        validators=[
+            RegexValidator(
+                regex=r"^[A-Za-zñÑ\s]+$",
+                code="invalid_data",
+                message=ERROR_MESSAGES["invalid"],
+            ),
+        ],
+    )

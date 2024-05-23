@@ -1,2 +1,2 @@
-from .views import CreateSearcherUserSchema
-from .serializers import SearcherUserSerializerSchema
+from .views import SearcherUserRegisterMethodSchema
+from .serializers import SearcherUserRegisterSerializerSchema
