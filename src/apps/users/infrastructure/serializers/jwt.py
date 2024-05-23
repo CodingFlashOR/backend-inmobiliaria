@@ -1,7 +1,7 @@
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer as BaseTokenSerializer,
-    Token,
 )
+from rest_framework_simplejwt.tokens import RefreshToken as TokenClass
 from rest_framework import serializers
 from jwt import DecodeError, ExpiredSignatureError
 from apps.users.infrastructure.schemas.jwt import (
@@ -9,9 +9,11 @@ from apps.users.infrastructure.schemas.jwt import (
     UpdateTokenSerializerSchema,
     LogoutSerializerSchema,
 )
+from apps.users.infrastructure.db import JWTRepository
+from apps.users.domain.typing import AccessToken, RefreshToken
 from apps.users.models import User
 from apps.utils import ErrorMessagesSerializer, decode_jwt
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 
 
 @AuthenticationSerializerSchema
@@ -31,16 +33,27 @@ class TokenObtainPairSerializer(BaseTokenSerializer):
     custom payload.
     """
 
+    jwt_repository = JWTRepository
+
     @classmethod
-    def get_token(cls, user: User) -> Token:
+    def get_token(cls, user: User) -> Tuple[AccessToken, RefreshToken]:
         """
-        Generates the access and refresh tokens for the user.
+        Generates the JSON WEB Tokens for the user and saves them to the database.
         """
 
-        token = cls.token_class.for_user(user)
+        token: TokenClass = cls.token_class.for_user(user=user)
         token["role"] = user.content_type.model_class().__name__.lower()
+        refresh = token
+        access = token.access_token
 
-        return token
+        for token in [refresh, access]:
+            cls.jwt_repository.add_to_checklist(
+                token=token,
+                payload=token.payload,
+                user=user,
+            )
+
+        return access.__str__(), refresh.__str__()
 
 
 class BaseUpdateLogoutSerializer(serializers.Serializer):
