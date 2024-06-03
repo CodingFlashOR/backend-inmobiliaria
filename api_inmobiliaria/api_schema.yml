@@ -1,0 +1,567 @@
+openapi: 3.0.3
+info:
+  title: Inmobiliaria Bonpland API
+  version: 1.0.0
+  description: Welcome to the Bonpland Real Estate API documentation. This guide provides
+    detailed information on all available endpoints, including the HTTP methods they
+    accept, the parameters they require, and the response formats they return. This
+    documentation is designed to be a useful reference for both developers who maintain
+    and extend the API, and frontend developers who consume it in their client applications.
+    If you have any questions or encounter any problems, feel free to contact the
+    development team.
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+paths:
+  /api/v1/user/searcher/:
+    post:
+      operationId: create_searcher_user
+      description: |-
+        Handle POST requests for searcheruser registration.
+
+        This method allows the registration of a new seacher user, waiting for a POST
+        request with the registration data. A successful registration will consist of
+        saving the user's information in the database and sending a message to the
+        user's email with a link that will allow them to activate their account.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearcherUserRegisterRequest'
+            examples:
+              DataValid:
+                value:
+                  full_name: Nombre Apellido
+                  email: user1@email.com
+                  password: contraseña1234
+                  confirm_password: contraseña1234
+                summary: Register a new user with role searcheruser.
+                description: "A valid user registration data. The following validations\
+                  \ will be applied:\n- **full_name:** This field is required, must\
+                  \ not exceed 40 characters and must contain letters and spaces.\n\
+                  - **email:** This field is required and must not exceed 40 characters,\
+                  \ must follow standard email format, and must not be in use.\n-\
+                  \ **password:** This field is required and should be between 8 and\
+                  \ 20 characters. It should not be a common password or contain only\
+                  \ numbers. \n- **confirm_password:** This field is required and\
+                  \ should match the password field."
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SearcherUserRegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SearcherUserRegisterRequest'
+        required: true
+      responses:
+        '201':
+          description: '**(CREATED)** User created correctly.'
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: object
+              examples:
+                InvalidData:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      full_name:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 40 caracteres.
+                      email:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 40 caracteres.
+                      - Este correo electrónico ya está en uso.
+                      password:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 20 caracteres.
+                      - El valor ingresado debe tener al menos 8 caracteres.
+                      confirm_password:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - La contraseña debe contener al menos una mayuscula o una minuscula.
+                      - Esta contraseña es demasiado común.
+                      - Las contraseñas no coinciden.
+                  summary: Invalid data
+                  description: These are the possible error messages for each field.
+          description: '**(BAD_REQUEST)** The request data is invalid, error messages
+            are returned for each field that did not pass validations.'
+        '500':
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                  code:
+                    type: string
+              examples:
+                DatabaseConnectionError:
+                  value:
+                    code: database_connection_error
+                    detail: Unable to establish a connection with the database. Please
+                      try again later.
+                  summary: Database connection error
+          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
+  /api/v1/user/token/login/:
+    post:
+      operationId: authenticate_user
+      description: |-
+        Handle POST requests for user authentication.
+
+        This method allows authentication of a user, waits for a POST request with
+        their credentials. Successful authentication will consist of creating the
+        user's JSON Web Tokens if their credentials are valid and their account is
+        active.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+            examples:
+              DataValid:
+                value:
+                  email: user1@email.com
+                  password: contraseña1234
+                summary: Valid data for the request.
+                description: |-
+                  Valid credentials for a user. The following validations will be applied:
+                  - **email:** This field is required.
+                  - **password:** This field is required.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  access:
+                    type: string
+                  refresh:
+                    type: string
+              examples:
+                ResponseOk:
+                  value:
+                    access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzExMDU0MzYyLCJpYXQiOjE3MTEwNDcxNjIsImp0aSI6IjY0MTE2YzgyYjhmMDQzOWJhNTJkZGZmMzgyNzQ2ZTIwIiwidXNlcl9pZCI6IjJhNmI0NTNiLWZhMmItNDMxOC05YzM1LWIwZTk2ZTg5NGI2MyJ9.gfhWpy5rYY6P3Xrg0usS6j1KhEvF1HqWMiU7AaFkp9A
+                    refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A
+                  summary: User authenticated
+                  description: The user has been authenticated successfully and the
+                    access and refresh tokens are returned. The access token is used
+                    to authenticate the user in the application, while the refresh
+                    token is used to obtain a new access token, each of these tokens
+                    contains information about the user, such as the user's identifier,
+                    the type of token, the expiration date, and the date of issue.
+          description: '**(OK)** Authenticated user.'
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: object
+              examples:
+                InvalidData:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      email:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      password:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                  summary: Invalid data
+                  description: These are the possible error messages for each field.
+          description: '**(BAD_REQUEST)** The request data are invalid, error message(s)
+            are returned for each field that did not pass the validations.'
+        '401':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string
+              examples:
+                AuthenticationFailed:
+                  value:
+                    code: authentication_failed
+                    detail: Credenciales inválidas.
+                  summary: Credentials invalid
+                  description: The email or password provided is incorrect.
+                UserInactive:
+                  value:
+                    code: authentication_failed
+                    detail: Cuenta del usuario inactiva.
+                  summary: Inactive user account
+                  description: The user account is inactive.
+          description: |-
+            **(UNAUTHORIZED)** The user you are trying to authenticate is not authorized, this is due to some of the following reasons.
+            - Invalid credentials.
+            - The user's account has not been activated.
+        '500':
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                  code:
+                    type: string
+              examples:
+                DatabaseConnectionError:
+                  value:
+                    code: database_connection_error
+                    detail: Unable to establish a connection with the database. Please
+                      try again later.
+                  summary: Database connection error
+                  description: The connection to the database could not be established.
+          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
+  /api/v1/user/token/logout/:
+    post:
+      operationId: logout_user
+      description: |-
+        Handle POST requests for user logout.
+
+        This method allows you to log out a user. Wait for a POST request with the
+        access and update JSON Web Tokens. A successful logout will consist of
+        invalidating the tokens by adding them to the blacklist if they have not yet
+        expired.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+            examples:
+              DataValid:
+                value:
+                  access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw
+                  refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
+                summary: Valid data for the request.
+                description: |-
+                  Valid data for the request. The following validations will be applied:
+                  - **refresh:** This field is require, must be a valid token and not expired.
+                  - **access:** This field is require and must be a valid token.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      responses:
+        '200':
+          description: '**(OK)** Successfully closed session.'
+        '401':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string
+              examples:
+                TokenError:
+                  value:
+                    code: token_error
+                    detail: The JSON Web Tokens does not match the user's last tokens.
+                  summary: Token error
+                  description: The provided JSON Web Tokens do not match the user's
+                    last generated tokens.
+          description: '**(UNAUTHORIZED)** The user''s JSON Web Token is not valid
+            for logout.'
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string
+              examples:
+                TokenNotFound:
+                  value:
+                    code: token_not_found
+                    detail: JSON Web Tokens not found.
+                  summary: Token not found
+                  description: The JSON Web Tokens provided do not exist in the database.
+                UserNotFound:
+                  value:
+                    code: user_not_found
+                    detail: The JSON Web Token user does not exist.
+                  summary: User not found
+                  description: The user in the provided JSON Web Tokens does not exist
+                    in the database.
+          description: '**(NOT_FOUND)** Some resources necessary for this process
+            were not found in the database.'
+        '500':
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                  code:
+                    type: string
+              examples:
+                DatabaseConnectionError:
+                  value:
+                    code: database_connection_error
+                    detail: Unable to establish a connection with the database. Please
+                      try again later.
+                  summary: Database connection error
+                  description: The connection to the database could not be established.
+          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
+  /api/v1/user/token/update/:
+    post:
+      operationId: update_tokens
+      description: |-
+        Handle POST requests for token refresh.
+
+        This method allows updating the JSON Web Tokens of an authenticated user,
+        waiting for a POST request with the access and update tokens. A successful
+        refresh will consist of creating new tokens to keep the user authenticated and
+        invalidating the previous refresh token by adding it to the blacklist.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTokenRequest'
+            examples:
+              DataValid:
+                value:
+                  refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
+                summary: Valid data for the request.
+                description: |-
+                  Valid data for the request. The following validations will be applied:
+                  - **refresh:** must be a valid token and not expired.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateTokenRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdateTokenRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  access:
+                    type: string
+                  refresh:
+                    type: string
+              examples:
+                ResponseOk:
+                  value:
+                    access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw
+                    refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
+                  summary: New tokens generated
+                  description: The new access and refresh tokens have been generated
+                    successfully, you can use these new tokens to keep the user authenticated.
+          description: '**(OK)** New tokens are generated.'
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: object
+              examples:
+                InvalidData:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      refresh:
+                      - This field is required.
+                      - This field may not be blank.
+                      - This field may not be null.
+                      - Not a valid string.
+                      - Token is expired.
+                      - Token is invalid.
+                      access:
+                      - This field is required.
+                      - This field may not be blank.
+                      - This field may not be null.
+                      - Not a valid string.
+                      - Token is invalid.
+                      - Token is not expired.
+                  summary: Invalid data
+                  description: These are the possible error messages for each field.
+          description: '**(BAD_REQUEST)** The request data are invalid, error message(s)
+            are returned for each field that did not pass the validations.'
+        '401':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string
+              examples:
+                TokenError:
+                  value:
+                    code: token_error
+                    detail: The JSON Web Tokens does not match the user's last tokens.
+                  summary: Token error
+                  description: The provided JSON Web Tokens do not match the user's
+                    last generated tokens.
+          description: '**(UNAUTHORIZED)** The user''s JSON Web Token is not valid
+            for logout.'
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string
+              examples:
+                TokenNotFound:
+                  value:
+                    code: token_not_found
+                    detail: JSON Web Tokens not found.
+                  summary: Token not found
+                  description: The JSON Web Tokens provided do not exist in the database.
+                UserNotFound:
+                  value:
+                    code: user_not_found
+                    detail: The JSON Web Token user does not exist.
+                  summary: User not found
+                  description: The user in the provided JSON Web Tokens does not exist
+                    in the database.
+          description: '**(NOT_FOUND)** Some resources necessary for this process
+            were not found in the database.'
+        '500':
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                  code:
+                    type: string
+              examples:
+                DatabaseConnectionError:
+                  value:
+                    code: database_connection_error
+                    detail: Unable to establish a connection with the database. Please
+                      try again later.
+                  summary: Database connection error
+                  description: The connection to the database could not be established.
+          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
+components:
+  schemas:
+    AuthenticationRequest:
+      type: object
+      description: |-
+        Handles the data for user authentication. Checks that the provided email and
+        password meet the necessary requirements.
+      properties:
+        email:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - email
+      - password
+    LogoutRequest:
+      type: object
+      description: Handles data to logout user.
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+        access:
+          type: string
+          minLength: 1
+      required:
+      - access
+      - refresh
+    SearcherUserRegisterRequest:
+      type: object
+      description: Defines the fields that are required for the searcher user registration.
+      properties:
+        email:
+          type: string
+          minLength: 1
+          pattern: ^([A-Za-z0-9]+[-_.])*[A-Za-z0-9]+@[A-Za-z]+(\.[A-Z|a-z]{2,4}){1,2}$
+          maxLength: 40
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+          maxLength: 20
+        confirm_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        full_name:
+          type: string
+          minLength: 1
+          pattern: ^[A-Za-z\u00f1\u00d1\s]+$
+          maxLength: 40
+      required:
+      - confirm_password
+      - email
+      - full_name
+      - password
+    UpdateTokenRequest:
+      type: object
+      description: Handles data to refresh tokens of a user.
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+        access:
+          type: string
+          minLength: 1
+      required:
+      - access
+      - refresh
+tags:
+- name: Users
+  description: It comprises all the endpoints that manage all the functionality related
+    to a user in the API.
