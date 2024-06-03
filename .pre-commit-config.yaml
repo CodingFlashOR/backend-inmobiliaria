@@ -5,11 +5,12 @@ repos:
       - id: black
         language_version: python3.10
         args: [
-          "--line-length", "79",
+          "--line-length", "80",
           "--target-version", "py310",
+          "--include", "api_inmobiliaria/*.pyi?",
           "--check",
           "--diff",
-          "src/"
+          "api_inmobiliaria"
         ]
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v2.37.0
