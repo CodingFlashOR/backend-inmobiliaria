@@ -1,7 +1,14 @@
 {
-    "python.testing.pytestArgs": [
-        "src/tests"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "black-formatter.args": [
+            "--line-length", "80",
+            "--target-version", "py311",
+            "--include", "../api_inmobiliaria/*.pyi?",
+            "--check",
+            "--diff",
+            "../api_inmobiliaria"
+        ],
+        "editor.formatOnSave": true
+      }
 }

@@ -34,10 +34,18 @@ Usamos la biblioteca [commitizen](https://commitizen-tools.github.io/commitizen/
 Al existir un fichero con un formato incorrecto puede usar la biblioteca **black** para dar formato al codigo de manera automatica con el siguiente commando.
 
 ```bash
-black src/
+black api_inmobiliaria/
 ```
 
 Luego agrega las modificaciones al aerea de confirmación de Git y podra realizar con exito el commit anterior.
+
+> [!NOTE]
+> Si está utilizando VSCode, puede instalar la siguiente extensión para automatizar el formato del código cada vez que guarda (Ctrl + S).
+Name: Black Formatter
+Id: ms-python.black-formatter
+Description: Formatting support for Python files using the Black formatter.
+Publisher: Microsoft
+VS Marketplace Link: https://marketplace.visualstudio.com/items?itemName=ms-python.black-formatter
 
 # 2. Principios de la Comunidad
 
