@@ -33,41 +33,6 @@ El sistema de gestión de inmuebles contendrá dos tipos de usuarios:
 - Guardado de inmuebles para usuarios.
 - Funcionalidades para administradores.
 
-### 1.3. Estructura
-La estructura del proyecto es la siguiente:
-
-```
-└── 📁src
-    └── 📁apps
-    └── 📁settings
-        └── 📁environments
-            └── base.py
-            └── development.py
-            └── production.py
-            └── testing.py
-        └── asgi.py
-        └── urls.py
-        └── wsgi.py
-    └── 📁tests
-    └── manage.py
-    └── pytest.ini
-    └── requirements.txt
-```
-
-- **[src](./src/):** este es el directorio raíz del poryecto. Contiene todos los modulos, configuraciones  globales y pruebas del código.
-
-- **[apps](./src/apps/):** este directorio contiene las aplicaciones Dajngo. Está dividido en varios subdirectorios, cada uno de los cuales representa un servicio o aplicación. Tambien podras encontras algunos ficheros auxiliares en donde cada servicio podra hacer uso de ellos respectivamente.
-
-- **[settings](./src/settings/):** Contiene archivos de configuración para la API. Incluye configuraciones para los diferentes entornos de desarrollo, producción y pruebas, configuraciones de los punto finales de la API, configuraciones ASGI y WSGI, etc.
-
-- **[tests](./src/tests/):** Contiene pruebas unitarias y de implementación del código de cada aplicación.
-
-- **[manage.py](./src/manage.py):** esta es una utilidad de línea de comandos que te permite interactuar con tu proyecto Django de varias maneras.
-
-- **[requirements.txt](./src/requirements.txt):** este archivo se utiliza para administrar dependencias para un proyecto de Python. Enumera todos los paquetes de Python de los que depende el proyecto.
-
-- **[pytest.ini](./src/pytest.ini):** Este archivo contiene la configuración para pytest, un marco de prueba para Python.
-
 ## 2. Tecnologías
 <div>
     <img src="/images/TechnologiesBackendIB.png">
@@ -75,7 +40,7 @@ La estructura del proyecto es la siguiente:
 
 ## 3. Instalación del proyecto
 > [!NOTE]
-> Asegúrese que Python 3.11.5 esté instalado en su sistema operativo.
+> Asegúrese que Python 3.11 y [poetry](https://python-poetry.org/docs/#installation) esté instalado en su sistema operativo.
 
 Primero debes seguir las siguientes instrucciones y dependiendo de que manera quieres realizar la instalación seguiras los pasos para instalar el proyecto de manera manual o utilizando Docker.
 
@@ -89,20 +54,10 @@ Primero debes seguir las siguientes instrucciones y dependiendo de que manera qu
 - **Crear y activar entorno virtual:** Creares un entorno virtual con el siguiente comando, en este entorno instalaremos todas las dependencias de este proyecto.
     
     ```bash
-    python3 -m venv <nombre_del_entorno>
+    poetry shell
     ```
-    
-    Por ultimo activamos el entorno con el siguiente comando.
-    
-    ```bash
-    # Linux y macOS
-    source <nombre_del_entorno>/bin/activate
-    
-    # Windows
-    .<nombre_del_entorno>\Scripts\activate
-    ```
-    
-- **Configurar variables de entorno:** Crea un archivo con el nombre _.env_ dentro del directorio _src_. En este archivo se definiran todas las variables de entorno de este proyecto. Las variables que se deben configurar son las siguientes.
+
+- **Configurar variables de entorno:** Crea un archivo con el nombre _.env_ dentro del directorio _api_inmobiliaria_. En este archivo se definiran todas las variables de entorno de este proyecto. Las variables que se deben configurar son las siguientes.
 
     ```.env
     # DJANGO
@@ -135,19 +90,19 @@ Primero debes seguir las siguientes instrucciones y dependiendo de que manera qu
 - **Paso 1 (instalar dependencias):** Para instalar las teconologias y paquetes que usa el proyecto usa el siguiente comando. Asegurate estar en el directotio raíz.
     
     ```bash
-    pip install -r "requirements.txt"
+    poetry install
     ```
     
 - **Paso 2 (realizar migraciones):** Migramos los modelos del proyecto necesarios para el funcionamiento del servidor con el siguiente comando.
     
     ```bash
-    python3 src/manage.py migrate --settings=settings.environments.development
+    python3 api_inmobiliaria/manage.py migrate --settings=settings.environments.development
     ```
 
 - **Paso 3 (iniciar el servidor):** Para iniciar el servidor de manera local ejecuta el siguiente comando.
     
     ```bash
-    python3 src/manage.py runserver --settings=settings.environments.development
+    python3 api_inmobiliaria/manage.py runserver --settings=settings.environments.development
     ```
     
 ### 3.2. Instalación con Docker
@@ -155,13 +110,13 @@ Primero debes seguir las siguientes instrucciones y dependiendo de que manera qu
 - **Paso 1 (Construir imagen):** para construir la imagen del contenedor de este pryecto debes ejecutar el siguiente comando.
     
     ```bash
-    docker build -t api-inmobiliaria .
+    docker build -t api_inmobiliaria .
     ```
     
 - **Paso 2 (Correr imagen):** para iniciar el contenedor de este pryecto debes ejecutar el siguiente comando.
     
     ```bash
-    docker run -p 8000:8000 api-inmobiliaria
+    docker run -e ENVIRONMENT=development -p 8000:8000 api_inmobiliaria
     ```
     
 De esta manera podrás usar todas las funcionalidades que este proyecto tiene para ofrecer. Es importante que hayas seguido todos los pasos explicados en el orden establecido.
@@ -170,7 +125,7 @@ De esta manera podrás usar todas las funcionalidades que este proyecto tiene pa
 Para correr las pruebas del proyecto debes ejecutar el siguiente comando.
 
 ```bash
-pytest src/tests/
+pytest
 ```
 
 ## 5. Contributores
@@ -192,10 +147,10 @@ A continuación se presentan a las personas que están aportando al desarrollo d
 
 | Nombre | Enlaces | Roles | 
 |----------|:--------:|:--------:|
-| Yoana Avaro | <a href="https://www.linkedin.com/in/yoana-avaro/" target="_blank">LinkedIn</a> | Diseño UX/UI |
-| Maria Fuentes | <a href="https://www.linkedin.com/in/maria-fuentes-112920256/" target="_blank">LinkedIn</a> - <a href="https://github.com/Mmff07" target="_blank">Git Hub</a> - <a href="https://www.behance.net/mariafuentes22" target="_blank">Behance</a> | Diseño UX/UI |
-| Ignacio Nicolas Basilio Buracco | <a href="https://github.com/NachoBasilio" target="_blank">Git Hub</a> - <a href="https://www.linkedin.com/in/ignacio-nicolas-basilio-buracco/" target="_blank">LinkedIn</a> | Frontend |
-| Jose Lozada | <a href="https://github.com/lozada07" target="_blank">Git Hub</a> - <a href="" target="_blank">LinkedIn</a> | Frontend |
-| Carlos Andres Aguirre Ariza | <a href="https://github.com/The-Asintota" target="_blank">Git Hub</a> - <a href="https://www.linkedin.com/in/carlosaguirredev/" target="_blank">LinkedIn</a> | Backend - Frontend |
-| Gabriela Patiño | <a href="https://github.com/Gabyp05" target="_blank">Git Hub</a> - <a href="https://www.linkedin.com/in/gabyp05/" target="_blank">LinkedIn</a> | QA |
-| Carolina Pascua | <a href="https://github.com/CarolinaPascua" target="_blank">Git Hub</a> - <a href="https://www.linkedin.com/in/carolinalidiapascua/" target="_blank">LinkedIn</a> | QA |
+| Yoana Avaro | [LinkedIn](https://www.linkedin.com/in/yoana-avaro/) | Diseño UX/UI |
+| Maria Fuentes | [LinkedIn](https://www.linkedin.com/in/maria-fuentes-112920256/) - [GitHub](https://github.com/Mmff07)- [Behance](https://www.behance.net/mariafuentes22) | Diseño UX/UI |
+| Ignacio Nicolas Basilio Buracco | [GitHub](https://github.com/NachoBasilio) - [LinkedIn](https://www.linkedin.com/in/ignacio-nicolas-basilio-buracco/) | Frontend |
+| Jose Lozada | [GitHub](https://github.com/lozada07) | Frontend |
+| Carlos Andres Aguirre Ariza | [GitHub](https://github.com/The-Asintota) - [LinkedIn](https://www.linkedin.com/in/carlosaguirredev/) | Backend - Frontend |
+| Gabriela Patiño | [GitHub](https://github.com/Gabyp05) - [LinkedIn](https://www.linkedin.com/in/gabyp05/) | QA |
+| Carolina Pascua | [GitHub](https://github.com/CarolinaPascua) - [LinkedIn](https://www.linkedin.com/in/carolinalidiapascua/) | QA |
