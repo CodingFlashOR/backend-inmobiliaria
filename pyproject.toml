@@ -1,8 +1,53 @@
+[tool.poetry]
+name = "api_inmobiliaria"
+version = "1.0.0"
+description = ""
+authors = ["Carlos Aguirre <aguizandre.2803@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+djangorestframework = "^3.15.1"
+django-cors-headers = "^4.3.1"
+django-extensions = "^3.2.3"
+django-phonenumber-field = "^7.3.0"
+djangorestframework-simplejwt = "^5.3.1"
+drf-spectacular = "^0.27.2"
+gunicorn = "^22.0.0"
+mysqlclient = "^2.2.4"
+phonenumbers = "^8.13.37"
+python-decouple = "^3.8"
+whitenoise = "^6.6.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+commitizen = "^3.27.0"
+pre-commit = "^3.7.1"
+
+[tool.poetry.group.test.dependencies]
+faker = "^25.3.0"
+pytest-django = "^4.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.black]
-line-length = 79
-target-version = ["py310"]
+line-length = 80
+target-version = ["py311"]
+include = "api_inmobiliaria/.*\\.pyi?$"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.1.0"
+version = "3.27.0"
 tag_format = "v$version"
+
+[tool.pytest.ini_options]
+pythonpath = "api_inmobiliaria"
+DJANGO_SETTINGS_MODULE = "settings.environments.testing"
+python_files = "tests.py test_*.py *_tests.py"
+minversion = "8.2.1"
+testpaths = [
+    "api_inmobiliaria/tests",
+]
