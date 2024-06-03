@@ -11,6 +11,6 @@ jobs:
       - name: Run Black
         uses: psf/black@stable
         with:
-          options: "--check --diff --target-version=py310 --line-length=79"
-          src: "./src/"
+          options: "--check --diff --target-version=py310 --line-length=80 --include=api_inmobiliaria/*.pyi?"
+          src: "./api_inmobiliaria"
           version: "24.2.0"
