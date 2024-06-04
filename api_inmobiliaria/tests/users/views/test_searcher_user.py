@@ -1,8 +1,10 @@
 from apps.users.domain.constants import SearcherUser
 from apps.users.models import User, UserRoles
+from apps.exceptions import DatabaseConnectionError
 from apps.utils import ERROR_MESSAGES
 from django.test import Client
 from django.urls import reverse
+from unittest.mock import Mock, patch
 from typing import Tuple, Dict
 from faker import Faker
 import pytest
@@ -13,10 +15,10 @@ fake = Faker("es_CO")
 
 @pytest.fixture
 def setUp() -> Tuple[Client, str]:
+
     return Client(), reverse(viewname="searcher_user")
 
 
-@pytest.mark.django_db
 class TestAPIViewPOSTMethod:
     """
     This class groups all test cases for the POST method of the `SearcherUserAPIView`.
@@ -45,6 +47,7 @@ class TestAPIViewPOSTMethod:
         for field, message in expected_errors[key].items():
             assert profile_data_errors_formatted[field] == message
 
+    @pytest.mark.django_db
     def test_request_valid(self, setUp: Tuple[Client, str]) -> None:
         data = {
             "full_name": "Nombre Apellido",
@@ -62,6 +65,7 @@ class TestAPIViewPOSTMethod:
         # Asserting that response data is correct
         assert response.status_code == 201
 
+    @pytest.mark.django_db
     @pytest.mark.parametrize(
         argnames="data, error_messages",
         argvalues=[
@@ -167,6 +171,7 @@ class TestAPIViewPOSTMethod:
         for field, message in error_messages.items():
             assert errors_formatted[field] == message
 
+    @pytest.mark.django_db
     @pytest.mark.parametrize(
         argnames="data, error_messages",
         argvalues=[
@@ -219,3 +224,34 @@ class TestAPIViewPOSTMethod:
 
         for field, message in error_messages.items():
             assert errors_formatted[field] == message
+
+    @patch("apps.users.infrastructure.serializers.base.UserRepository")
+    def test_exception_raised_db(
+        self, user_repository_mock: Mock, setUp: Tuple[Client, str]
+    ) -> None:
+        # Mocking the methods
+        get: Mock = user_repository_mock.get
+
+        # Setting the return values
+        get.side_effect = DatabaseConnectionError
+
+        # Simulating the request
+        client, path = setUp
+        response = client.post(
+            path=path,
+            data={
+                "full_name": "Nombre Apellido",
+                "email": "user1@email.com",
+                "password": "contraseña1234",
+                "confirm_password": "contraseña1234",
+            },
+            content_type="application/json",
+        )
+
+        # Asserting that response data is correct
+        assert response.status_code == 500
+        assert response.data["code"] == "database_connection_error"
+        assert (
+            response.data["detail"]
+            == "Unable to establish a connection with the database. Please try again later."
+        )

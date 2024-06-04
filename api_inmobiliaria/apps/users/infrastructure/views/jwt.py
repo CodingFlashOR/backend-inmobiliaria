@@ -34,7 +34,6 @@ class AuthenticationAPIView(TokenObtainPairView):
     def _handle_valid_request(self, data: Dict[str, Any]) -> Response:
         tokens = self.application_class(
             jwt_class=TokenObtainPairSerializer,
-            jwt_repository=JWTRepository,
         ).authenticate_user(credentials=data)
 
         return Response(

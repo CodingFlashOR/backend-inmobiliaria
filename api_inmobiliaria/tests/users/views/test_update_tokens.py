@@ -1,65 +1,40 @@
-from apps.users.models import JWT, User, UserRoles
+from apps.users.models import User, UserRoles
 from apps.exceptions import DatabaseConnectionError
 from tests.users.factory import JWTFactory
-from rest_framework_simplejwt.utils import datetime_from_epoch
+from tests.utils import empty_queryset
 from django.test import Client
 from django.urls import reverse
 from unittest.mock import Mock, patch
 from typing import Tuple, Dict, List
-from uuid import uuid4
 import pytest
 
 
 @pytest.fixture
 def setUp() -> Tuple[Client, str]:
+
     return Client(), reverse(viewname="update_tokens")
 
 
-@pytest.mark.django_db
 class TestAPIView:
     """
     A test class for the `AuthenticationAPIView` view. This class contains test methods
     to verify the behavior of the view for updating the tokens of a user.
     """
 
-    def test_request_valid(self, setUp: Tuple[Client, str]) -> None:
+    @pytest.mark.django_db
+    def test_request_valid(
+        self, setUp: Tuple[Client, str], save_user_db, save_jwt_db
+    ) -> None:
         # Creating a user
-        data = {
-            "base_data": {
-                "email": "user1@email.com",
-                "password": "contraseña1234",
-            },
-            "profile_data": {
-                "full_name": "Nombre Apellido",
-                "address": "Residencia 1",
-                "phone_number": "+57 3123574898",
-            },
-        }
-        user = User.objects.create_user(
-            base_data=data["base_data"],
-            profile_data=data["profile_data"],
-            related_model_name=UserRoles.SEARCHER.value,
-        )
-        user.is_active = True
-        user.save()
+        user, _ = save_user_db(active=True, role=UserRoles.SEARCHER.value)
 
         # Creating the token
         refresh_data = JWTFactory.refresh(
             user_uuid=user.uuid.__str__(), exp=False
         )
         access_data = JWTFactory.access(user_uuid=user.uuid.__str__(), exp=True)
-        JWT.objects.create(
-            user=user,
-            jti=access_data["payload"]["jti"],
-            token=access_data["token"],
-            expires_at=datetime_from_epoch(ts=access_data["payload"]["exp"]),
-        )
-        JWT.objects.create(
-            user=user,
-            jti=refresh_data["payload"]["jti"],
-            token=refresh_data["token"],
-            expires_at=datetime_from_epoch(ts=refresh_data["payload"]["exp"]),
-        )
+        _ = save_jwt_db(user=user, data=access_data)
+        _ = save_jwt_db(user=user, data=refresh_data)
 
         # Simulating the request
         client, path = setUp
@@ -77,6 +52,7 @@ class TestAPIView:
         assert "access" in response.data
         assert "refresh" in response.data
 
+    @pytest.mark.django_db
     @pytest.mark.parametrize(
         argnames="data, error_messages",
         argvalues=[
@@ -150,26 +126,12 @@ class TestAPIView:
         for field, message in error_messages.items():
             assert response_errors_formated[field] == message
 
-    def test_if_jwt_not_found(self, setUp: Tuple[Client, str]) -> None:
+    @pytest.mark.django_db
+    def test_if_jwt_not_found(
+        self, setUp: Tuple[Client, str], save_user_db
+    ) -> None:
         # Creating a user
-        data = {
-            "base_data": {
-                "email": "user1@email.com",
-                "password": "contraseña1234",
-            },
-            "profile_data": {
-                "full_name": "Nombre Apellido",
-                "address": "Residencia 1",
-                "phone_number": "+57 3123574898",
-            },
-        }
-        user = User.objects.create_user(
-            base_data=data["base_data"],
-            profile_data=data["profile_data"],
-            related_model_name=UserRoles.SEARCHER.value,
-        )
-        user.is_active = True
-        user.save()
+        user, _ = save_user_db(active=True, role=UserRoles.SEARCHER.value)
 
         # Creating the token
         refresh_data = JWTFactory.refresh(
@@ -193,44 +155,20 @@ class TestAPIView:
         assert response.data["code"] == "token_not_found"
         assert response.data["detail"] == "JSON Web Tokens not found."
 
-    def test_if_jwt_not_match_user(self, setUp: Tuple[Client, str]) -> None:
+    @pytest.mark.django_db
+    def test_if_jwt_not_match_user(
+        self, setUp: Tuple[Client, str], save_user_db, save_jwt_db
+    ) -> None:
         # Creating a user
-        data = {
-            "base_data": {
-                "email": "user1@email.com",
-                "password": "contraseña1234",
-            },
-            "profile_data": {
-                "full_name": "Nombre Apellido",
-                "address": "Residencia 1",
-                "phone_number": "+57 3123574898",
-            },
-        }
-        user = User.objects.create_user(
-            base_data=data["base_data"],
-            profile_data=data["profile_data"],
-            related_model_name=UserRoles.SEARCHER.value,
-        )
-        user.is_active = True
-        user.save()
+        user, _ = save_user_db(active=True, role=UserRoles.SEARCHER.value)
 
         # Creating the token
         refresh_data = JWTFactory.refresh(
             user_uuid=user.uuid.__str__(), exp=False
         )
         access_data = JWTFactory.access(user_uuid=user.uuid.__str__(), exp=True)
-        JWT.objects.create(
-            user=user,
-            jti=access_data["payload"]["jti"],
-            token=access_data["token"],
-            expires_at=datetime_from_epoch(ts=access_data["payload"]["exp"]),
-        )
-        JWT.objects.create(
-            user=user,
-            jti=refresh_data["payload"]["jti"],
-            token=refresh_data["token"],
-            expires_at=datetime_from_epoch(ts=refresh_data["payload"]["exp"]),
-        )
+        _ = save_jwt_db(user=user, data=access_data)
+        _ = save_jwt_db(user=user, data=refresh_data)
 
         # Simulating the request
         client, path = setUp
@@ -255,21 +193,25 @@ class TestAPIView:
             == "The JSON Web Tokens does not match the user's last tokens."
         )
 
-    def test_if_user_not_found(self, setUp: Tuple[Client, str]) -> None:
-        user_uuid = uuid4().__str__()
+    @patch("apps.users.infrastructure.views.jwt.UserRepository")
+    def test_if_user_not_found(
+        self, user_repository_mock: Mock, setUp: Tuple[Client, str]
+    ) -> None:
+        # Mocking the methods
+        get_user: Mock = user_repository_mock.get
+
+        # Setting the return values
+        get_user.return_value = empty_queryset(model=User)
 
         # Simulating the request
         client, path = setUp
+
+        refresh = JWTFactory.refresh(user_uuid="123", exp=False).get("token")
+        access = JWTFactory.access(user_uuid="123", exp=True).get("token")
+
         response = client.post(
             path=path,
-            data={
-                "refresh": JWTFactory.refresh(
-                    user_uuid=user_uuid, exp=False
-                ).get("token"),
-                "access": JWTFactory.access(user_uuid=user_uuid, exp=True).get(
-                    "token"
-                ),
-            },
+            data={"refresh": refresh, "access": access},
             content_type="application/json",
         )
 
@@ -282,10 +224,10 @@ class TestAPIView:
 
     @patch("apps.users.infrastructure.views.jwt.UserRepository")
     def test_exception_raised_db(
-        self, repository: Mock, setUp: Tuple[Client, str]
+        self, user_repository_mock: Mock, setUp: Tuple[Client, str]
     ) -> None:
         # Mocking the methods
-        get: Mock = repository.get
+        get: Mock = user_repository_mock.get
 
         # Setting the return values
         get.side_effect = DatabaseConnectionError

@@ -4,7 +4,7 @@ from apps.users.infrastructure.serializers import (
 from apps.users.domain.constants import SearcherUser
 from apps.users.models import User
 from apps.utils import ERROR_MESSAGES
-from tests.utils import get_empty_queryset
+from tests.utils import empty_queryset
 from unittest.mock import Mock, patch
 from typing import Dict, Any
 from faker import Faker
@@ -34,7 +34,7 @@ class TestSerializer:
         get: Mock = repository.get
 
         # Setting the return values
-        get.return_value = get_empty_queryset(model=User)
+        get.return_value = empty_queryset(model=User)
 
         # Instantiating the serializer
         serializer = self.serializer_class(data=data)
@@ -136,7 +136,7 @@ class TestSerializer:
         get: Mock = repository.get
 
         # Setting the return values
-        get.return_value = get_empty_queryset(model=User)
+        get.return_value = empty_queryset(model=User)
 
         # Instantiating the serializer
         serializer = self.serializer_class(data=data)

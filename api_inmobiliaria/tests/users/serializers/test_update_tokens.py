@@ -13,6 +13,7 @@ class TestSerializer:
 
     def test_correct_execution(self) -> None:
         data = JWTFactory.access_and_refresh(exp_access=True, exp_refresh=False)
+
         # Instantiating the serializer
         serializer = self.serializer_class(data=data["tokens"])
 
