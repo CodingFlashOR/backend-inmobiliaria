@@ -9,8 +9,7 @@ from apps.exceptions import (
 )
 from apps.utils import decode_jwt
 from tests.users.factory import JWTFactory
-from tests.utils import get_empty_queryset
-from rest_framework_simplejwt.utils import datetime_from_epoch
+from tests.utils import empty_queryset
 from unittest.mock import Mock
 import pytest
 
@@ -24,47 +23,17 @@ class TestApplication:
     application_class = JWTUsesCases
 
     @pytest.mark.django_db
-    def test_updated_tokens(self) -> None:
+    def test_updated_tokens(self, save_user_db, save_jwt_db) -> None:
         # Creating a user
-        data = {
-            "base_data": {
-                "email": "user1@email.com",
-                "password": "contraseña1234",
-            },
-            "profile_data": {
-                "full_name": "Nombre Apellido",
-                "address": "Residencia 1",
-                "phone_number": "+57 3123574898",
-            },
-        }
-        user = User.objects.create_user(
-            base_data=data["base_data"],
-            profile_data=data["profile_data"],
-            related_model_name=UserRoles.SEARCHER.value,
-        )
-        user.is_active = True
-        user.save()
+        user, _ = save_user_db(active=True, role=UserRoles.SEARCHER.value)
 
         # Creating the token
         refresh_data = JWTFactory.refresh(
             user_uuid=user.uuid.__str__(), exp=False
         )
         access_data = JWTFactory.access(user_uuid=user.uuid.__str__(), exp=True)
-        JWT.objects.create(
-            user=user,
-            jti=access_data["payload"]["jti"],
-            token=access_data["token"],
-            expires_at=datetime_from_epoch(ts=access_data["payload"]["exp"]),
-        )
-        JWT.objects.create(
-            user=user,
-            jti=refresh_data["payload"]["jti"],
-            token=refresh_data["token"],
-            expires_at=datetime_from_epoch(ts=refresh_data["payload"]["exp"]),
-        )
-
-        # Asserting the tokens are not in the blacklist
-        assert JWTBlacklist.objects.count() == 0
+        _ = save_jwt_db(user=user, data=access_data)
+        _ = save_jwt_db(user=user, data=refresh_data)
 
         # Instantiating the application
         tokens = self.application_class(
@@ -96,8 +65,19 @@ class TestApplication:
         # Assert that the generated tokens were saved in the database
         access_payload = decode_jwt(token=access)
         refresh_payload = decode_jwt(token=refresh)
-        access_obj = JWT.objects.filter(jti=access_payload["jti"]).first()
-        refresh_obj = JWT.objects.filter(jti=refresh_payload["jti"]).first()
+
+        access_obj = (
+            JWT.objects.filter(jti=access_payload["jti"])
+            .select_related("user")
+            .only("user__uuid", "jti", "token")
+            .first()
+        )
+        refresh_obj = (
+            JWT.objects.filter(jti=refresh_payload["jti"])
+            .select_related("user")
+            .only("user__uuid", "jti", "token")
+            .first()
+        )
 
         assert access_obj
         assert refresh_obj
@@ -113,26 +93,9 @@ class TestApplication:
         assert refresh_payload["role"] == UserRoles.SEARCHER.value
 
     @pytest.mark.django_db
-    def test_if_jwt_not_found(self) -> None:
+    def test_if_jwt_not_found(self, save_user_db) -> None:
         # Creating a user
-        data = {
-            "base_data": {
-                "email": "user1@email.com",
-                "password": "contraseña1234",
-            },
-            "profile_data": {
-                "full_name": "Nombre Apellido",
-                "address": "Residencia 1",
-                "phone_number": "+57 3123574898",
-            },
-        }
-        user = User.objects.create_user(
-            base_data=data["base_data"],
-            profile_data=data["profile_data"],
-            related_model_name=UserRoles.SEARCHER.value,
-        )
-        user.is_active = True
-        user.save()
+        user, _ = save_user_db(active=True, role=UserRoles.SEARCHER.value)
 
         # Creating the token
         refresh_data = JWTFactory.refresh(
@@ -160,44 +123,17 @@ class TestApplication:
         assert JWTBlacklist.objects.count() == 0
 
     @pytest.mark.django_db
-    def test_if_jwt_not_match_user(self) -> None:
+    def test_if_jwt_not_match_user(self, save_user_db, save_jwt_db) -> None:
         # Creating a user
-        data = {
-            "base_data": {
-                "email": "user1@email.com",
-                "password": "contraseña1234",
-            },
-            "profile_data": {
-                "full_name": "Nombre Apellido",
-                "address": "Residencia 1",
-                "phone_number": "+57 3123574898",
-            },
-        }
-        user = User.objects.create_user(
-            base_data=data["base_data"],
-            profile_data=data["profile_data"],
-            related_model_name=UserRoles.SEARCHER.value,
-        )
-        user.is_active = True
-        user.save()
+        user, _ = save_user_db(active=True, role=UserRoles.SEARCHER.value)
 
         # Creating the token
         refresh_data = JWTFactory.refresh(
             user_uuid=user.uuid.__str__(), exp=False
         )
         access_data = JWTFactory.access(user_uuid=user.uuid.__str__(), exp=True)
-        JWT.objects.create(
-            user=user,
-            jti=access_data["payload"]["jti"],
-            token=access_data["token"],
-            expires_at=datetime_from_epoch(ts=access_data["payload"]["exp"]),
-        )
-        JWT.objects.create(
-            user=user,
-            jti=refresh_data["payload"]["jti"],
-            token=refresh_data["token"],
-            expires_at=datetime_from_epoch(ts=refresh_data["payload"]["exp"]),
-        )
+        _ = save_jwt_db(user=user, data=access_data)
+        _ = save_jwt_db(user=user, data=refresh_data)
 
         # Instantiating the application
         with pytest.raises(JWTError):
@@ -233,7 +169,7 @@ class TestApplication:
         get_token: Mock = jwt_class.get_token
 
         # Setting the return values
-        get_user.return_value = get_empty_queryset(model=User)
+        get_user.return_value = empty_queryset(model=User)
 
         # Instantiating the application
         with pytest.raises(ResourceNotFoundError):
