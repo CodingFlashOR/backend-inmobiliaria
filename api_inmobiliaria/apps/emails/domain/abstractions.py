@@ -1,4 +1,4 @@
-from apps.users.models import User
+from apps.users.models import BaseUserData
 from apps.emails.domain.typing import Token
 from apps.emails import models
 from django.db.models import QuerySet
@@ -44,22 +44,22 @@ class ITokenGenerator(Protocol):
     ITokenGenerator is a protocol that defines the interface for a token generator.
     """
 
-    def make_token(cls, user: User) -> str:
+    def make_token(cls, user: BaseUserData) -> str:
         """
         Generate a token for the given user and store it in the repository.
 
         #### Parameters:
-        - user: A instance of the User model.
+        - user: A instance of the BaseUserData model.
         """
 
         ...
 
-    def check_token(cls, user: User, token: Token) -> bool:
+    def check_token(cls, user: BaseUserData, token: Token) -> bool:
         """
         Check that a token is correct for a given user.
 
         #### Parameters:
-        - user: A instance of the User model.
+        - user: A instance of the BaseUserData model.
         - token: Token to be checked.
         """
 

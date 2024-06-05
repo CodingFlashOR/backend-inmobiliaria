@@ -4,7 +4,7 @@ from apps.users.domain.abstractions import (
     ITokenClass,
     IUserRepository,
 )
-from apps.users.models import User, JWT
+from apps.users.models import BaseUserData, JWT
 from apps.exceptions import JWTError, ResourceNotFoundError
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate
@@ -43,7 +43,7 @@ class JWTUsesCases:
 
     def _is_token_recent(
         self,
-        user: User,
+        user: BaseUserData,
         access_payload: JWTPayload,
         refresh_payload: JWTPayload,
     ) -> List[JWT]:
@@ -53,7 +53,7 @@ class JWTUsesCases:
         #### Parameters:
         - access_payload: The payload of the access token.
         - refresh_payload: The payload of the refresh token.
-        - user: An instance of the User model.
+        - user: An instance of the BaseUserData model.
 
         #### Raises:
         - ResourceNotFoundError: If the tokens do not exist.

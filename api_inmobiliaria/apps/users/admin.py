@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import User, SearcherUser, JWT, JWTBlacklist
+from .models import BaseUserData, SearcherUser, JWT, JWTBlacklist
 
 
-class UserAdminPanel(admin.ModelAdmin):
+class BaseUserDataAdminPanel(admin.ModelAdmin):
     """
-    Admin panel configuration for the User model.
+    Admin panel configuration for the BaseUserData model.
     """
 
     list_display = [
@@ -18,11 +18,10 @@ class UserAdminPanel(admin.ModelAdmin):
         "date_joined",
         "last_login",
     ]
-    search_fields = [
-        "email",
-        "uuid",
-        "is_active",
-    ]
+    list_filter = ["is_active"]
+    search_fields = ["email", "uuid"]
+    readonly_fields = ["date_joined", "password"]
+    ordering = ["-date_joined"]
 
 
 class SearcherUserAdminPanel(admin.ModelAdmin):
@@ -37,7 +36,9 @@ class SearcherUserAdminPanel(admin.ModelAdmin):
         "phone_number",
         "date_joined",
     ]
-    search_fields = ["uuid"]
+    search_fields = ["uuid", "full_name", "phone_number"]
+    readonly_fields = ["date_joined"]
+    ordering = ["-date_joined"]
 
 
 class JWTAdminPanel(admin.ModelAdmin):
@@ -53,7 +54,9 @@ class JWTAdminPanel(admin.ModelAdmin):
         "date_joined",
         "expires_at",
     ]
-    search_fields = ["user", "jti"]
+    search_fields = ["user", "jti", "token"]
+    readonly_fields = ["date_joined"]
+    ordering = ["-date_joined"]
 
 
 class JWTBlacklistedAdminPanel(admin.ModelAdmin):
@@ -63,9 +66,11 @@ class JWTBlacklistedAdminPanel(admin.ModelAdmin):
 
     list_display = ["uuid", "token", "date_joined"]
     search_fields = ["token"]
+    readonly_fields = ["date_joined"]
+    ordering = ["-date_joined"]
 
 
-admin.site.register(User, UserAdminPanel)
+admin.site.register(BaseUserData, BaseUserDataAdminPanel)
 admin.site.register(SearcherUser, SearcherUserAdminPanel)
 admin.site.register(JWT, JWTAdminPanel)
 admin.site.register(JWTBlacklist, JWTBlacklistedAdminPanel)
