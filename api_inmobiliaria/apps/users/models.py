@@ -98,9 +98,12 @@ class UserManager(BaseUserManager):
         )
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class BaseUserData(AbstractBaseUser, PermissionsMixin):
     """
-    This model represents a user in the system.
+    BaseUserData is the base model for all user types. Contains fields that are common to
+    all users, regardless of their role. User data related to their role is stored in
+    separate profile models, which are linked to this model through a generic
+    relationship.
     """
 
     uuid = models.UUIDField(
@@ -142,9 +145,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []
 
     class Meta:
-        db_table = "user"
-        verbose_name = "User"
-        verbose_name_plural = "Users"
+        db_table = "base_user_data"
+        verbose_name = "Base user data"
+        verbose_name_plural = "Base users data"
         ordering = ["is_active", "-date_joined"]
 
     def __str__(self):
@@ -157,7 +160,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class SearcherUser(models.Model):
     """
-    This model represents a searcher user in the system.
+    This model represents a user with the role `seacheruser`.
     """
 
     uuid = models.UUIDField(db_column="uuid", default=uuid4, primary_key=True)
@@ -184,8 +187,8 @@ class SearcherUser(models.Model):
 
     class Meta:
         db_table = "searcher_user"
-        verbose_name = "searcher_user"
-        verbose_name_plural = "searcher_users"
+        verbose_name = "searcher user"
+        verbose_name_plural = "searcher users"
         ordering = ["-date_joined"]
 
     def __str__(self):
@@ -204,7 +207,7 @@ class JWT(models.Model):
     uuid = models.UUIDField(db_column="uuid", default=uuid4, primary_key=True)
     user = models.ForeignKey(
         db_column="user",
-        to="User",
+        to="BaseUserData",
         to_field="uuid",
         on_delete=models.SET_NULL,
         db_index=True,
@@ -267,8 +270,8 @@ class JWTBlacklist(models.Model):
 
     class Meta:
         db_table = "jwt_blacklist"
-        verbose_name = "JWT_blacklist"
-        verbose_name_plural = "JWT_blacklist"
+        verbose_name = "JWT blacklist"
+        verbose_name_plural = "JWT blacklist"
         ordering = ["-date_joined"]
 
     def __str__(self) -> str:
