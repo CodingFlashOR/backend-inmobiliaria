@@ -40,7 +40,7 @@ black api_inmobiliaria/
 Luego agrega las modificaciones al aerea de confirmación de Git y podra realizar con exito el commit anterior.
 
 > [!NOTE]
-> Si está utilizando VSCode, puede instalar la siguiente extensión para automatizar el formato del código cada vez que guarda (Ctrl + S).
+> Si está utilizando VSCode, puede instalar la siguiente extensión para automatizar el formato del código aprovechando la configuración indicada en este repositorio.
 Name: Black Formatter
 Id: ms-python.black-formatter
 Description: Formatting support for Python files using the Black formatter.

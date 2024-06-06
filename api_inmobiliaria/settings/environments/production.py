@@ -24,8 +24,8 @@ SESSION_COOKIE_SECURE = True
 CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = [
-    f"https://{config('FRONTEND_HOST', cast=str)}"
-    f"http://{config('TEST_HOST', cast=str)}"
+    f"https://{config('FRONTEND_HOST', cast=str)}",
+    f"http://{config('TEST_HOST', cast=str)}",
 ]
 
 
