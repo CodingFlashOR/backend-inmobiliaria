@@ -1,4 +1,4 @@
-from apps.users.domain.typing import JWToken, JWTPayload
+from apps.users.domain.typing import JSONWebToken, JWTPayload
 from apps.users.models import User, JWT, JWTBlacklist
 from apps.exceptions import DatabaseConnectionError
 from rest_framework_simplejwt.utils import datetime_from_epoch
@@ -44,7 +44,7 @@ class JWTRepository:
 
     @classmethod
     def add_to_checklist(
-        cls, token: JWToken, payload: JWTPayload, user: User
+        cls, token: JSONWebToken, payload: JWTPayload, user: User
     ) -> None:
         """
         Associate a JSON Web Token with a user by adding it to the checklist.
@@ -53,7 +53,7 @@ class JWTRepository:
         users, and which tokens created are pending expiration or invalidation.
 
         #### Parameters:
-        - token: A JWToken.
+        - token: A JSONWebToken.
         - payload: The payload of the token.
         - user: An instance of the User model.
 

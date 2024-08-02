@@ -1,5 +1,5 @@
 from apps.users.domain.constants import UserRoles, USER_ROLE_PERMISSIONS
-from apps.users.domain.typing import JWToken, JWTPayload
+from apps.users.domain.typing import JSONWebToken, JWTPayload
 from apps.users.domain.abstractions import (
     IJWTRepository,
     ITokenClass,
@@ -82,7 +82,7 @@ class JWTUsesCases:
 
     def authenticate_user(
         self, credentials: Dict[str, str]
-    ) -> Dict[str, JWToken]:
+    ) -> Dict[str, JSONWebToken]:
         """
         Authenticate a user with the given credentials and return access and refresh
         tokens.
@@ -115,7 +115,9 @@ class JWTUsesCases:
 
         return {"access": access, "refresh": refresh}
 
-    def update_tokens(self, data: Dict[str, JWTPayload]) -> Dict[str, JWToken]:
+    def update_tokens(
+        self, data: Dict[str, JWTPayload]
+    ) -> Dict[str, JSONWebToken]:
         """
         Update the user's access and refresh tokens.
 
