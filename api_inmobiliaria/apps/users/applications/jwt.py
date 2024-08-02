@@ -10,12 +10,27 @@ from apps.exceptions import JWTError, ResourceNotFoundError, PermissionDenied
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate
 from typing import Dict, List
+from enum import Enum
+
+
+class JWTErrorMessages(Enum):
+    """
+    Enum class for error messages related to JWT use cases. The errors that are in
+    Spanish are messages that the user will see.
+    """
+
+    AUTHENTICATION_FAILED = "Credenciales inválidas."
+    INACTIVE_ACCOUNT = "Cuenta del usuario inactiva."
+    JWT_ERROR = "The JWTs sent do not match the user's last tokens."
+    TOTEN_NOT_FOUND_CODE = "token_not_found"
+    TOTEN_NOT_FOUND = "JWT not found."
+    USER_NOT_FOUND_CODE = "user_not_found"
+    USER_NOT_FOUND = "The JWT user does not exist."
 
 
 class JWTUsesCases:
     """
-    Use cases for the JWT tokens. It contains the business logic for the operations
-    that can be performed with the JWT tokens.
+    This class encapsulates the use cases given to JSON Web Tokens in the system.
     """
 
     def __init__(
@@ -51,7 +66,8 @@ class JWTUsesCases:
 
         if latest_tokens.count() < 2:
             raise ResourceNotFoundError(
-                code="token_not_found", detail="JSON Web Tokens not found."
+                code=JWTErrorMessages.TOTEN_NOT_FOUND_CODE.value,
+                detail=JWTErrorMessages.TOTEN_NOT_FOUND.value,
             )
 
         payload_jtis = {access_payload["jti"], refresh_payload["jti"]}
@@ -59,8 +75,7 @@ class JWTUsesCases:
 
         if not payload_jtis.issubset(token_jtis):
             raise JWTError(
-                code="token_error",
-                detail="The JSON Web Tokens does not match the user's last tokens.",
+                detail=JWTErrorMessages.JWT_ERROR.value,
             )
 
         return latest_tokens
@@ -85,13 +100,11 @@ class JWTUsesCases:
 
         if not user:
             raise AuthenticationFailed(
-                code="authentication_failed",
-                detail="Credenciales inválidas.",
+                detail=JWTErrorMessages.AUTHENTICATION_FAILED.value,
             )
         elif not user.is_active:
             raise AuthenticationFailed(
-                code="authentication_failed",
-                detail="Cuenta del usuario inactiva.",
+                detail=JWTErrorMessages.INACTIVE_ACCOUNT.value,
             )
         elif not user.has_perm(
             perm=USER_ROLE_PERMISSIONS[UserRoles.SEARCHER.value]["jwt"]
@@ -114,13 +127,15 @@ class JWTUsesCases:
         """
 
         user = self.__user_repository.get_user_data(
-            uuid=data["access"]["user_uuid"]
+            uuid=data["access"]["user_uuid"],
+            is_active=True,
+            is_deleted=False,
         ).first()
 
         if not user:
             raise ResourceNotFoundError(
-                code="user_not_found",
-                detail="The JSON Web Token user does not exist.",
+                code=JWTErrorMessages.USER_NOT_FOUND_CODE.value,
+                detail=JWTErrorMessages.USER_NOT_FOUND.value,
             )
 
         tokens = self.__is_token_recent(
@@ -149,16 +164,18 @@ class JWTUsesCases:
         """
 
         user = self.__user_repository.get_user_data(
-            uuid=data["access"]["user_uuid"]
+            uuid=data["access"]["user_uuid"],
+            is_active=True,
+            is_deleted=False,
         ).first()
 
         if not user:
             raise ResourceNotFoundError(
-                code="user_not_found",
-                detail="The JSON Web Token user does not exist.",
+                code=JWTErrorMessages.USER_NOT_FOUND_CODE.value,
+                detail=JWTErrorMessages.USER_NOT_FOUND.value,
             )
 
-        tokens = self._is_token_recent(
+        tokens = self.__is_token_recent(
             access_payload=data["access"],
             refresh_payload=data["refresh"],
             user=user,

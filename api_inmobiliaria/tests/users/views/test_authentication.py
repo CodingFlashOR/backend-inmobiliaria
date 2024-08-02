@@ -1,6 +1,8 @@
+from apps.users.applications.jwt import JWTErrorMessages
 from apps.users.domain.constants import UserRoles
 from apps.users.models import User
-from apps.exceptions import DatabaseConnectionError
+from apps.exceptions import DatabaseConnectionError, PermissionDenied
+from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from django.test import Client
 from django.urls import reverse
 from unittest.mock import Mock, patch
@@ -66,9 +68,12 @@ class TestAPIView:
         )
 
         # Asserting that response data is correct
-        assert response.status_code == 401
-        assert "authentication_failed" in response.data["code"]
-        assert "Credenciales inválidas." in response.data["detail"]
+        assert response.status_code == AuthenticationFailed.status_code
+        assert AuthenticationFailed.default_code == response.data["code"]
+        assert (
+            JWTErrorMessages.AUTHENTICATION_FAILED.value
+            == response.data["detail"]
+        )
 
     @pytest.mark.django_db
     def test_if_inactive_user_account(
@@ -95,9 +100,11 @@ class TestAPIView:
         )
 
         # Asserting that response data is correct
-        assert response.status_code == 401
-        assert "authentication_failed" in response.data["code"]
-        assert "Cuenta del usuario inactiva." in response.data["detail"]
+        assert response.status_code == AuthenticationFailed.status_code
+        assert AuthenticationFailed.default_code == response.data["code"]
+        assert (
+            JWTErrorMessages.INACTIVE_ACCOUNT.value == response.data["detail"]
+        )
 
     @pytest.mark.django_db
     def test_if_user_has_not_permission(
@@ -124,12 +131,9 @@ class TestAPIView:
         )
 
         # Asserting that response data is correct
-        assert response.status_code == 403
-        assert "permission_denied" in response.data["code"]
-        assert (
-            "The user does not have permissions to perform this action."
-            in response.data["detail"]
-        )
+        assert response.status_code == PermissionDenied.status_code
+        assert PermissionDenied.default_code in response.data["code"]
+        assert PermissionDenied.default_detail == response.data["detail"]
 
     @patch("apps.backend.UserRepository")
     def test_exception_raised_db(
@@ -155,9 +159,6 @@ class TestAPIView:
         )
 
         # Asserting that response data is correct
-        assert response.status_code == 500
-        assert "database_connection_error" in response.data["code"]
-        assert (
-            "Unable to establish a connection with the database. Please try again later."
-            in response.data["detail"]
-        )
+        assert response.status_code == DatabaseConnectionError.status_code
+        assert DatabaseConnectionError.default_code in response.data["code"]
+        assert DatabaseConnectionError.default_detail == response.data["detail"]
