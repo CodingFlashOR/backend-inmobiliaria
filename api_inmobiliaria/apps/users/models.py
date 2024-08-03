@@ -26,7 +26,9 @@ class UserManager(BaseUserManager):
         base_data: Dict[str, Any] = None,
     ) -> AbstractBaseUser:
         """
-        Create and save a User with the given attributes.
+        This is a private method that handles the creation of a user instance.
+        Optionally it can associate to a model instance that encapsulates the user
+        role data if `related_model_name` and `role_data` are provided.
         """
 
         related_instance = None
@@ -51,16 +53,23 @@ class UserManager(BaseUserManager):
 
     def create_user(
         self,
-        is_active: bool,
+        is_active: bool = None,
         related_model_name: str = None,
         role_data: Dict[str, Any] = None,
         base_data: Dict[str, Any] = None,
     ) -> AbstractBaseUser:
         """
-        Create and save a User with the given email and password.
+        Creates and saves a user with the specified attributes.
+
+        #### Parameters:
+        - is_active: Indicates if the user is active.
+        - related_model_name: The name of the related model that encapsulates the
+        role data.
+        - role_data: The data to create the related model instance.
+        - base_data: The data to create the user instance.
         """
 
-        base_data.setdefault("is_active", is_active)
+        base_data.setdefault("is_active", is_active or False)
 
         return self.__create_user(
             related_model_name=related_model_name,
@@ -97,8 +106,9 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     """
-    Custom user model for the system. This class defines the structure of a user in
-    the system.
+    Represents a user in the system with authentication and authorization
+    capabilities. This model includes a `generic relationship` to associate the user
+    with different types of role data.
     """
 
     uuid = models.UUIDField(
@@ -152,7 +162,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = "user"
         verbose_name_plural = "users"
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Return the string representation of the model.
         """
@@ -208,7 +218,7 @@ class Searcher(models.Model):
         verbose_name = "searcher"
         verbose_name_plural = "searchers"
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Return the string representation of the model.
         """
