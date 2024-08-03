@@ -78,8 +78,8 @@ class JWTError(DetailDictMixin, APIException):
     """
 
     status_code = status.HTTP_401_UNAUTHORIZED
-    default_detail = "Token error."
-    default_code = "token_error"
+    default_detail = "JWT error."
+    default_code = "JWT_error"
 
     def __init__(self, detail: str | Dict[str, Any] = None, code: str = None):
         if isinstance(detail, dict):

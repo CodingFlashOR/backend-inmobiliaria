@@ -8,6 +8,7 @@ from apps.users.domain.typing import AccessToken, RefreshToken
 from apps.users.domain.constants import UserProperties
 from apps.users.models import User
 from apps.utils import ErrorMessagesSerializer, decode_jwt, ERROR_MESSAGES
+from apps.exceptions import JWTError
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer as BaseTokenSerializer,
 )
@@ -15,6 +16,19 @@ from rest_framework_simplejwt.tokens import RefreshToken as TokenClass
 from rest_framework import serializers
 from jwt import DecodeError, ExpiredSignatureError
 from typing import Dict, Any, Tuple
+from enum import Enum
+
+
+class JWTSerializerErrorMessages(Enum):
+    """
+    Enum class for error messages related to serializers for JWTs.
+    """
+
+    REFRESH_INVALID = "Refresh token invalid."
+    REFRESH_EXPIRED = "Refresh token has expired."
+    ACCESS_INVALID = "Access token invalid."
+    ACCESS_NOT_EXPIRED = "Access token is not expired."
+    USER_NOT_MATCH = "The user of the access token does not match the user of the refresh token."
 
 
 @AuthenticationSerializerSchema
@@ -50,12 +64,12 @@ class TokenObtainPairSerializer(BaseTokenSerializer):
     custom payload.
     """
 
-    jwt_repository = JWTRepository
+    __jwt_repository = JWTRepository
 
     @classmethod
     def get_token(cls, user: User) -> Tuple[AccessToken, RefreshToken]:
         """
-        Generates the JSON WEB Tokens for the user and saves them to the database.
+        Generates the JWT for the user and saves them to the database.
         """
 
         token: TokenClass = cls.token_class.for_user(user=user)
@@ -64,7 +78,7 @@ class TokenObtainPairSerializer(BaseTokenSerializer):
         access = token.access_token
 
         for token in [refresh, access]:
-            cls.jwt_repository.add_to_checklist(
+            cls.__jwt_repository.add_to_checklist(
                 token=token,
                 payload=token.payload,
                 user=user,
@@ -81,32 +95,52 @@ class BaseUpdateLogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField(required=True)
     access = serializers.CharField(required=True)
 
-    def validate_refresh(self, value: str) -> Dict[str, Any]:
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.access_payload = None
+        self.refresh_payload = None
+
+    def validate_refresh(self, value: str) -> Dict[str, Dict[str, Any]]:
+        """
+        Check that the refresh token is valid and not expired.
+        """
+
         try:
-            self._refresh_payload = decode_jwt(token=value)
+            if not self.refresh_payload:
+                self.refresh_payload = decode_jwt(token=value)
         except ExpiredSignatureError:
             raise serializers.ValidationError(
-                detail="Token is expired.", code="token_error"
+                code=JWTError.default_code,
+                detail=JWTSerializerErrorMessages.REFRESH_EXPIRED.value,
             )
         except DecodeError:
             raise serializers.ValidationError(
-                detail="Token is invalid.", code="token_error"
+                code=JWTError.default_code,
+                detail=JWTSerializerErrorMessages.REFRESH_INVALID.value,
             )
 
-        return self._refresh_payload
+        return self.refresh_payload
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """
         Check that the refresh and access tokens belong to the same user.
         """
 
-        if (
-            self._refresh_payload["user_uuid"]
-            != self._access_payload["user_uuid"]
+        if not self.access_payload:
+            self.access_payload = decode_jwt(token=attrs["access"])
+        elif not self.refresh_payload:
+            self.refresh_payload = decode_jwt(token=attrs["refresh"])
+        elif (
+            self.refresh_payload["user_uuid"]
+            != self.access_payload["user_uuid"]
         ):
             raise serializers.ValidationError(
-                code="token_error",
-                detail={"access": ["Tokens do not match the same user."]},
+                code=JWTError.default_code,
+                detail={
+                    "access": [
+                        JWTSerializerErrorMessages.USER_NOT_MATCH.value,
+                    ]
+                },
             )
 
         return attrs
@@ -118,22 +152,29 @@ class UpdateTokenSerializer(BaseUpdateLogoutSerializer):
     Handles data to refresh tokens of a user.
     """
 
-    def validate_access(self, value: str) -> Dict[str, Any]:
+    def validate_access(self, value: str) -> Dict[str, Dict[str, Any]]:
+        """
+        Check that the access token is valid and not expired.
+        """
+
         try:
             decode_jwt(token=value)
         except ExpiredSignatureError:
-            self._access_payload = decode_jwt(
-                token=value, options={"verify_exp": False}
-            )
+            if not self.access_payload:
+                self.access_payload = decode_jwt(
+                    token=value, options={"verify_exp": False}
+                )
 
-            return self._access_payload
+            return self.access_payload
         except DecodeError:
             raise serializers.ValidationError(
-                detail="Token is invalid.", code="token_error"
+                code=JWTError.default_code,
+                detail=JWTSerializerErrorMessages.ACCESS_INVALID.value,
             )
 
         raise serializers.ValidationError(
-            detail="Token is not expired.", code="token_error"
+            code=JWTError.default_code,
+            detail=JWTSerializerErrorMessages.ACCESS_NOT_EXPIRED.value,
         )
 
 
@@ -141,17 +182,22 @@ class UpdateTokenSerializer(BaseUpdateLogoutSerializer):
 class LogoutSerializer(BaseUpdateLogoutSerializer):
     """
     Handles data to logout user.
-
     """
 
-    def validate_access(self, value: str) -> Dict[str, Any]:
+    def validate_access(self, value: str) -> Dict[str, Dict[str, Any]]:
+        """
+        Check that the access token is valid.
+        """
+
         try:
-            self._access_payload = decode_jwt(
-                token=value, options={"verify_exp": False}
-            )
+            if not self.access_payload:
+                self.access_payload = decode_jwt(
+                    token=value, options={"verify_exp": False}
+                )
         except DecodeError:
             raise serializers.ValidationError(
-                detail="Token is invalid.", code="token_error"
+                code=JWTError.default_code,
+                detail=JWTSerializerErrorMessages.ACCESS_INVALID.value,
             )
 
-        return self._access_payload
+        return self.access_payload

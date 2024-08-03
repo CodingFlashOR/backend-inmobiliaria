@@ -1,6 +1,6 @@
 from apps.users.models import User, JWT
 from django.db.models import QuerySet, Model
-from .typing import JWToken, AccessToken, RefreshToken
+from .typing import JSONWebToken, AccessToken, RefreshToken
 from typing import Dict, Any, Tuple, Protocol, Optional
 
 
@@ -84,7 +84,7 @@ class IJWTRepository(Protocol):
         ...
 
     @classmethod
-    def add_to_checklist(cls, token: JWToken, user: User) -> None:
+    def add_to_checklist(cls, token: JSONWebToken, user: User) -> None:
         """
         Associate a JSON Web Token with a user by adding it to the checklist.
 
@@ -92,7 +92,7 @@ class IJWTRepository(Protocol):
         users, and which tokens created are pending expiration or invalidation.
 
         #### Parameters:
-        - token: A JWToken.
+        - token: A JSONWebToken.
         - user: An instance of the User model.
 
         #### Raises:

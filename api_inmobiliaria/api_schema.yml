@@ -38,8 +38,8 @@ paths:
                 summary: Valid data for the request.
                 description: |-
                   Valid credentials for a user. The following validations will be applied:
-                  - **email:** This field is required.
-                  - **password:** This field is required.
+                  - **email:** This field is required and must not exceed 40 characters.
+                  - **password:** This field is required and must not exceed 40 characters.
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/AuthenticationRequest'
@@ -137,7 +137,7 @@ paths:
                 PermissionDenied:
                   value:
                     code: permission_denied
-                    detail: El usuario no tiene permisos para realizar esta acción.
+                    detail: The user does not have permissions to perform this action.
                   summary: Permission denied
                   description: This response appears when the user trying to authenticate
                     does not have the permissions to do so with JSON Web Token.
@@ -210,8 +210,8 @@ paths:
               examples:
                 TokenError:
                   value:
-                    code: token_error
-                    detail: The JSON Web Tokens does not match the user's last tokens.
+                    code: JWT_error
+                    detail: The JWTs sent do not match the user's last tokens.
                   summary: Token error
                   description: The provided JSON Web Tokens do not match the user's
                     last generated tokens.
@@ -230,13 +230,13 @@ paths:
                 TokenNotFound:
                   value:
                     code: token_not_found
-                    detail: JSON Web Tokens not found.
+                    detail: JWT not found.
                   summary: Token not found
                   description: The JSON Web Tokens provided do not exist in the database.
                 UserNotFound:
                   value:
                     code: user_not_found
-                    detail: The JSON Web Token user does not exist.
+                    detail: The JWT user does not exist.
                   summary: User not found
                   description: The user in the provided JSON Web Tokens does not exist
                     in the database.
@@ -332,15 +332,15 @@ paths:
                       - This field may not be blank.
                       - This field may not be null.
                       - Not a valid string.
-                      - Token is expired.
-                      - Token is invalid.
+                      - Refresh token has expired.
+                      - Refresh token invalid.
                       access:
                       - This field is required.
                       - This field may not be blank.
                       - This field may not be null.
                       - Not a valid string.
-                      - Token is invalid.
-                      - Token is not expired.
+                      - Access token invalid.
+                      - Access token is not expired.
                   summary: Invalid data
                   description: These are the possible error messages for each field.
           description: '**(BAD_REQUEST)** The request data are invalid, error message(s)
@@ -357,8 +357,8 @@ paths:
               examples:
                 TokenError:
                   value:
-                    code: token_error
-                    detail: The JSON Web Tokens does not match the user's last tokens.
+                    code: JWT_error
+                    detail: The JWTs sent do not match the user's last tokens.
                   summary: Token error
                   description: The provided JSON Web Tokens do not match the user's
                     last generated tokens.
@@ -377,13 +377,13 @@ paths:
                 TokenNotFound:
                   value:
                     code: token_not_found
-                    detail: JSON Web Tokens not found.
+                    detail: JWT not found.
                   summary: Token not found
                   description: The JSON Web Tokens provided do not exist in the database.
                 UserNotFound:
                   value:
                     code: user_not_found
-                    detail: The JSON Web Token user does not exist.
+                    detail: The JWT user does not exist.
                   summary: User not found
                   description: The user in the provided JSON Web Tokens does not exist
                     in the database.

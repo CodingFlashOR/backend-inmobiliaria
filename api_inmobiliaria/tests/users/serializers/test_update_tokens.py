@@ -1,20 +1,32 @@
-from apps.users.infrastructure.serializers import UpdateTokenSerializer
-from tests.users.factory import JWTFactory
+from apps.users.infrastructure.serializers import (
+    UpdateTokenSerializer,
+    JWTSerializerErrorMessages,
+)
+from tests.factory import JWTFactory
+from rest_framework.fields import CharField
 from typing import Dict, List
 import pytest
 
 
+# This constant is used when the serializer error messages are the default.
+DEFAULT_ERROR_MESSAGES = CharField().error_messages
+
+
 class TestSerializer:
     """
-    A class to test the `UpdateTokenSerializer` class.
+    This class encapsulates all the tests of the serializer in charge of validating
+    the data required to update the access and refresh tokens.
     """
 
     serializer_class = UpdateTokenSerializer
 
     def test_correct_execution(self) -> None:
-        data = JWTFactory.access_and_refresh(exp_access=True, exp_refresh=False)
+        """
+        This test is responsible for validating the expected behavior of the
+        serializer when the data to update the tokens is valid.
+        """
 
-        # Instantiating the serializer
+        data = JWTFactory.access_and_refresh(exp_access=True, exp_refresh=False)
         serializer = self.serializer_class(data=data["tokens"])
 
         # Check if the serializer is valid
@@ -32,8 +44,8 @@ class TestSerializer:
             (
                 {},
                 {
-                    "refresh": ["This field is required."],
-                    "access": ["This field is required."],
+                    "refresh": [DEFAULT_ERROR_MESSAGES["required"]],
+                    "access": [DEFAULT_ERROR_MESSAGES["required"]],
                 },
             ),
             (
@@ -42,8 +54,10 @@ class TestSerializer:
                     "access": JWTFactory.access_invalid(),
                 },
                 {
-                    "refresh": ["Token is invalid."],
-                    "access": ["Token is invalid."],
+                    "refresh": [
+                        JWTSerializerErrorMessages.REFRESH_INVALID.value
+                    ],
+                    "access": [JWTSerializerErrorMessages.ACCESS_INVALID.value],
                 },
             ),
             (
@@ -51,8 +65,10 @@ class TestSerializer:
                     "refresh": JWTFactory.refresh(exp=True).get("token"),
                 },
                 {
-                    "access": ["This field is required."],
-                    "refresh": ["Token is expired."],
+                    "access": [DEFAULT_ERROR_MESSAGES["required"]],
+                    "refresh": [
+                        JWTSerializerErrorMessages.REFRESH_EXPIRED.value
+                    ],
                 },
             ),
             (
@@ -60,8 +76,10 @@ class TestSerializer:
                     "access": JWTFactory.access(exp=False).get("token"),
                 },
                 {
-                    "refresh": ["This field is required."],
-                    "access": ["Token is not expired."],
+                    "refresh": [DEFAULT_ERROR_MESSAGES["required"]],
+                    "access": [
+                        JWTSerializerErrorMessages.ACCESS_NOT_EXPIRED.value
+                    ],
                 },
             ),
         ],
@@ -75,7 +93,11 @@ class TestSerializer:
     def test_failed_execution(
         self, data: Dict[str, str], error_messages: Dict[str, List]
     ) -> None:
-        # Instantiating the serializer
+        """
+        This test is responsible for validating the expected behavior of the
+        serializer when the data to update the tokens is invalid.
+        """
+
         serializer = self.serializer_class(data=data)
 
         # Check if the serializer is not valid

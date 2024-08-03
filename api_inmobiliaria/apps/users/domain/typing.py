@@ -9,8 +9,8 @@ UserUUID.__doc__ = """
 """
 
 
-JWToken = NewType("JWToken", str)
-JWToken.__doc__ = """
+JSONWebToken = NewType("JSONWebToken", str)
+JSONWebToken.__doc__ = """
     A JSON Web Token. For example:
 
     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c

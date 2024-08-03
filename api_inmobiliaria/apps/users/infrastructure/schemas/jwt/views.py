@@ -1,15 +1,31 @@
+from apps.users.applications.jwt import JWTErrorMessages
 from apps.users.domain.constants import UserProperties
+from apps.exceptions import JWTError, PermissionDenied, DatabaseConnectionError
 from apps.utils import ERROR_MESSAGES
+from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from rest_framework.fields import CharField
 from drf_spectacular.utils import (
     extend_schema,
     OpenApiResponse,
     OpenApiExample,
 )
+from enum import Enum
 
 
 # This constant is used when the serializer error messages are the default.
 DEFAULT_ERROR_MESSAGES = CharField().error_messages
+
+
+class JWTSerializerErrorMessages(Enum):
+    """
+    Enum class for error messages related to serializers for JWTs.
+    """
+
+    REFRESH_INVALID = "Refresh token invalid."
+    REFRESH_EXPIRED = "Refresh token has expired."
+    ACCESS_INVALID = "Access token invalid."
+    ACCESS_NOT_EXPIRED = "Access token is not expired."
+    USER_NOT_MATCH = "The user of the access token does not match the user of the refresh token."
 
 
 AuthenticationSchema = extend_schema(
@@ -87,8 +103,8 @@ AuthenticationSchema = extend_schema(
                     summary="Credentials invalid",
                     description="The email or password provided is incorrect.",
                     value={
-                        "code": "authentication_failed",
-                        "detail": "Credenciales inválidas.",
+                        "code": AuthenticationFailed.default_code,
+                        "detail": JWTErrorMessages.AUTHENTICATION_FAILED.value,
                     },
                 ),
                 OpenApiExample(
@@ -96,8 +112,8 @@ AuthenticationSchema = extend_schema(
                     summary="Inactive user account",
                     description="The user account is inactive.",
                     value={
-                        "code": "authentication_failed",
-                        "detail": "Cuenta del usuario inactiva.",
+                        "code": AuthenticationFailed.default_code,
+                        "detail": JWTErrorMessages.INACTIVE_ACCOUNT.value,
                     },
                 ),
             ],
@@ -116,8 +132,8 @@ AuthenticationSchema = extend_schema(
                     summary="Permission denied",
                     description="This response appears when the user trying to authenticate does not have the permissions to do so with JSON Web Token.",
                     value={
-                        "code": "permission_denied",
-                        "detail": "The user does not have permissions to perform this action.",
+                        "code": PermissionDenied.default_code,
+                        "detail": PermissionDenied.default_detail,
                     },
                 ),
             ],
@@ -136,8 +152,8 @@ AuthenticationSchema = extend_schema(
                     summary="Database connection error",
                     description="The connection to the database could not be established.",
                     value={
-                        "code": "database_connection_error",
-                        "detail": "Unable to establish a connection with the database. Please try again later.",
+                        "code": DatabaseConnectionError.default_code,
+                        "detail": DatabaseConnectionError.default_detail,
                     },
                 ),
             ],
@@ -191,16 +207,16 @@ UpdateTokensSchema = extend_schema(
                                 DEFAULT_ERROR_MESSAGES["blank"],
                                 DEFAULT_ERROR_MESSAGES["null"],
                                 DEFAULT_ERROR_MESSAGES["invalid"],
-                                "Token is expired.",
-                                "Token is invalid.",
+                                JWTSerializerErrorMessages.REFRESH_EXPIRED.value,
+                                JWTSerializerErrorMessages.REFRESH_INVALID.value,
                             ],
                             "access": [
                                 DEFAULT_ERROR_MESSAGES["required"],
                                 DEFAULT_ERROR_MESSAGES["blank"],
                                 DEFAULT_ERROR_MESSAGES["null"],
                                 DEFAULT_ERROR_MESSAGES["invalid"],
-                                "Token is invalid.",
-                                "Token is not expired.",
+                                JWTSerializerErrorMessages.ACCESS_INVALID.value,
+                                JWTSerializerErrorMessages.ACCESS_NOT_EXPIRED.value,
                             ],
                         },
                     },
@@ -221,8 +237,8 @@ UpdateTokensSchema = extend_schema(
                     summary="Token error",
                     description="The provided JSON Web Tokens do not match the user's last generated tokens.",
                     value={
-                        "code": "token_error",
-                        "detail": "The JSON Web Tokens does not match the user's last tokens.",
+                        "code": JWTError.default_code,
+                        "detail": JWTErrorMessages.JWT_ERROR.value,
                     },
                 ),
             ],
@@ -241,8 +257,8 @@ UpdateTokensSchema = extend_schema(
                     summary="Token not found",
                     description="The JSON Web Tokens provided do not exist in the database.",
                     value={
-                        "code": "token_not_found",
-                        "detail": "JSON Web Tokens not found.",
+                        "code": JWTErrorMessages.TOKEN_NOT_FOUND_CODE.value,
+                        "detail": JWTErrorMessages.TOKEN_NOT_FOUND.value,
                     },
                 ),
                 OpenApiExample(
@@ -250,8 +266,8 @@ UpdateTokensSchema = extend_schema(
                     summary="User not found",
                     description="The user in the provided JSON Web Tokens does not exist in the database.",
                     value={
-                        "code": "user_not_found",
-                        "detail": "The JSON Web Token user does not exist.",
+                        "code": JWTErrorMessages.USER_NOT_FOUND_CODE.value,
+                        "detail": JWTErrorMessages.USER_NOT_FOUND.value,
                     },
                 ),
             ],
@@ -270,8 +286,8 @@ UpdateTokensSchema = extend_schema(
                     summary="Database connection error",
                     description="The connection to the database could not be established.",
                     value={
-                        "code": "database_connection_error",
-                        "detail": "Unable to establish a connection with the database. Please try again later.",
+                        "code": DatabaseConnectionError.default_code,
+                        "detail": DatabaseConnectionError.default_detail,
                     },
                 ),
             ],
@@ -301,8 +317,8 @@ LogoutSchema = extend_schema(
                     summary="Token error",
                     description="The provided JSON Web Tokens do not match the user's last generated tokens.",
                     value={
-                        "code": "token_error",
-                        "detail": "The JSON Web Tokens does not match the user's last tokens.",
+                        "code": JWTError.default_code,
+                        "detail": JWTErrorMessages.JWT_ERROR.value,
                     },
                 ),
             ],
@@ -321,8 +337,8 @@ LogoutSchema = extend_schema(
                     summary="Token not found",
                     description="The JSON Web Tokens provided do not exist in the database.",
                     value={
-                        "code": "token_not_found",
-                        "detail": "JSON Web Tokens not found.",
+                        "code": JWTErrorMessages.TOKEN_NOT_FOUND_CODE.value,
+                        "detail": JWTErrorMessages.TOKEN_NOT_FOUND.value,
                     },
                 ),
                 OpenApiExample(
@@ -330,8 +346,8 @@ LogoutSchema = extend_schema(
                     summary="User not found",
                     description="The user in the provided JSON Web Tokens does not exist in the database.",
                     value={
-                        "code": "user_not_found",
-                        "detail": "The JSON Web Token user does not exist.",
+                        "code": JWTErrorMessages.USER_NOT_FOUND_CODE.value,
+                        "detail": JWTErrorMessages.USER_NOT_FOUND.value,
                     },
                 ),
             ],
@@ -350,8 +366,8 @@ LogoutSchema = extend_schema(
                     summary="Database connection error",
                     description="The connection to the database could not be established.",
                     value={
-                        "code": "database_connection_error",
-                        "detail": "Unable to establish a connection with the database. Please try again later.",
+                        "code": DatabaseConnectionError.default_code,
+                        "detail": DatabaseConnectionError.default_detail,
                     },
                 ),
             ],

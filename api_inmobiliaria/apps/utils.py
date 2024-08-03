@@ -1,4 +1,4 @@
-from apps.users.domain.typing import JWToken, JWTPayload
+from apps.users.domain.typing import JSONWebToken, JWTPayload
 from apps.constants import ERROR_MESSAGES
 from settings.environments.base import SIMPLE_JWT
 from rest_framework.response import Response
@@ -56,7 +56,9 @@ def api_exception_handler(
     return response
 
 
-def decode_jwt(token: JWToken, options: Dict[str, bool] = None) -> JWTPayload:
+def decode_jwt(
+    token: JSONWebToken, options: Dict[str, bool] = None
+) -> JWTPayload:
     """
     Returns the token payload.
     """
