@@ -22,8 +22,8 @@ class JWTErrorMessages(Enum):
     AUTHENTICATION_FAILED = "Credenciales inválidas."
     INACTIVE_ACCOUNT = "Cuenta del usuario inactiva."
     JWT_ERROR = "The JWTs sent do not match the user's last tokens."
-    TOTEN_NOT_FOUND_CODE = "token_not_found"
-    TOTEN_NOT_FOUND = "JWT not found."
+    TOKEN_NOT_FOUND_CODE = "token_not_found"
+    TOKEN_NOT_FOUND = "JWT not found."
     USER_NOT_FOUND_CODE = "user_not_found"
     USER_NOT_FOUND = "The JWT user does not exist."
 
@@ -66,8 +66,8 @@ class JWTUsesCases:
 
         if latest_tokens.count() < 2:
             raise ResourceNotFoundError(
-                code=JWTErrorMessages.TOTEN_NOT_FOUND_CODE.value,
-                detail=JWTErrorMessages.TOTEN_NOT_FOUND.value,
+                code=JWTErrorMessages.TOKEN_NOT_FOUND_CODE.value,
+                detail=JWTErrorMessages.TOKEN_NOT_FOUND.value,
             )
 
         payload_jtis = {access_payload["jti"], refresh_payload["jti"]}

@@ -1,31 +1,44 @@
 from apps.users.infrastructure.serializers import TokenObtainPairSerializer
 from apps.users.infrastructure.db import JWTRepository, UserRepository
 from apps.users.applications import JWTUsesCases
-from apps.users.models import User, JWT, JWTBlacklist, UserRoles
+from apps.users.domain.constants import UserRoles
+from apps.users.models import User, JWT, JWTBlacklist
 from apps.exceptions import (
     DatabaseConnectionError,
     ResourceNotFoundError,
     JWTError,
 )
 from apps.utils import decode_jwt
-from tests.users.factory import JWTFactory
+from tests.factory import JWTFactory
 from tests.utils import empty_queryset
 from unittest.mock import Mock
+from typing import Callable, Tuple, Dict, Any
 import pytest
 
 
 class TestApplication:
     """
-    A test class for the `JWTUsesCases` application. This class contains test methods
-    to verify the behavior of use cases for updating the tokens of a user.
+    This class encapsulates all the tests of the JWT use case responsible for updating
+    the tokens of a user.
     """
 
     application_class = JWTUsesCases
 
     @pytest.mark.django_db
-    def test_updated_tokens(self, save_user_db, save_jwt_db) -> None:
+    def test_updated_tokens(
+        self,
+        create_user: Callable[[bool, str, bool], Tuple[User, Dict[str, Dict]]],
+        save_jwt_db: Callable[[User, Dict[str, Any]], JWT],
+    ) -> None:
+        """
+        This test case is responsible for testing the successful update of the tokens
+        of a user.
+        """
+
         # Creating a user
-        user, _ = save_user_db(active=True, role=UserRoles.SEARCHER.value)
+        user, _ = create_user(
+            active=True, role=UserRoles.SEARCHER.value, add_perm=False
+        )
 
         # Creating the token
         refresh_data = JWTFactory.refresh(
@@ -93,9 +106,19 @@ class TestApplication:
         assert refresh_payload["role"] == UserRoles.SEARCHER.value
 
     @pytest.mark.django_db
-    def test_if_jwt_not_found(self, save_user_db) -> None:
+    def test_if_jwt_not_found(
+        self,
+        create_user: Callable[[bool, str, bool], Tuple[User, Dict[str, Dict]]],
+    ) -> None:
+        """
+        This test checks if the application raises an exception when the JWT is not
+        found.
+        """
+
         # Creating a user
-        user, _ = save_user_db(active=True, role=UserRoles.SEARCHER.value)
+        user, _ = create_user(
+            active=True, role=UserRoles.SEARCHER.value, add_perm=False
+        )
 
         # Creating the token
         refresh_data = JWTFactory.refresh(
@@ -123,9 +146,20 @@ class TestApplication:
         assert JWTBlacklist.objects.count() == 0
 
     @pytest.mark.django_db
-    def test_if_jwt_not_match_user(self, save_user_db, save_jwt_db) -> None:
+    def test_if_jwt_not_match_user(
+        self,
+        create_user: Callable[[bool, str, bool], Tuple[User, Dict[str, Dict]]],
+        save_jwt_db: Callable[[User, Dict[str, Any]], JWT],
+    ) -> None:
+        """
+        This test checks if the application raises an exception when the JWT does not
+        match the user.
+        """
+
         # Creating a user
-        user, _ = save_user_db(active=True, role=UserRoles.SEARCHER.value)
+        user, _ = create_user(
+            active=True, role=UserRoles.SEARCHER.value, add_perm=False
+        )
 
         # Creating the token
         refresh_data = JWTFactory.refresh(
@@ -161,15 +195,20 @@ class TestApplication:
     def test_if_user_not_found(
         self, user_repository: Mock, jwt_repository: Mock, jwt_class: Mock
     ) -> None:
+        """
+        This test checks if the application raises an exception when the user is not
+        found.
+        """
+
         # Mocking the methods
-        get_user: Mock = user_repository.get_user_data
+        get_user_data: Mock = user_repository.get_user_data
         get_jwt: Mock = jwt_repository.get
         add_to_blacklist: Mock = jwt_repository.add_to_blacklist
         add_to_checklist: Mock = jwt_repository.add_to_checklist
         get_token: Mock = jwt_class.get_token
 
         # Setting the return values
-        get_user.return_value = empty_queryset(model=User)
+        get_user_data.return_value = empty_queryset(model=User)
 
         # Instantiating the application
         with pytest.raises(ResourceNotFoundError):
@@ -193,15 +232,20 @@ class TestApplication:
     def test_exception_raised_db(
         self, user_repository: Mock, jwt_repository: Mock, jwt_class: Mock
     ) -> None:
+        """
+        This test checks if the application raises an exception when a database error
+        occurs.
+        """
+
         # Mocking the methods
-        get_user: Mock = user_repository.get_user_data
+        get_user_data: Mock = user_repository.get_user_data
         get_jwt: Mock = jwt_repository.get
         add_to_blacklist: Mock = jwt_repository.add_to_blacklist
         add_to_checklist: Mock = jwt_repository.add_to_checklist
         get_token: Mock = jwt_class.get_token
 
         # Setting the return values
-        get_user.side_effect = DatabaseConnectionError
+        get_user_data.side_effect = DatabaseConnectionError
 
         # Instantiating the application
         with pytest.raises(DatabaseConnectionError):

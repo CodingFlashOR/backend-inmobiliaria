@@ -2,7 +2,7 @@ from apps.users.infrastructure.serializers import (
     LogoutSerializer,
     JWTSerializerErrorMessages,
 )
-from tests.users.factory import JWTFactory
+from tests.factory import JWTFactory
 from rest_framework.fields import CharField
 from typing import Dict, List
 import pytest

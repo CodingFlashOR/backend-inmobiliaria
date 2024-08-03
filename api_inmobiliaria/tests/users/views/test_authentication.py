@@ -12,6 +12,9 @@ import pytest
 
 @pytest.fixture
 def setUp() -> Tuple[Client, str]:
+    """
+    A fixture to set up the client and the path for the view.
+    """
 
     return Client(), reverse(viewname="jwt_authenticate_user")
 
@@ -140,8 +143,7 @@ class TestAPIView:
         self, user_repository_mock: Mock, setUp: Tuple[Client, str]
     ) -> None:
         """
-        This test is responsible for validating the expected behavior of the view
-        when an exception is raised while trying to connect to the database.
+        Test to check if the response is correct when an exception is raised.
         """
 
         # Mocking the methods

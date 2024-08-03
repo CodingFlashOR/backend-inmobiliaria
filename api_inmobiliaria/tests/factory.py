@@ -2,22 +2,18 @@ from settings.environments.base import SIMPLE_JWT
 from apps.users.domain.constants import (
     ACCESS_TOKEN_LIFETIME,
     REFRESH_TOKEN_LIFETIME,
+    UserRoles,
 )
 from apps.users.domain.typing import (
     AccessToken,
     RefreshToken,
     JWTPayload,
 )
-from apps.users.models import UserRoles
 from rest_framework_simplejwt.utils import aware_utcnow, datetime_to_epoch
 from datetime import datetime
-from faker import Faker
 from jwt import encode
 from uuid import uuid4
 from typing import Dict, Any
-
-
-fake = Faker("es_CO")
 
 
 class JWTFactory:

@@ -97,8 +97,8 @@ class BaseUpdateLogoutSerializer(serializers.Serializer):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.__access_payload = None
-        self.__refresh_payload = None
+        self.access_payload = None
+        self.refresh_payload = None
 
     def validate_refresh(self, value: str) -> Dict[str, Dict[str, Any]]:
         """
@@ -106,7 +106,8 @@ class BaseUpdateLogoutSerializer(serializers.Serializer):
         """
 
         try:
-            self.__refresh_payload = decode_jwt(token=value)
+            if not self.refresh_payload:
+                self.refresh_payload = decode_jwt(token=value)
         except ExpiredSignatureError:
             raise serializers.ValidationError(
                 code=JWTError.default_code,
@@ -118,16 +119,20 @@ class BaseUpdateLogoutSerializer(serializers.Serializer):
                 detail=JWTSerializerErrorMessages.REFRESH_INVALID.value,
             )
 
-        return self.__refresh_payload
+        return self.refresh_payload
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """
         Check that the refresh and access tokens belong to the same user.
         """
 
-        if (
-            self.__refresh_payload["user_uuid"]
-            != self.__access_payload["user_uuid"]
+        if not self.access_payload:
+            self.access_payload = decode_jwt(token=attrs["access"])
+        elif not self.refresh_payload:
+            self.refresh_payload = decode_jwt(token=attrs["refresh"])
+        elif (
+            self.refresh_payload["user_uuid"]
+            != self.access_payload["user_uuid"]
         ):
             raise serializers.ValidationError(
                 code=JWTError.default_code,
@@ -155,11 +160,12 @@ class UpdateTokenSerializer(BaseUpdateLogoutSerializer):
         try:
             decode_jwt(token=value)
         except ExpiredSignatureError:
-            self.__access_payload = decode_jwt(
-                token=value, options={"verify_exp": False}
-            )
+            if not self.access_payload:
+                self.access_payload = decode_jwt(
+                    token=value, options={"verify_exp": False}
+                )
 
-            return self.__access_payload
+            return self.access_payload
         except DecodeError:
             raise serializers.ValidationError(
                 code=JWTError.default_code,
@@ -184,13 +190,14 @@ class LogoutSerializer(BaseUpdateLogoutSerializer):
         """
 
         try:
-            self.__access_payload = decode_jwt(
-                token=value, options={"verify_exp": False}
-            )
+            if not self.access_payload:
+                self.access_payload = decode_jwt(
+                    token=value, options={"verify_exp": False}
+                )
         except DecodeError:
             raise serializers.ValidationError(
                 code=JWTError.default_code,
                 detail=JWTSerializerErrorMessages.ACCESS_INVALID.value,
             )
 
-        return self.__access_payload
+        return self.access_payload

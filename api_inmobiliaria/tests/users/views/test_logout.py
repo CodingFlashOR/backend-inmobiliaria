@@ -1,32 +1,57 @@
-from apps.users.models import User, UserRoles
-from apps.exceptions import DatabaseConnectionError
-from tests.users.factory import JWTFactory
+from apps.users.infrastructure.serializers import JWTSerializerErrorMessages
+from apps.users.applications import JWTErrorMessages
+from apps.users.domain.constants import UserRoles
+from apps.users.models import User, JWT
+from apps.exceptions import (
+    DatabaseConnectionError,
+    ResourceNotFoundError,
+    JWTError,
+)
+from tests.factory import JWTFactory
 from tests.utils import empty_queryset
+from rest_framework.fields import CharField
 from django.test import Client
 from django.urls import reverse
 from unittest.mock import Mock, patch
-from typing import Tuple, Dict, List
+from typing import Callable, Tuple, Dict, List, Any
 import pytest
+
+
+# This constant is used when the serializer error messages are the default.
+DEFAULT_ERROR_MESSAGES = CharField().error_messages
 
 
 @pytest.fixture
 def setUp() -> Tuple[Client, str]:
+    """
+    A fixture to set up the client and the path for the view.
+    """
 
     return Client(), reverse(viewname="jwt_logout_user")
 
 
 class TestAPIView:
     """
-    A test class for the `LogoutAPIView` view. This class contains test
-    methods to verify the behavior of the view for logout user.
+    This class encapsulates all the tests of the view in charge of handling logout
+    requests from a user.
     """
 
     @pytest.mark.django_db
     def test_request_valid(
-        self, setUp: Tuple[Client, str], save_user_db, save_jwt_db
+        self,
+        setUp: Tuple[Client, str],
+        create_user: Callable[[bool, str, bool], Tuple[User, Dict[str, Dict]]],
+        save_jwt_db: Callable[[User, Dict[str, Any]], JWT],
     ) -> None:
+        """
+        This test is responsible for validating the expected behavior of the view
+        when the request data is valid.
+        """
+
         # Creating a user
-        user, _ = save_user_db(active=True, role=UserRoles.SEARCHER.value)
+        user, _ = create_user(
+            active=True, role=UserRoles.SEARCHER.value, add_perm=False
+        )
 
         # Creating the token
         refresh_data = JWTFactory.refresh(
@@ -59,8 +84,8 @@ class TestAPIView:
             (
                 {},
                 {
-                    "refresh": ["This field is required."],
-                    "access": ["This field is required."],
+                    "refresh": [DEFAULT_ERROR_MESSAGES["required"]],
+                    "access": [DEFAULT_ERROR_MESSAGES["required"]],
                 },
             ),
             (
@@ -69,8 +94,10 @@ class TestAPIView:
                     "access": JWTFactory.access_invalid(),
                 },
                 {
-                    "refresh": ["Token is invalid."],
-                    "access": ["Token is invalid."],
+                    "refresh": [
+                        JWTSerializerErrorMessages.REFRESH_INVALID.value
+                    ],
+                    "access": [JWTSerializerErrorMessages.ACCESS_INVALID.value],
                 },
             ),
             (
@@ -78,8 +105,10 @@ class TestAPIView:
                     "refresh": JWTFactory.refresh(exp=True).get("token"),
                 },
                 {
-                    "access": ["This field is required."],
-                    "refresh": ["Token is expired."],
+                    "access": [DEFAULT_ERROR_MESSAGES["required"]],
+                    "refresh": [
+                        JWTSerializerErrorMessages.REFRESH_EXPIRED.value
+                    ],
                 },
             ),
         ],
@@ -95,6 +124,11 @@ class TestAPIView:
         data: Dict[str, str],
         error_messages: Dict[str, List],
     ) -> None:
+        """
+        This test is responsible for validating the expected behavior of the view
+        when the request data is invalid.
+        """
+
         # Simulating the request
         client, path = setUp
         response = client.post(
@@ -118,10 +152,19 @@ class TestAPIView:
 
     @pytest.mark.django_db
     def test_if_jwt_not_found(
-        self, setUp: Tuple[Client, str], save_user_db
+        self,
+        setUp: Tuple[Client, str],
+        create_user: Callable[[bool, str, bool], Tuple[User, Dict[str, Dict]]],
     ) -> None:
+        """
+        This test is responsible for validating the expected behavior of the view
+        when the JWTs are not found in the database.
+        """
+
         # Creating a user
-        user, _ = save_user_db(active=True, role=UserRoles.SEARCHER.value)
+        user, _ = create_user(
+            active=True, role=UserRoles.SEARCHER.value, add_perm=False
+        )
 
         # Creating the token
         refresh = JWTFactory.refresh(
@@ -140,16 +183,28 @@ class TestAPIView:
         )
 
         # Asserting that response data is correct
-        assert response.status_code == 404
-        assert response.data["code"] == "token_not_found"
-        assert response.data["detail"] == "JSON Web Tokens not found."
+        assert response.status_code == ResourceNotFoundError.status_code
+        assert (
+            response.data["code"] == JWTErrorMessages.TOKEN_NOT_FOUND_CODE.value
+        )
+        assert response.data["detail"] == JWTErrorMessages.TOKEN_NOT_FOUND.value
 
     @pytest.mark.django_db
     def test_if_jwt_not_match_user(
-        self, setUp: Tuple[Client, str], save_user_db, save_jwt_db
+        self,
+        setUp: Tuple[Client, str],
+        create_user: Callable[[bool, str, bool], Tuple[User, Dict[str, Dict]]],
+        save_jwt_db: Callable[[User, Dict[str, Any]], JWT],
     ) -> None:
+        """
+        This test is responsible for validating the expected behavior of the view
+        when the JWTs do not match the user.
+        """
+
         # Creating a user
-        user, _ = save_user_db(active=True, role=UserRoles.SEARCHER.value)
+        user, _ = create_user(
+            active=True, role=UserRoles.SEARCHER.value, add_perm=False
+        )
 
         # Creating the token
         refresh_data = JWTFactory.refresh(
@@ -178,22 +233,24 @@ class TestAPIView:
         )
 
         # Asserting that response data is correct
-        assert response.status_code == 401
-        assert response.data["code"] == "token_error"
-        assert (
-            response.data["detail"]
-            == "The JSON Web Tokens does not match the user's last tokens."
-        )
+        assert response.status_code == JWTError.status_code
+        assert response.data["code"] == JWTError.default_code
+        assert response.data["detail"] == JWTErrorMessages.JWT_ERROR.value
 
     @patch("apps.users.infrastructure.views.jwt.UserRepository")
     def test_if_user_not_found(
         self, user_repository_mock: Mock, setUp: Tuple[Client, str]
     ) -> None:
+        """
+        This test is responsible for validating the expected behavior of the view
+        when the user is not found in the database.
+        """
+
         # Mocking the methods
-        get_user: Mock = user_repository_mock.get
+        get_user_data: Mock = user_repository_mock.get_user_data
 
         # Setting the return values
-        get_user.return_value = empty_queryset(model=User)
+        get_user_data.return_value = empty_queryset(model=User)
 
         # Simulating the request
         client, path = setUp
@@ -208,21 +265,25 @@ class TestAPIView:
         )
 
         # Asserting that response data is correct
-        assert response.status_code == 404
-        assert response.data["code"] == "user_not_found"
+        assert response.status_code == ResourceNotFoundError.status_code
         assert (
-            response.data["detail"] == "The JSON Web Token user does not exist."
+            response.data["code"] == JWTErrorMessages.USER_NOT_FOUND_CODE.value
         )
+        assert response.data["detail"] == JWTErrorMessages.USER_NOT_FOUND.value
 
     @patch("apps.users.infrastructure.views.jwt.UserRepository")
     def test_exception_raised_db(
         self, user_repository_mock: Mock, setUp: Tuple[Client, str]
     ) -> None:
+        """
+        Test to check if the response is correct when an exception is raised.
+        """
+
         # Mocking the methods
-        get: Mock = user_repository_mock.get
+        get_user_data: Mock = user_repository_mock.get_user_data
 
         # Setting the return values
-        get.side_effect = DatabaseConnectionError
+        get_user_data.side_effect = DatabaseConnectionError
 
         # Simulating the request
         client, path = setUp
@@ -235,9 +296,6 @@ class TestAPIView:
         )
 
         # Asserting that response data is correct
-        assert response.status_code == 500
-        assert response.data["code"] == "database_connection_error"
-        assert (
-            response.data["detail"]
-            == "Unable to establish a connection with the database. Please try again later."
-        )
+        assert response.status_code == DatabaseConnectionError.status_code
+        assert response.data["code"] == DatabaseConnectionError.default_code
+        assert response.data["detail"] == DatabaseConnectionError.default_detail

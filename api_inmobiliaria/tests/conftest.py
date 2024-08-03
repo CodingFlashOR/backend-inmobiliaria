@@ -9,7 +9,7 @@ from apps.emails.utils import TokenGenerator
 from rest_framework_simplejwt.utils import datetime_from_epoch
 from django.contrib.auth.models import Group, Permission
 from django.db.models.query import QuerySet
-from typing import Callable, Tuple, Dict
+from typing import Callable, Tuple, Dict, Any
 from unittest.mock import Mock
 from copy import deepcopy
 import pytest
@@ -87,7 +87,7 @@ def create_user() -> Callable[[bool, str, bool], Tuple[User, Dict[str, Dict]]]:
 
 
 @pytest.fixture
-def save_jwt_db() -> Callable[[User, Dict], JWT]:
+def save_jwt_db() -> Callable[[User, Dict[str, Any]], JWT]:
     """
     A fixture to save a JSON Web Token in the database and return the JWT and the data
     used to create it.
