@@ -39,16 +39,24 @@ class SearcherUserAPIView(MethodHTTPMapped, generics.GenericAPIView):
         "POST": status.HTTP_201_CREATED,
     }
 
-    def _handle_valid_request(
+    def __handle_valid_request(
         self, data: Dict[str, Any], request: Request
     ) -> Response:
+        """
+        Handle a valid request by invoking the application logic and returning a
+        response.
+        """
+
         application = self.get_application_class()
         application(data=data, request=request)
 
         return Response(status=self.get_status_code())
 
     @staticmethod
-    def _handle_invalid_request(errors: List[Dict[str, Any]]) -> Response:
+    def __handle_invalid_request(errors: List[Dict[str, Any]]) -> Response:
+        """
+        Handle an invalid request by returning a response with error details.
+        """
 
         return Response(
             data={
@@ -75,8 +83,8 @@ class SearcherUserAPIView(MethodHTTPMapped, generics.GenericAPIView):
         serializer: Serializer = serializer_class(data=request.data)
 
         if serializer.is_valid():
-            return self._handle_valid_request(
+            return self.__handle_valid_request(
                 data=serializer.validated_data, request=request
             )
 
-        return self._handle_invalid_request(errors=serializer.errors)
+        return self.__handle_invalid_request(errors=serializer.errors)
