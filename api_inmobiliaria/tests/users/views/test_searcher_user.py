@@ -16,6 +16,9 @@ import pytest
 
 @pytest.fixture
 def setUp() -> Tuple[Client, str]:
+    """
+    A fixture to set up the client and the path for the view.
+    """
 
     return Client(), reverse(viewname="searcher_user")
 
@@ -166,10 +169,9 @@ class TestAPIViewPOSTMethod:
         assert response.status_code == 400
         assert response.data["code"] == "invalid_request_data"
 
-        errors = response.data["detail"].copy()
         errors_formatted = {
             field: [str(error) for error in errors]
-            for field, errors in errors.items()
+            for field, errors in response.data["detail"].items()
         }
 
         for field, message in error_messages.items():
@@ -197,6 +199,7 @@ class TestAPIViewPOSTMethod:
     def test_data_used(
         self,
         setUp: Tuple[Client, str],
+        create_user: Callable[[bool, str, bool], Tuple[User, Dict[str, Dict]]],
         data: Dict[str, Dict],
         error_messages: Dict[str, Dict],
     ) -> None:
@@ -206,18 +209,14 @@ class TestAPIViewPOSTMethod:
         """
 
         # Creating a user
-        data_copy = data.copy()
-        _ = User.objects.create_user(
-            base_data={
-                "email": data_copy["email"],
-                "password": data_copy["password"],
-            },
-            role_data={
-                "name": data_copy["name"],
-                "last_name": data_copy["last_name"],
-            },
-            related_model_name=UserRoles.SEARCHER.value,
-            is_active=False,
+        _ = create_user(
+            email=data["email"],
+            password=data["password"],
+            name=data["name"],
+            last_name=data["last_name"],
+            active=False,
+            role=UserRoles.SEARCHER.value,
+            add_perm=False,
         )
 
         # Simulating the request
@@ -230,10 +229,9 @@ class TestAPIViewPOSTMethod:
         assert response.status_code == 400
         assert response.data["code"] == "invalid_request_data"
 
-        errors = response.data["detail"].copy()
         errors_formatted = {
             field: [str(error) for error in errors]
-            for field, errors in errors.items()
+            for field, errors in response.data["detail"].items()
         }
 
         for field, message in error_messages.items():
@@ -269,9 +267,6 @@ class TestAPIViewPOSTMethod:
         )
 
         # Asserting that response data is correct
-        assert response.status_code == 500
-        assert response.data["code"] == "database_connection_error"
-        assert (
-            response.data["detail"]
-            == "Unable to establish a connection with the database. Please try again later."
-        )
+        assert response.status_code == DatabaseConnectionError.status_code
+        assert response.data["code"] == DatabaseConnectionError.default_code
+        assert response.data["detail"] == DatabaseConnectionError.default_detail

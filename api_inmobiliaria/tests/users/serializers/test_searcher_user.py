@@ -161,10 +161,9 @@ class TestRegisterSerializer:
         assert not serializer.is_valid()
         assert serializer.validated_data == {}
 
-        errors = serializer.errors.copy()
         errors_formatted = {
             field: [str(error) for error in errors]
-            for field, errors in errors.items()
+            for field, errors in serializer.errors.items()
         }
 
         for field, message in error_messages.items():
@@ -215,10 +214,9 @@ class TestRegisterSerializer:
         assert not serializer.is_valid()
         assert serializer.validated_data == {}
 
-        errors = serializer.errors.copy()
         errors_formatted = {
             field: [str(error) for error in errors]
-            for field, errors in errors.items()
+            for field, errors in serializer.errors.items()
         }
 
         for field, message in error_messages.items():
