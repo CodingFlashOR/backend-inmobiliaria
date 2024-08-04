@@ -9,6 +9,7 @@ from django.test import RequestFactory
 from django.core import mail
 from unittest.mock import Mock
 from typing import Callable
+from copy import deepcopy
 import pytest
 
 
@@ -41,7 +42,7 @@ class TestCreateSearcherUser:
         assert not Searcher.objects.filter(name=data["name"]).exists()
 
         self.application_class(user_repository=UserRepository).create_user(
-            data=data.copy(),
+            data=deepcopy(data),
             request=RequestFactory().post("/"),
         )
 
@@ -77,8 +78,6 @@ class TestCreateSearcherUser:
         """
 
         # Mocking the methods of the UserRepository class
-        # To control the behavior of serializer validations that use these methods
-        # We make it return a DatabaseConnectionError exception
         create: Mock = user_repository.create
         create.side_effect = DatabaseConnectionError
 

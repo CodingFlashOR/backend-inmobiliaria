@@ -38,7 +38,7 @@ def create_user() -> Callable[[bool, str, bool], Tuple[User, Dict[str, Dict]]]:
     """
 
     def user(
-        active: bool, role: str, add_perm: bool
+        active: bool, role: str, add_perm: bool, **user_data
     ) -> Tuple[User, Dict[str, Dict]]:
         """
         Create a user in the database.
@@ -53,15 +53,18 @@ def create_user() -> Callable[[bool, str, bool], Tuple[User, Dict[str, Dict]]]:
         data = {
             UserRoles.SEARCHER.value: {
                 "base_data": {
-                    "email": "user1@email.com",
-                    "password": "contraseña1234",
+                    "email": user_data.get("email", None) or "user1@email.com",
+                    "password": user_data.get("password", None)
+                    or "contraseña1234",
                 },
                 "role_data": {
-                    "name": "Nombre del usuario",
-                    "last_name": "Apellido del usuario",
-                    "cc": "123456789",
-                    "address": "Residencia 1",
-                    "phone_number": "+57 3123574898",
+                    "name": user_data.get("name", None) or "Nombre del usuario",
+                    "last_name": user_data.get("last_name", None)
+                    or "Apellido del usuario",
+                    "cc": user_data.get("cc", None) or "123456789",
+                    "address": user_data.get("address", None) or "Residencia 1",
+                    "phone_number": user_data.get("phone_number", None)
+                    or "+57 3123574898",
                 },
             },
         }
