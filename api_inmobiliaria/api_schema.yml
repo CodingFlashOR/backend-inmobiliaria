@@ -520,6 +520,7 @@ paths:
                     detail: Unable to establish a connection with the database. Please
                       try again later.
                   summary: Database connection error
+                  description: The connection to the database could not be established.
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
 components:
   schemas:
