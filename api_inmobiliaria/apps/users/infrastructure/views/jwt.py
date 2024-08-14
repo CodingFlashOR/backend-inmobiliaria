@@ -10,9 +10,9 @@ from apps.users.infrastructure.serializers import (
     LogoutSerializer,
 )
 from apps.users.infrastructure.db import JWTRepository, UserRepository
-from apps.users.infrastructure.views.utils import PermissionMixin
 from apps.users.applications import JWTUsesCases
 from apps.authentication import JWTAuthentication
+from apps.utils.views import PermissionMixin
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import GenericAPIView

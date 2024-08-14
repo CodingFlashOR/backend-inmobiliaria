@@ -1,38 +1,13 @@
-from apps.users.domain.typing import JSONWebToken, JWTPayload
-from apps.constants import ERROR_MESSAGES
 from apps.api_exceptions import APIException
 from apps.view_exceptions import ViewException
-from settings.environments.base import SIMPLE_JWT
 from rest_framework.response import Response
 from rest_framework.views import set_rollback
-from rest_framework import serializers, exceptions
+from rest_framework.exceptions import NotFound
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.http import Http404
 from typing import Dict, Any
-from jwt import decode
-from uuid import UUID
-
-
-class ErrorMessagesSerializer(serializers.Serializer):
-    """
-    A serializer class that provides custom error messages for fields.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Customized error messages
-        msg = {
-            "invalid": ERROR_MESSAGES["invalid"],
-            "required": ERROR_MESSAGES["required"],
-            "blank": ERROR_MESSAGES["blank"],
-            "null": ERROR_MESSAGES["null"],
-        }
-        fields = list(self.fields.keys())
-        for field_name in fields:
-            self.fields[field_name].error_messages.update(msg)
 
 
 def api_view_exception_handler(
@@ -47,7 +22,7 @@ def api_view_exception_handler(
     """
 
     if isinstance(exc, Http404):
-        exc = exceptions.NotFound(*(exc.args))
+        exc = NotFound(*(exc.args))
     elif isinstance(exc, APIException):
         headers = {}
 
@@ -91,31 +66,3 @@ def view_exception_handler(view_func) -> HttpResponse:
             )
 
     return _wrapped_view_func
-
-
-def decode_jwt(
-    token: JSONWebToken, options: Dict[str, bool] = None
-) -> JWTPayload:
-    """
-    Returns the token payload.
-    """
-
-    return decode(
-        jwt=token,
-        key=SIMPLE_JWT["SIGNING_KEY"],
-        algorithms=[SIMPLE_JWT["ALGORITHM"]],
-        options=options,
-    )
-
-
-def is_valid_uuid(value: str) -> bool:
-    """
-    Validates if the provided string is a valid UUID.
-    """
-
-    try:
-        UUID(value)
-
-        return True
-    except ValueError:
-        return False

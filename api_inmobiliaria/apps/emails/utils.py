@@ -1,4 +1,3 @@
-from apps.emails.infrastructure.db import TokenRepository
 from apps.users.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 import base64
@@ -23,8 +22,6 @@ class TokenGenerator(PasswordResetTokenGenerator):
     It is used in scenarios where a user needs to interact with the system via email,
     ensuring that the user is indeed the one who initiated the process.
     """
-
-    _token_repository = TokenRepository
 
     def _make_hash_value(self, user: User, timestamp: int) -> str:
         """

@@ -9,10 +9,11 @@ from apps.api_exceptions import (
     PermissionDeniedAPIError,
     AuthenticationFailedAPIError,
 )
-from apps.utils import decode_jwt
+from settings.environments.base import SIMPLE_JWT
 from tests.factory import UserFactory
 from unittest.mock import Mock, patch
 from typing import Callable
+from jwt import decode
 import pytest
 
 
@@ -65,8 +66,16 @@ class TestAuthenticationApplication:
         assert refresh
 
         # Assert that the generated tokens were saved in the database
-        access_payload = decode_jwt(token=access)
-        refresh_payload = decode_jwt(token=refresh)
+        access_payload = decode(
+            jwt=access,
+            key=SIMPLE_JWT["SIGNING_KEY"],
+            algorithms=[SIMPLE_JWT["ALGORITHM"]],
+        )
+        refresh_payload = decode(
+            jwt=refresh,
+            key=SIMPLE_JWT["SIGNING_KEY"],
+            algorithms=[SIMPLE_JWT["ALGORITHM"]],
+        )
 
         access_obj = (
             JWT.objects.filter(jti=access_payload["jti"])

@@ -8,7 +8,7 @@ from apps.emails.paths import TEMPLATES
 from apps.emails.utils import TokenGenerator
 from apps.users.infrastructure.db import UserRepository
 from apps.api_exceptions import DatabaseConnectionAPIError
-from apps.utils import view_exception_handler
+from apps.utils.exceptions import view_exception_handler
 from django.utils.decorators import method_decorator
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse

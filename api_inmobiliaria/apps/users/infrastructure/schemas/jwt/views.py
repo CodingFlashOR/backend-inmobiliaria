@@ -6,7 +6,7 @@ from apps.api_exceptions import (
     DatabaseConnectionAPIError,
     AuthenticationFailedAPIError,
 )
-from apps.utils import ERROR_MESSAGES
+from apps.utils.messages import ERROR_MESSAGES
 from rest_framework.fields import CharField
 from drf_spectacular.utils import (
     extend_schema,
