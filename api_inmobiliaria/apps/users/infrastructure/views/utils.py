@@ -4,7 +4,8 @@ from apps.api_exceptions import (
 )
 from rest_framework.serializers import Serializer
 from rest_framework.request import Request
-from rest_framework import permissions, generics
+from rest_framework.permissions import BasePermission
+from rest_framework.generics import GenericAPIView
 from typing import Dict, List, Any, Callable
 
 
@@ -29,9 +30,9 @@ class MethodHTTPMapped:
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
 
-        if not generics.GenericAPIView in cls.__bases__:
+        if not GenericAPIView in cls.__bases__:
             raise TypeError(
-                f"The {cls.__name__} class must inherit from generics.GenericAPIView. Make sure your view definition includes GenericAPIView as a base class when using the MethodHTTPMapped class."
+                f"The {cls.__name__} class must inherit from GenericAPIView. Make sure your view definition includes GenericAPIView as a base class when using the MethodHTTPMapped class."
             )
 
     def get_authenticators(self) -> List[Callable]:
@@ -49,7 +50,7 @@ class MethodHTTPMapped:
 
         return [auth() for auth in authentication_classes]
 
-    def get_permissions(self) -> List[permissions.BasePermission]:
+    def get_permissions(self) -> List[BasePermission]:
         """
         Returns the permission classes that the view should use for the incoming
         request based on the HTTP method.
@@ -83,6 +84,23 @@ class MethodHTTPMapped:
 
         return application_class(**dependencies)
 
+
+class PermissionMixin:
+    """
+    A class that provides permission checking functionality for views.
+
+    This mixin class provides a method to check if the request should be permitted
+    based on the permissions defined in the view.
+    """
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+
+        if not GenericAPIView in cls.__bases__:
+            raise TypeError(
+                f"The {cls.__name__} class must inherit from GenericAPIView. Make sure your view definition includes GenericAPIView as a base class when using the PermissionMixin class."
+            )
+
     def permission_denied(
         self, request: Request, message: str = None, code: str = None
     ) -> None:
@@ -96,8 +114,8 @@ class MethodHTTPMapped:
         """
 
         if request.authenticators and not request.successful_authenticator:
-            raise NotAuthenticatedAPIError(code=code, detail=message)
-        raise PermissionDeniedAPIError(code=code, detail=message)
+            raise NotAuthenticatedAPIError()
+        raise PermissionDeniedAPIError(detail=message, code=code)
 
     def check_permissions(self, request: Request) -> None:
         """

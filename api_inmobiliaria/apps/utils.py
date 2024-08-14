@@ -55,11 +55,8 @@ def api_view_exception_handler(
             headers["WWW-Authenticate"] = exc.auth_header
         elif getattr(exc, "wait", None):
             headers["Retry-After"] = "%d" % exc.wait
-        elif isinstance(exc.detail, (list, dict)):
-            data = exc.detail
-        else:
-            data = {"detail": exc.detail}
 
+        data = {"detail": exc.detail}
         data["code"] = exc.code
         set_rollback()
 
