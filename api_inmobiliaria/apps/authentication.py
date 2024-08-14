@@ -39,7 +39,7 @@ class JWTAuthentication(BaseAJWTuthentication):
                     }
                 )
 
-        raise JWTAPIError(detail=messages)
+        raise JWTAPIError(code="jwt_error", detail=messages)
 
     def get_user(self, validated_token: Token) -> User:
         """
