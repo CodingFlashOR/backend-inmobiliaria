@@ -1,6 +1,6 @@
 from apps.users.infrastructure.serializers import AuthenticationSerializer
 from apps.users.domain.constants import UserProperties
-from apps.constants import ERROR_MESSAGES
+from apps.utils.messages import ERROR_MESSAGES
 from tests.utils import fake
 from typing import Dict, List
 import pytest

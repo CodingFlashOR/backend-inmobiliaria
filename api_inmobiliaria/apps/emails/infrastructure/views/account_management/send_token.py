@@ -2,7 +2,7 @@ from apps.emails.infrastructure.db import TokenRepository
 from apps.emails.applications.managers import ActionLinkManager
 from apps.emails.utils import TokenGenerator
 from apps.users.infrastructure.db import UserRepository
-from apps.utils import is_valid_uuid
+from apps.utils.validators import is_valid_uuid
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView

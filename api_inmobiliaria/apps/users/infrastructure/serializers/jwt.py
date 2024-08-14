@@ -7,14 +7,15 @@ from apps.users.infrastructure.db import JWTRepository
 from apps.users.domain.typing import AccessToken, RefreshToken
 from apps.users.domain.constants import UserProperties
 from apps.users.models import User
-from apps.utils import ErrorMessagesSerializer, decode_jwt, ERROR_MESSAGES
+from apps.utils.messages import ErrorMessagesSerializer, ERROR_MESSAGES
 from apps.api_exceptions import JWTAPIError
+from settings.environments.base import SIMPLE_JWT
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer as BaseTokenSerializer,
 )
 from rest_framework_simplejwt.tokens import RefreshToken as TokenClass
 from rest_framework import serializers
-from jwt import DecodeError, ExpiredSignatureError
+from jwt import decode, DecodeError, ExpiredSignatureError
 from typing import Dict, Any, Tuple
 from enum import Enum
 
@@ -108,7 +109,11 @@ class BaseUpdateLogoutSerializer(serializers.Serializer):
 
         try:
             if not self.refresh_payload:
-                self.refresh_payload = decode_jwt(token=value)
+                self.refresh_payload = decode(
+                    jwt=value,
+                    key=SIMPLE_JWT["SIGNING_KEY"],
+                    algorithms=[SIMPLE_JWT["ALGORITHM"]],
+                )
         except ExpiredSignatureError:
             raise serializers.ValidationError(
                 code=JWTAPIError.default_code,
@@ -128,20 +133,24 @@ class BaseUpdateLogoutSerializer(serializers.Serializer):
         """
 
         if not self.access_payload:
-            self.access_payload = decode_jwt(token=attrs["access"])
+            self.access_payload = decode(
+                jwt=attrs["access"],
+                key=SIMPLE_JWT["SIGNING_KEY"],
+                algorithms=[SIMPLE_JWT["ALGORITHM"]],
+            )
         elif not self.refresh_payload:
-            self.refresh_payload = decode_jwt(token=attrs["refresh"])
+            self.refresh_payload = decode(
+                jwt=attrs["refresh"],
+                key=SIMPLE_JWT["SIGNING_KEY"],
+                algorithms=[SIMPLE_JWT["ALGORITHM"]],
+            )
         elif (
             self.refresh_payload["user_uuid"]
             != self.access_payload["user_uuid"]
         ):
             raise serializers.ValidationError(
                 code=JWTAPIError.default_code,
-                detail={
-                    "access": [
-                        JWTErrorMessages.USER_NOT_MATCH.value,
-                    ]
-                },
+                detail={"access": [JWTErrorMessages.USER_NOT_MATCH.value]},
             )
 
         return attrs
@@ -159,11 +168,18 @@ class UpdateTokenSerializer(BaseUpdateLogoutSerializer):
         """
 
         try:
-            decode_jwt(token=value)
+            decode(
+                jwt=value,
+                key=SIMPLE_JWT["SIGNING_KEY"],
+                algorithms=[SIMPLE_JWT["ALGORITHM"]],
+            )
         except ExpiredSignatureError:
             if not self.access_payload:
-                self.access_payload = decode_jwt(
-                    token=value, options={"verify_exp": False}
+                self.access_payload = decode(
+                    jwt=value,
+                    key=SIMPLE_JWT["SIGNING_KEY"],
+                    algorithms=[SIMPLE_JWT["ALGORITHM"]],
+                    options={"verify_exp": False},
                 )
 
             return self.access_payload
@@ -192,7 +208,11 @@ class LogoutSerializer(BaseUpdateLogoutSerializer):
 
         try:
             if not self.access_payload:
-                self.access_payload = decode_jwt(token=value)
+                self.access_payload = decode(
+                    jwt=value,
+                    key=SIMPLE_JWT["SIGNING_KEY"],
+                    algorithms=[SIMPLE_JWT["ALGORITHM"]],
+                )
         except ExpiredSignatureError:
             raise serializers.ValidationError(
                 code=JWTAPIError.default_code,

@@ -1,12 +1,12 @@
+from apps.users.infrastructure.db import UserRepository
 from apps.users.infrastructure.serializers import (
     SearcherRegisterSerializer,
 )
-from apps.users.infrastructure.db import UserRepository
-from apps.users.infrastructure.views.utils import MethodHTTPMapped
 from apps.users.infrastructure.schemas.searcher import (
     SearcherRegisterSchema,
 )
 from apps.users.applications import RegisterUser
+from apps.utils.views import MethodHTTPMapped, PermissionMixin
 from rest_framework.serializers import Serializer
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -15,7 +15,7 @@ from rest_framework import status
 from typing import Dict, Any, List
 
 
-class SearcherUserAPIView(MethodHTTPMapped, GenericAPIView):
+class SearcherUserAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
     """
     API view for managing operations for users with `searcher role`.
 

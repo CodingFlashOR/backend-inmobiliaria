@@ -1,6 +1,6 @@
 from apps.users.infrastructure.db import UserRepository
 from apps.users.domain.constants import UserProperties
-from apps.utils import ErrorMessagesSerializer, ERROR_MESSAGES
+from apps.utils.messages import ErrorMessagesSerializer, ERROR_MESSAGES
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 from django.contrib.auth.password_validation import validate_password

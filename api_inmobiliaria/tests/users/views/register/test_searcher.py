@@ -3,7 +3,7 @@ from apps.users.domain.constants import (
     UserProperties,
 )
 from apps.api_exceptions import DatabaseConnectionAPIError
-from apps.utils import ERROR_MESSAGES
+from apps.utils.messages import ERROR_MESSAGES
 from tests.factory import UserFactory
 from tests.utils import fake
 from rest_framework import status

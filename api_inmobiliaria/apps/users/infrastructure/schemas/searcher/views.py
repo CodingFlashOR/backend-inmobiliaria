@@ -1,6 +1,6 @@
 from apps.users.domain.constants import SearcherProperties, UserProperties
 from apps.api_exceptions import DatabaseConnectionAPIError
-from apps.utils import ERROR_MESSAGES
+from apps.utils.messages import ERROR_MESSAGES
 from drf_spectacular.utils import (
     extend_schema,
     OpenApiResponse,

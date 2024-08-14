@@ -1,7 +1,7 @@
 from apps.users.infrastructure.serializers import SearcherRegisterSerializer
 from apps.users.domain.constants import SearcherProperties, UserProperties
 from apps.users.models import User
-from apps.utils import ERROR_MESSAGES
+from apps.utils.messages import ERROR_MESSAGES
 from tests.factory import UserFactory
 from tests.utils import empty_queryset, fake
 from unittest.mock import Mock, patch

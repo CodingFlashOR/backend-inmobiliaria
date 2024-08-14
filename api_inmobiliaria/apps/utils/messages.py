@@ -1,3 +1,6 @@
+from rest_framework.serializers import Serializer
+
+
 ERROR_MESSAGES = {
     # Length errors
     "max_length": "El valor ingresado no puede tener más de {max_length} caracteres.",
@@ -18,3 +21,23 @@ ERROR_MESSAGES = {
     "phone_in_use": "Este número de teléfono ya está en uso.",
     "address_in_use": "Esta dirección ya está en uso.",
 }
+
+
+class ErrorMessagesSerializer(Serializer):
+    """
+    A serializer class that provides custom error messages for fields.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Customized error messages
+        msg = {
+            "invalid": ERROR_MESSAGES["invalid"],
+            "required": ERROR_MESSAGES["required"],
+            "blank": ERROR_MESSAGES["blank"],
+            "null": ERROR_MESSAGES["null"],
+        }
+        fields = list(self.fields.keys())
+        for field_name in fields:
+            self.fields[field_name].error_messages.update(msg)
