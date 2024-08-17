@@ -1,4 +1,6 @@
+from apps.emails.domain.constants import LOGIN_URL, REGISTER_URL, HOME_URL
 from rest_framework.serializers import Serializer
+from enum import Enum
 
 
 ERROR_MESSAGES = {
@@ -23,9 +25,93 @@ ERROR_MESSAGES = {
 }
 
 
+class JWTErrorMessages(Enum):
+    """
+    Enum class for error messages related to JWT use cases. The errors that are in
+    Spanish are messages that the user will see.
+    """
+
+    AUTHENTICATION_FAILED = "Credenciales inválidas."
+    INACTIVE_ACCOUNT = "Tu cuenta está inactiva. Te recomendamos revisar la bandeja de entrada de tu correo electrónico para encontrar el mensaje que te enviamos al registrarte. Ese correo incluye las instrucciones para activar tu cuenta."
+    LAST_TOKENS = (
+        "The JWTs sent in the request do not match the user's last tokens."
+    )
+    TOKEN_NOT_FOUND = {
+        "code": "jwt_not_found",
+        "detail": "{token_type} token is not in the outstanding token list.",
+    }
+    USER_NOT_FOUND = {
+        "code": "user_not_found",
+        "detail": "The token user does not exist.",
+    }
+    INVALID_OR_EXPIRED = "{token_type} token is invalid or expired."
+    BLACKLISTED = "{token_type} token is blacklisted."
+    DIFFERENT_TOKEN = "The access token does not belong to the update token."
+    USER_NOT_MATCH = "The user of the access token does not match the user of the refresh token."
+    ACCESS_NOT_EXPIRED = "Access token is not expired."
+
+
+class ActionLinkManagerErrors(Enum):
+    """
+    Error enumeration for the email communication module related to user account
+    management.
+    """
+
+    DEFAULT = {
+        "message": "Lo sentimos, se ha producido un error inesperado en nuestro sistema. No se ha podido completar tu solicitud en este momento. Por favor, inténtalo de nuevo más tarde. Si el problema persiste, puedes ponerte en contacto con nuestro equipo de soporte al cliente para obtener más ayuda. Disculpa las molestias y gracias por tu paciencia.",
+        "redirect": {
+            "action": "Ir al inicio",
+            "url": HOME_URL,
+        },
+    }
+    USER_NOT_FOUND = {
+        "message": "Ha ocurrido un error y no hemos podido identificarte. Por favor, regístrate en nuestra plataforma para disfrutar de nuestros servicios.",
+        "redirect": {
+            "action": "Registrarse",
+            "url": REGISTER_URL,
+        },
+    }
+    TOKEN_EXPIRED = {
+        "message": "El enlace ha expirado. Para tu seguridad, estos enlaces son válidos solo por un tiempo limitado. Por favor, solicita un nuevo enlace para {action}",
+        "redirect": {
+            "action": "Solicitar nuevo enlace",
+        },
+    }
+    TOKEN_INVALID = {
+        "message": "Lo sentimos, este enlace es de un solo uso y ya ha sido utilizado. Para acceder a nuestros servicios o realizar otras acciones, por favor inicia sesión en tu cuenta.",
+        "redirect": {
+            "action": "Iniciar sesión",
+            "url": LOGIN_URL,
+        },
+    }
+
+
+class ActivationErrors(Enum):
+    """
+    Enum class for error messages related to the use case in charge of sending the
+    account activation message. The errors that are in English are messages that the
+    user will see.
+    """
+
+    USER_NOT_FOUND = {
+        "message": "Ha ocurrido un error y no hemos podido identificarte. Por favor, regístrate en nuestra plataforma y activa tu cuenta para que puedas disfrutar de nuestros servicios.",
+        "redirect": {
+            "action": "Registrarse",
+            "url": REGISTER_URL,
+        },
+    }
+    ACTIVE_ACCOUNT = {
+        "message": "¡Parece que tu cuenta ya estaba activada! Inicia sesión cuando quieras y comienza a disfrutar de nuestros servicios.",
+        "redirect": {
+            "action": "Iniciar sesión",
+            "url": LOGIN_URL,
+        },
+    }
+
+
 class ErrorMessagesSerializer(Serializer):
     """
-    A serializer class that provides custom error messages for fields.
+    A serializer class that provides custom error messages in Spanish for the fields.
     """
 
     def __init__(self, *args, **kwargs):

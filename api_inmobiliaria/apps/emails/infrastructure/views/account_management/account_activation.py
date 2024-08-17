@@ -2,13 +2,14 @@ from apps.emails.infrastructure.db import TokenRepository
 from apps.emails.infrastructure.serializers import (
     Base64UserTokenSerializer,
 )
-from apps.emails.applications import AccountActivation, ActionLinkManagerErrors
+from apps.emails.applications.account_management import AccountActivation
 from apps.emails.domain.constants import LOGIN_URL
 from apps.emails.paths import TEMPLATES
-from apps.emails.utils import TokenGenerator
 from apps.users.infrastructure.db import UserRepository
-from apps.api_exceptions import DatabaseConnectionAPIError
+from apps.utils.generators import TokenGenerator
+from apps.utils.messages import ActionLinkManagerErrors
 from apps.utils.exceptions import view_exception_handler
+from apps.api_exceptions import DatabaseConnectionAPIError
 from django.utils.decorators import method_decorator
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse

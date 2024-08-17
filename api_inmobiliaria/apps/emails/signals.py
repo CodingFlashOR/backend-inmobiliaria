@@ -1,8 +1,8 @@
 from apps.emails.infrastructure.db import TokenRepository
-from apps.emails.applications import AccountActivation
-from apps.emails.utils import TokenGenerator
+from apps.emails.applications.account_management import AccountActivation
 from apps.users.models import User
 from apps.users.signals import account_activation_mail
+from apps.utils.generators import TokenGenerator
 from django.http.request import HttpRequest
 from django.dispatch import receiver
 

@@ -1,1 +1,1 @@
-from .account_activation import AccountActivation, ActivationErrors
+from .account_activation import AccountActivation
