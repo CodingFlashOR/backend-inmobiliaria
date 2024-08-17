@@ -1,7 +1,8 @@
-from apps.users.models import User, JWT
+from apps.users.models import User
 from django.db.models import QuerySet, Model
-from .typing import JSONWebToken, AccessToken, RefreshToken
-from typing import Dict, Any, Tuple, Protocol, Optional
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+from .typing import JSONWebToken, JWTPayload
+from typing import Dict, Any, Protocol, Optional
 
 
 class IUserRepository(Protocol):
@@ -69,7 +70,7 @@ class IJWTRepository(Protocol):
     """
 
     @classmethod
-    def get(cls, **filters) -> QuerySet[JWT]:
+    def get_checklist_token(cls, **filters) -> QuerySet[OutstandingToken]:
         """
         Retrieve a JWT from the database based on the provided filters and limits the
         result to the last 2 records.
@@ -84,7 +85,9 @@ class IJWTRepository(Protocol):
         ...
 
     @classmethod
-    def add_to_checklist(cls, token: JSONWebToken, user: User) -> None:
+    def add_checklist(
+        cls, token: JSONWebToken, payload: JWTPayload, user: User
+    ) -> None:
         """
         Associate a JSON Web Token with a user by adding it to the checklist.
 
@@ -93,6 +96,7 @@ class IJWTRepository(Protocol):
 
         #### Parameters:
         - token: A JSONWebToken.
+        - payload: The payload of the token.
         - user: An instance of the User model.
 
         #### Raises:
@@ -102,7 +106,7 @@ class IJWTRepository(Protocol):
         ...
 
     @classmethod
-    def add_to_blacklist(cls, token: JWT) -> None:
+    def add_blacklist(cls, token: OutstandingToken) -> None:
         """
         Invalidates a JSON Web Token by adding it to the blacklist.
 
@@ -110,7 +114,7 @@ class IJWTRepository(Protocol):
         purposes until it is removed from the blacklist or has expired.
 
         #### Parameters:
-        - token: An instance of the `JWT` model.
+        - token: An instance of the `OutstandingToken` model.
 
         #### Raises:
         - DatabaseConnectionAPIError: If there is an operational error with the database.
@@ -118,20 +122,16 @@ class IJWTRepository(Protocol):
 
         ...
 
-
-class ITokenClass(Protocol):
-    """
-    Interface that defines the methods that a class must implement to be used as a
-    JWT class.
-    """
-
     @classmethod
-    def get_token(cls, user: User) -> Tuple[AccessToken, RefreshToken]:
+    def exists_in_blacklist(cls, jti: str) -> bool:
         """
-        Generates the JSON WEB Tokens for the user and saves them to the database.
+        Check if a token exists in the blacklist.
 
         #### Parameters:
-        - user: An instance of the User model for which to generate the tokens.
+        - jti: The JTI of the token.
+
+        #### Raises:
+        - DatabaseConnectionAPIError: If there is an operational error with the database.
         """
 
         ...

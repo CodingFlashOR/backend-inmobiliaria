@@ -16,16 +16,10 @@ class UserRoles(Enum):
 
 USER_ROLE_PERMISSIONS = {
     UserRoles.SEARCHER.value: {
-        "perm_codename_list": [
-            f"change_{UserRoles.SEARCHER.value}",
-            f"delete_{UserRoles.SEARCHER.value}",
-            f"view_{UserRoles.SEARCHER.value}",
-            "add_jwt",
-        ],
-        "jwt": "users.add_jwt",
-        "change_data": f"users.change_{UserRoles.SEARCHER.value}",
-        "delete_data": f"users.delete_{UserRoles.SEARCHER.value}",
-        "view_data": f"users.view_{UserRoles.SEARCHER.value}",
+        "jwt_auth": "token_blacklist.add_outstandingtoken",
+        "change_data": "users.change_user",
+        "delete_data": "users.delete_user",
+        "view_data": "users.view_user",
     },
 }
 

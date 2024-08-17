@@ -5,14 +5,13 @@ from apps.users.infrastructure.schemas.jwt import (
 )
 from apps.users.infrastructure.serializers import (
     AuthenticationSerializer,
-    TokenObtainPairSerializer,
     UpdateTokenSerializer,
     LogoutSerializer,
 )
 from apps.users.infrastructure.db import JWTRepository, UserRepository
-from apps.users.applications import JWTUsesCases
-from apps.authentication import JWTAuthentication
+from apps.users.applications import JWTLogout, JWTLogin, JWTUpdate
 from apps.utils.views import PermissionMixin
+from authentication.jwt import JWTAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import GenericAPIView
@@ -32,7 +31,7 @@ class AuthenticationAPIView(TokenObtainPairView):
     authentication_classes = []
     permission_classes = []
     serializer_class = AuthenticationSerializer
-    application_class = JWTUsesCases
+    application_class = JWTLogin
 
     @AuthenticationSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
@@ -57,13 +56,12 @@ class AuthenticationAPIView(TokenObtainPairView):
                 content_type="application/json",
             )
 
-        app = self.application_class(
-            jwt_class=TokenObtainPairSerializer,
+        data = self.application_class.authenticate_user(
+            credentials=serializer.validated_data
         )
-        tokens = app.authenticate_user(credentials=serializer.validated_data)
 
         return Response(
-            data=tokens,
+            data=data,
             status=status.HTTP_200_OK,
             content_type="application/json",
         )
@@ -78,7 +76,7 @@ class UpdateTokenAPIView(GenericAPIView):
     authentication_classes = []
     permission_classes = []
     serializer_class = UpdateTokenSerializer
-    application_class = JWTUsesCases
+    application_class = JWTUpdate
 
     @UpdateTokensSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
@@ -104,11 +102,10 @@ class UpdateTokenAPIView(GenericAPIView):
             )
 
         app = self.application_class(
-            jwt_class=TokenObtainPairSerializer,
             jwt_repository=JWTRepository,
             user_repository=UserRepository,
         )
-        tokens = app.update_tokens(data=serializer.validated_data)
+        tokens = app.new_tokens(data=serializer.validated_data)
 
         return Response(
             data=tokens,
@@ -126,20 +123,21 @@ class LogoutAPIView(PermissionMixin, GenericAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = LogoutSerializer
-    application_class = JWTUsesCases
+    application_class = JWTLogout
 
     @LogoutSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
         """
-        Handle POST requests for user logout.
+        Handles POST requests for user logout.
 
-        This method allows you to log out a user. Wait for a POST request with the
-        access and update JSON Web Tokens. A successful logout will consist of
-        invalidating the tokens by adding them to the blacklist if they have not yet
-        expired.
+        This method allows to logout an authenticated user. Wait for a POST request
+        with the update token. A successful logout will consist of invalidating the
+        access and refresh token by adding them to the blacklist.
         """
 
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.serializer_class(
+            data=request.data, context={"access_payload": request.auth.payload}
+        )
 
         if not serializer.is_valid():
             return Response(
@@ -151,11 +149,10 @@ class LogoutAPIView(PermissionMixin, GenericAPIView):
                 content_type="application/json",
             )
 
-        app = self.application_class(
-            jwt_repository=JWTRepository,
-            user_repository=UserRepository,
-        )
-        app.logout_user(data=serializer.validated_data)
+        data = serializer.validated_data
+        data["access_token"] = request.auth
+        app = self.application_class(jwt_repository=JWTRepository)
+        app.logout_user(data=data, user=request.user)
 
         return Response(
             status=status.HTTP_200_OK,

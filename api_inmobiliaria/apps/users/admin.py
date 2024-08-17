@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Searcher, JWT, JWTBlacklist
+from .models import User, Searcher
 
 
 @admin.register(User)
@@ -47,7 +47,7 @@ class SearcherAdminPanel(admin.ModelAdmin):
     list_filter = ["is_phone_verified"]
 
 
-class JWTAdminPanel(admin.ModelAdmin):
+'''class JWTAdminPanel(admin.ModelAdmin):
     """
     Admin panel configuration for the JWT model.
     """
@@ -77,4 +77,4 @@ class JWTBlacklistedAdminPanel(admin.ModelAdmin):
 
 
 admin.site.register(JWT, JWTAdminPanel)
-admin.site.register(JWTBlacklist, JWTBlacklistedAdminPanel)
+admin.site.register(JWTBlacklist, JWTBlacklistedAdminPanel)'''

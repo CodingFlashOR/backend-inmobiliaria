@@ -1,2 +1,4 @@
 from .register import RegisterUser
-from .jwt import JWTUsesCases, JWTErrorMessages
+from .login import JWTLogin
+from .update_jwt import JWTUpdate
+from .logout import JWTLogout

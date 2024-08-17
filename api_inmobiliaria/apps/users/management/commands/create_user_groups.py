@@ -68,7 +68,10 @@ class Command(BaseCommand):
         for role in user_roles:
             group = self._define_group(name=role)
             self._assign_permissions(
-                permissions=USER_ROLE_PERMISSIONS[role]["perm_codename_list"],
+                permissions=[
+                    value.split(".")[-1]
+                    for value in USER_ROLE_PERMISSIONS[role].values()
+                ],
                 group=group,
             )
 

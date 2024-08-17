@@ -1,9 +1,14 @@
 from apps.users.domain.typing import JSONWebToken, JWTPayload
-from apps.users.models import User, JWT, JWTBlacklist
+from apps.users.models import User
 from apps.api_exceptions import DatabaseConnectionAPIError
+from rest_framework_simplejwt.token_blacklist.models import (
+    OutstandingToken,
+    BlacklistedToken,
+)
 from rest_framework_simplejwt.utils import datetime_from_epoch
 from django.db.models import QuerySet
 from django.db import OperationalError
+from django.utils import timezone
 
 
 class JWTRepository:
@@ -12,11 +17,11 @@ class JWTRepository:
     or queries related to a JSON Web Token.
     """
 
-    jwt_model = JWT
-    blacklist_model = JWTBlacklist
+    jwt_model = OutstandingToken
+    blacklist_model = BlacklistedToken
 
     @classmethod
-    def get(cls, **filters) -> QuerySet[JWT]:
+    def get_checklist_token(cls, **filters) -> QuerySet[OutstandingToken]:
         """
         Retrieve a JWT from the database based on the provided filters and limits the
         result to the last 2 records.
@@ -31,9 +36,8 @@ class JWTRepository:
         try:
             tokens = (
                 cls.jwt_model.objects.select_related("user")
-                .defer("date_joined")
                 .filter(**filters)
-                .order_by("-date_joined")[:2]
+                .order_by("-created_at")[:2]
             )
         except OperationalError:
             # In the future, a retry system will be implemented when the database is
@@ -43,7 +47,7 @@ class JWTRepository:
         return tokens
 
     @classmethod
-    def add_to_checklist(
+    def add_checklist(
         cls, token: JSONWebToken, payload: JWTPayload, user: User
     ) -> None:
         """
@@ -66,6 +70,7 @@ class JWTRepository:
                 jti=payload["jti"],
                 token=token,
                 user=user,
+                created_at=timezone.now(),
                 expires_at=datetime_from_epoch(ts=payload["exp"]),
             )
         except OperationalError:
@@ -74,7 +79,7 @@ class JWTRepository:
             raise DatabaseConnectionAPIError()
 
     @classmethod
-    def add_to_blacklist(cls, token: JWT) -> None:
+    def add_blacklist(cls, token: OutstandingToken) -> None:
         """
         Invalidates a JSON Web Token by adding it to the blacklist.
 
@@ -82,7 +87,7 @@ class JWTRepository:
         purposes until it is removed from the blacklist or has expired.
 
         #### Parameters:
-        - token: An instance of the `JWT` model.
+        - token: An instance of the `OutstandingToken` model.
 
         #### Raises:
         - DatabaseConnectionAPIError: If there is an operational error with the database.
@@ -90,6 +95,25 @@ class JWTRepository:
 
         try:
             cls.blacklist_model.objects.create(token=token)
+        except OperationalError:
+            # In the future, a retry system will be implemented when the database is
+            # suddenly unavailable.
+            raise DatabaseConnectionAPIError()
+
+    @classmethod
+    def exists_in_blacklist(cls, jti: str) -> bool:
+        """
+        Check if a token exists in the blacklist.
+
+        #### Parameters:
+        - jti: The JTI of the token.
+
+        #### Raises:
+        - DatabaseConnectionAPIError: If there is an operational error with the database.
+        """
+
+        try:
+            return cls.blacklist_model.objects.filter(token__jti=jti).exists()
         except OperationalError:
             # In the future, a retry system will be implemented when the database is
             # suddenly unavailable.
