@@ -125,11 +125,11 @@ AUTHENTICATION_BACKENDS = [
 
 # API settings
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
+    "DEFAULT_AUTHENTICATION_CLASSES": [
         "authentication.jwt.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
-    ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
+    ],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
     "EXCEPTION_HANDLER": "apps.utils.exceptions.api_view_exception_handler",
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
@@ -193,6 +193,20 @@ SPECTACULAR_SETTINGS = {
     ],
     "SERVE_INCLUDE_SCHEMA": False,
     "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+    "AUTHENTICATION_CLASSES": ["authentication.jwt.JWTAuthentication"],
+    "SWAGGER_UI_SETTINGS": {
+        "persistAuthorization": True,
+    },
+    "SECURITY": [{"JWTAuthentication": []}],
+    "SECURITY_DEFINITIONS": [
+        {
+            "JWTAuthentication": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+            }
+        }
+    ],
     "COMPONENT_SPLIT_REQUEST": True,
     "LICENSE": {
         "name": "MIT License",
