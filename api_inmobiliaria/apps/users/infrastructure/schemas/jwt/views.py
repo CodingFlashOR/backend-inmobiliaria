@@ -1,57 +1,51 @@
-from apps.utils.messages import JWTErrorMessages
-from apps.users.domain.constants import UserProperties
+from apps.users.domain.constants import (
+    ACCESS_TOKEN_LIFETIME,
+    REFRESH_TOKEN_LIFETIME,
+    UserProperties,
+    UserRoles,
+)
+from apps.utils.messages import ERROR_MESSAGES, JWTErrorMessages
 from apps.api_exceptions import (
     JWTAPIError,
     PermissionDeniedAPIError,
     DatabaseConnectionAPIError,
     AuthenticationFailedAPIError,
 )
-from apps.utils.messages import ERROR_MESSAGES
 from rest_framework.fields import CharField
 from drf_spectacular.utils import (
     extend_schema,
     OpenApiResponse,
     OpenApiExample,
 )
-from enum import Enum
 
 
 # This constant is used when the serializer error messages are the default.
 DEFAULT_ERROR_MESSAGES = CharField().error_messages
 
 
-class JWTSerializerErrorMessages(Enum):
-    """
-    Enum class for error messages related to serializers for JWTs.
-    """
-
-    REFRESH_INVALID = "Refresh token invalid."
-    REFRESH_EXPIRED = "Refresh token has expired."
-    ACCESS_INVALID = "Access token invalid."
-    ACCESS_NOT_EXPIRED = "Access token is not expired."
-    USER_NOT_MATCH = "The user of the access token does not match the user of the refresh token."
-
-
 AuthenticationSchema = extend_schema(
     operation_id="jwt_authenticate_user",
     tags=["Users"],
+    auth=[],
     responses={
         200: OpenApiResponse(
             description="**(OK)** Authenticated user.",
             response={
                 "properties": {
-                    "access": {"type": "string"},
-                    "refresh": {"type": "string"},
+                    "access_token": {"type": "string"},
+                    "refresh_token": {"type": "string"},
+                    "role_user": {"type": "string"},
                 }
             },
             examples=[
                 OpenApiExample(
                     name="response_ok",
                     summary="User authenticated",
-                    description="The user has been authenticated successfully and the access and refresh tokens are returned. The access token is used to authenticate the user in the application, while the refresh token is used to obtain a new access token, each of these tokens contains information about the user, such as the user's identifier, the type of token, the expiration date, and the date of issue.",
+                    description=f"The user has been successfully authenticated and the access and refresh tokens are returned. The access token with a duration of {ACCESS_TOKEN_LIFETIME} minutes used to access protected API resources. This token is sent with each request to the server to authenticate the user, while the refresh token with a duration of {REFRESH_TOKEN_LIFETIME} day that is used to obtain new JSON Web Tokens without requiring the user to authenticate again. This is useful when the access token has expired, but the user should still be authenticated.",
                     value={
-                        "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzExMDU0MzYyLCJpYXQiOjE3MTEwNDcxNjIsImp0aSI6IjY0MTE2YzgyYjhmMDQzOWJhNTJkZGZmMzgyNzQ2ZTIwIiwidXNlcl9pZCI6IjJhNmI0NTNiLWZhMmItNDMxOC05YzM1LWIwZTk2ZTg5NGI2MyJ9.gfhWpy5rYY6P3Xrg0usS6j1KhEvF1HqWMiU7AaFkp9A",
-                        "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A",
+                        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzExMDU0MzYyLCJpYXQiOjE3MTEwNDcxNjIsImp0aSI6IjY0MTE2YzgyYjhmMDQzOWJhNTJkZGZmMzgyNzQ2ZTIwIiwidXNlcl9pZCI6IjJhNmI0NTNiLWZhMmItNDMxOC05YzM1LWIwZTk2ZTg5NGI2MyJ9.gfhWpy5rYY6P3Xrg0usS6j1KhEvF1HqWMiU7AaFkp9A",
+                        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A",
+                        "role_user": UserRoles.SEARCHER.value,
                     },
                 ),
             ],
@@ -76,6 +70,7 @@ AuthenticationSchema = extend_schema(
                                 ERROR_MESSAGES["required"],
                                 ERROR_MESSAGES["blank"],
                                 ERROR_MESSAGES["null"],
+                                ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
                                     max_length=UserProperties.EMAIL_MAX_LENGTH.value,
                                 ),
@@ -84,6 +79,7 @@ AuthenticationSchema = extend_schema(
                                 ERROR_MESSAGES["required"],
                                 ERROR_MESSAGES["blank"],
                                 ERROR_MESSAGES["null"],
+                                ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
                                     max_length=UserProperties.PASSWORD_MAX_LENGTH.value,
                                 ),
@@ -169,13 +165,14 @@ AuthenticationSchema = extend_schema(
 UpdateTokensSchema = extend_schema(
     operation_id="update_tokens",
     tags=["Users"],
+    auth=[],
     responses={
         200: OpenApiResponse(
             description="**(OK)** New tokens are generated.",
             response={
                 "properties": {
-                    "access": {"type": "string"},
-                    "refresh": {"type": "string"},
+                    "access_token": {"type": "string"},
+                    "refresh_token": {"type": "string"},
                 }
             },
             examples=[
@@ -184,8 +181,8 @@ UpdateTokensSchema = extend_schema(
                     summary="New tokens generated",
                     description="The new access and refresh tokens have been generated successfully, you can use these new tokens to keep the user authenticated.",
                     value={
-                        "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw",
-                        "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg",
+                        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw",
+                        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg",
                     },
                 ),
             ],
@@ -206,21 +203,17 @@ UpdateTokensSchema = extend_schema(
                     value={
                         "code": "invalid_request_data",
                         "detail": {
-                            "refresh": [
+                            "refresh_token": [
                                 DEFAULT_ERROR_MESSAGES["required"],
                                 DEFAULT_ERROR_MESSAGES["blank"],
                                 DEFAULT_ERROR_MESSAGES["null"],
                                 DEFAULT_ERROR_MESSAGES["invalid"],
-                                JWTSerializerErrorMessages.REFRESH_EXPIRED.value,
-                                JWTSerializerErrorMessages.REFRESH_INVALID.value,
                             ],
-                            "access": [
+                            "access_token": [
                                 DEFAULT_ERROR_MESSAGES["required"],
                                 DEFAULT_ERROR_MESSAGES["blank"],
                                 DEFAULT_ERROR_MESSAGES["null"],
                                 DEFAULT_ERROR_MESSAGES["invalid"],
-                                JWTSerializerErrorMessages.ACCESS_INVALID.value,
-                                JWTSerializerErrorMessages.ACCESS_NOT_EXPIRED.value,
                             ],
                         },
                     },
@@ -237,11 +230,34 @@ UpdateTokensSchema = extend_schema(
             },
             examples=[
                 OpenApiExample(
-                    name="token_error",
-                    summary="Token error",
-                    description="The provided JSON Web Tokens do not match the user's last generated tokens.",
+                    name="invalid_expired",
+                    summary="Invalid or expired",
+                    description="The access or refresh token is invalid or has expired.",
                     value={
                         "code": JWTAPIError.default_code,
+                        "detail": JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
+                            token_type="refresh",
+                        ),
+                    },
+                ),
+                OpenApiExample(
+                    name="token_blacklisted",
+                    summary="Token exists in the blacklist",
+                    description="The access token exists in the blacklist. Tokens that exist in the blacklist cannot be used in authentication processes and creation of new tokens.",
+                    value={
+                        "code": JWTAPIError.default_code,
+                        "detail": JWTErrorMessages.BLACKLISTED.value.format(
+                            token_type="access",
+                        ),
+                    },
+                ),
+                OpenApiExample(
+                    name="access_token_not_expired",
+                    summary="Access token not expired",
+                    description="New JSON Web Tokens can only be created for a user if their access token has expired.",
+                    value={
+                        "code": JWTAPIError.default_code,
+                        "detail": JWTErrorMessages.ACCESS_NOT_EXPIRED.value,
                     },
                 ),
             ],
@@ -260,16 +276,17 @@ UpdateTokensSchema = extend_schema(
                     summary="Token not found",
                     description="The JSON Web Tokens provided do not exist in the database.",
                     value={
-                        "detail": JWTErrorMessages.TOKEN_NOT_FOUND.value,
+                        "code": JWTErrorMessages.TOKEN_NOT_FOUND.value["code"],
+                        "detail": JWTErrorMessages.TOKEN_NOT_FOUND.value[
+                            "detail"
+                        ].format(token_type="access or refresh"),
                     },
                 ),
                 OpenApiExample(
                     name="user_not_found",
                     summary="User not found",
                     description="The user in the provided JSON Web Tokens does not exist in the database.",
-                    value={
-                        "detail": JWTErrorMessages.USER_NOT_FOUND.value,
-                    },
+                    value=JWTErrorMessages.USER_NOT_FOUND.value,
                 ),
             ],
         ),
@@ -300,6 +317,7 @@ UpdateTokensSchema = extend_schema(
 LogoutSchema = extend_schema(
     operation_id="logout_user",
     tags=["Users"],
+    auth=[{"JWTAuthentication": []}],
     responses={
         200: OpenApiResponse(
             description="**(OK)** Successfully closed session.",
@@ -314,11 +332,25 @@ LogoutSchema = extend_schema(
             },
             examples=[
                 OpenApiExample(
-                    name="token_error",
-                    summary="Token error",
-                    description="The provided JSON Web Tokens do not match the user's last generated tokens.",
+                    name="invalid_expired",
+                    summary="Invalid or expired",
+                    description="The access or refresh token is invalid or has expired.",
                     value={
                         "code": JWTAPIError.default_code,
+                        "detail": JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
+                            token_type="access",
+                        ),
+                    },
+                ),
+                OpenApiExample(
+                    name="token_blacklisted",
+                    summary="Token exists in the blacklist",
+                    description="The access token exists in the blacklist. Tokens that exist in the blacklist cannot be used in authentication processes and creation of new tokens.",
+                    value={
+                        "code": JWTAPIError.default_code,
+                        "detail": JWTErrorMessages.BLACKLISTED.value.format(
+                            token_type="access",
+                        ),
                     },
                 ),
             ],
@@ -333,20 +365,10 @@ LogoutSchema = extend_schema(
             },
             examples=[
                 OpenApiExample(
-                    name="token_not_found",
-                    summary="Token not found",
-                    description="The JSON Web Tokens provided do not exist in the database.",
-                    value={
-                        "detail": JWTErrorMessages.TOKEN_NOT_FOUND.value,
-                    },
-                ),
-                OpenApiExample(
                     name="user_not_found",
                     summary="User not found",
                     description="The user in the provided JSON Web Tokens does not exist in the database.",
-                    value={
-                        "detail": JWTErrorMessages.USER_NOT_FOUND.value,
-                    },
+                    value=JWTErrorMessages.USER_NOT_FOUND.value,
                 ),
             ],
         ),

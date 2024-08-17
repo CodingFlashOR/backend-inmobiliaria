@@ -38,8 +38,10 @@ paths:
                 summary: Valid data for the request.
                 description: |-
                   Valid credentials for a user. The following validations will be applied:
-                  - **email:** This field is required and must not exceed 40 characters.
-                  - **password:** This field is required and must not exceed 40 characters.
+                  - **Email:** This field is required and must not exceed 40 characters.
+                  - **Password:** This field is required and must not exceed 40 characters.
+
+                  Request responses that include messages in Spanish indicate that these are messages intended for use on the frontend by the client.
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/AuthenticationRequest'
@@ -53,22 +55,27 @@ paths:
             application/json:
               schema:
                 properties:
-                  access:
+                  access_token:
                     type: string
-                  refresh:
+                  refresh_token:
+                    type: string
+                  role_user:
                     type: string
               examples:
                 ResponseOk:
                   value:
-                    access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzExMDU0MzYyLCJpYXQiOjE3MTEwNDcxNjIsImp0aSI6IjY0MTE2YzgyYjhmMDQzOWJhNTJkZGZmMzgyNzQ2ZTIwIiwidXNlcl9pZCI6IjJhNmI0NTNiLWZhMmItNDMxOC05YzM1LWIwZTk2ZTg5NGI2MyJ9.gfhWpy5rYY6P3Xrg0usS6j1KhEvF1HqWMiU7AaFkp9A
-                    refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A
+                    access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzExMDU0MzYyLCJpYXQiOjE3MTEwNDcxNjIsImp0aSI6IjY0MTE2YzgyYjhmMDQzOWJhNTJkZGZmMzgyNzQ2ZTIwIiwidXNlcl9pZCI6IjJhNmI0NTNiLWZhMmItNDMxOC05YzM1LWIwZTk2ZTg5NGI2MyJ9.gfhWpy5rYY6P3Xrg0usS6j1KhEvF1HqWMiU7AaFkp9A
+                    refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A
+                    role_user: searcher
                   summary: User authenticated
-                  description: The user has been authenticated successfully and the
-                    access and refresh tokens are returned. The access token is used
-                    to authenticate the user in the application, while the refresh
-                    token is used to obtain a new access token, each of these tokens
-                    contains information about the user, such as the user's identifier,
-                    the type of token, the expiration date, and the date of issue.
+                  description: The user has been successfully authenticated and the
+                    access and refresh tokens are returned. The access token with
+                    a duration of 2:00:00 minutes used to access protected API resources.
+                    This token is sent with each request to the server to authenticate
+                    the user, while the refresh token with a duration of 1 day, 0:00:00
+                    day that is used to obtain new JSON Web Tokens without requiring
+                    the user to authenticate again. This is useful when the access
+                    token has expired, but the user should still be authenticated.
           description: '**(OK)** Authenticated user.'
         '400':
           content:
@@ -88,11 +95,13 @@ paths:
                       - Este campo es requerido.
                       - Este campo no puede estar en blanco.
                       - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
                       - El valor ingresado no puede tener más de 40 caracteres.
                       password:
                       - Este campo es requerido.
                       - Este campo no puede estar en blanco.
                       - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
                       - El valor ingresado no puede tener más de 40 caracteres.
                   summary: Invalid data
                   description: These are the possible error messages for each field.
@@ -117,7 +126,10 @@ paths:
                 UserInactive:
                   value:
                     code: authentication_failed
-                    detail: Cuenta del usuario inactiva.
+                    detail: Tu cuenta está inactiva. Te recomendamos revisar la bandeja
+                      de entrada de tu correo electrónico para encontrar el mensaje
+                      que te enviamos al registrarte. Ese correo incluye las instrucciones
+                      para activar tu cuenta.
                   summary: Inactive user account
                   description: The user account is inactive.
           description: |-
@@ -165,12 +177,11 @@ paths:
     post:
       operationId: logout_user
       description: |-
-        Handle POST requests for user logout.
+        Handles POST requests for user logout.
 
-        This method allows you to log out a user. Wait for a POST request with the
-        access and update JSON Web Tokens. A successful logout will consist of
-        invalidating the tokens by adding them to the blacklist if they have not yet
-        expired.
+        This method allows to logout an authenticated user. Wait for a POST request
+        with the update token. A successful logout will consist of invalidating the
+        access and refresh token by adding them to the blacklist.
       tags:
       - Users
       requestBody:
@@ -181,13 +192,11 @@ paths:
             examples:
               DataValid:
                 value:
-                  access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw
-                  refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
+                  refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
                 summary: Valid data for the request.
                 description: |-
                   Valid data for the request. The following validations will be applied:
-                  - **refresh:** This field is require, must be a valid token and not expired.
-                  - **access:** This field is require and must be a valid token.
+                  - **Refresh token:** It is required, must be a valid token, it must not be expired and it should not exist on the blacklist.
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/LogoutRequest'
@@ -195,6 +204,8 @@ paths:
             schema:
               $ref: '#/components/schemas/LogoutRequest'
         required: true
+      security:
+      - JWTAuthentication2: []
       responses:
         '200':
           description: '**(OK)** Successfully closed session.'
@@ -208,13 +219,20 @@ paths:
                   detail:
                     type: string
               examples:
-                TokenError:
+                InvalidExpired:
                   value:
-                    code: JWT_error
-                    detail: The JWTs sent do not match the user's last tokens.
-                  summary: Token error
-                  description: The provided JSON Web Tokens do not match the user's
-                    last generated tokens.
+                    code: jwt_error
+                    detail: access token is invalid or expired.
+                  summary: Invalid or expired
+                  description: The access or refresh token is invalid or has expired.
+                TokenBlacklisted:
+                  value:
+                    code: jwt_error
+                    detail: access token is blacklisted.
+                  summary: Token exists in the blacklist
+                  description: The access token exists in the blacklist. Tokens that
+                    exist in the blacklist cannot be used in authentication processes
+                    and creation of new tokens.
           description: '**(UNAUTHORIZED)** The user''s JSON Web Token is not valid
             for logout.'
         '404':
@@ -227,16 +245,10 @@ paths:
                   detail:
                     type: string
               examples:
-                TokenNotFound:
-                  value:
-                    code: token_not_found
-                    detail: JWT not found.
-                  summary: Token not found
-                  description: The JSON Web Tokens provided do not exist in the database.
                 UserNotFound:
                   value:
                     code: user_not_found
-                    detail: The JWT user does not exist.
+                    detail: The token user does not exist.
                   summary: User not found
                   description: The user in the provided JSON Web Tokens does not exist
                     in the database.
@@ -280,13 +292,13 @@ paths:
             examples:
               DataValid:
                 value:
-                  access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw
-                  refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
+                  access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw
+                  refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
                 summary: Valid data for the request.
                 description: |-
                   Valid data for the request. The following validations will be applied:
-                  - **acess:** must be a valid token.
-                  - **refresh:** must be a valid token and not expired.
+                  - **Access token:** It is required, must be a valid token, must be expired and it should not exist on the blacklist.
+                  - **Refresh token:** It is required, must be a valid token, it must not be expired and it should not exist on the blacklist.
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/UpdateTokenRequest'
@@ -300,15 +312,15 @@ paths:
             application/json:
               schema:
                 properties:
-                  access:
+                  access_token:
                     type: string
-                  refresh:
+                  refresh_token:
                     type: string
               examples:
                 ResponseOk:
                   value:
-                    access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw
-                    refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
+                    access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw
+                    refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
                   summary: New tokens generated
                   description: The new access and refresh tokens have been generated
                     successfully, you can use these new tokens to keep the user authenticated.
@@ -327,20 +339,16 @@ paths:
                   value:
                     code: invalid_request_data
                     detail:
-                      refresh:
+                      refresh_token:
                       - This field is required.
                       - This field may not be blank.
                       - This field may not be null.
                       - Not a valid string.
-                      - Refresh token has expired.
-                      - Refresh token invalid.
-                      access:
+                      access_token:
                       - This field is required.
                       - This field may not be blank.
                       - This field may not be null.
                       - Not a valid string.
-                      - Access token invalid.
-                      - Access token is not expired.
                   summary: Invalid data
                   description: These are the possible error messages for each field.
           description: '**(BAD_REQUEST)** The request data are invalid, error message(s)
@@ -355,13 +363,27 @@ paths:
                   detail:
                     type: string
               examples:
-                TokenError:
+                InvalidExpired:
                   value:
-                    code: JWT_error
-                    detail: The JWTs sent do not match the user's last tokens.
-                  summary: Token error
-                  description: The provided JSON Web Tokens do not match the user's
-                    last generated tokens.
+                    code: jwt_error
+                    detail: refresh token is invalid or expired.
+                  summary: Invalid or expired
+                  description: The access or refresh token is invalid or has expired.
+                TokenBlacklisted:
+                  value:
+                    code: jwt_error
+                    detail: access token is blacklisted.
+                  summary: Token exists in the blacklist
+                  description: The access token exists in the blacklist. Tokens that
+                    exist in the blacklist cannot be used in authentication processes
+                    and creation of new tokens.
+                AccessTokenNotExpired:
+                  value:
+                    code: jwt_error
+                    detail: Access token is not expired.
+                  summary: Access token not expired
+                  description: New JSON Web Tokens can only be created for a user
+                    if their access token has expired.
           description: '**(UNAUTHORIZED)** The user''s JSON Web Token is not valid
             for logout.'
         '404':
@@ -376,14 +398,15 @@ paths:
               examples:
                 TokenNotFound:
                   value:
-                    code: token_not_found
-                    detail: JWT not found.
+                    code: jwt_not_found
+                    detail: access or refresh token is not in the outstanding token
+                      list.
                   summary: Token not found
                   description: The JSON Web Tokens provided do not exist in the database.
                 UserNotFound:
                   value:
                     code: user_not_found
-                    detail: The JWT user does not exist.
+                    detail: The token user does not exist.
                   summary: User not found
                   description: The user in the provided JSON Web Tokens does not exist
                     in the database.
@@ -435,14 +458,16 @@ paths:
                   confirm_password: contraseña1234
                 summary: Register a new user with role searcher.
                 description: "A valid user registration data. The following validations\
-                  \ will be applied:\n- **name and last_name:** This field is required,\
+                  \ will be applied:\n- **Name and last_name:** This field is required,\
                   \ must not exceed 40 characters and must contain only letters and\
-                  \ spaces.\n- **email:** This field is required and must not exceed\
+                  \ spaces.\n- **Email:** This field is required and must not exceed\
                   \ 40 characters, must follow standard email format, and must not\
-                  \ be in use.\n- **password:** This field is required and should\
+                  \ be in use.\n- **Password:** This field is required and should\
                   \ be between 8 and 40 characters. It should not be a common password\
-                  \ or contain only numbers. \n- **confirm_password:** This field\
-                  \ is required and should match the password field."
+                  \ or contain only numbers. \n- **Confirm password:** This field\
+                  \ is required and should match the password field.\n\nRequest responses\
+                  \ that include messages in Spanish indicate that these are messages\
+                  \ intended for use on the frontend by the client."
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/SearcherRegisterRequest'
@@ -545,15 +570,11 @@ components:
       type: object
       description: Handles data to logout user.
       properties:
-        refresh:
-          type: string
-          minLength: 1
-        access:
+        refresh_token:
           type: string
           minLength: 1
       required:
-      - access
-      - refresh
+      - refresh_token
     SearcherRegisterRequest:
       type: object
       description: Defines the fields that are required for the searcher user registration.
@@ -592,15 +613,15 @@ components:
       type: object
       description: Handles data to refresh tokens of a user.
       properties:
-        refresh:
+        access_token:
           type: string
           minLength: 1
-        access:
+        refresh_token:
           type: string
           minLength: 1
       required:
-      - access
-      - refresh
+      - access_token
+      - refresh_token
 tags:
 - name: Users
   description: It comprises all the endpoints that manage all the functionality related
