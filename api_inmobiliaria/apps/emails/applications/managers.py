@@ -1,10 +1,10 @@
 from apps.emails.domain.abstractions import ITokenGenerator, ITokenRepository
-from apps.emails.domain.constants import LOGIN_URL, REGISTER_URL, HOME_URL
 from apps.emails.domain.typing import Token
 from apps.emails.paths import TEMPLATES
 from apps.users.domain.abstractions import IUserRepository
 from apps.users.domain.typing import UserUUID
 from apps.users.models import User
+from apps.utils.messages import ActionLinkManagerErrors
 from apps.view_exceptions import (
     ResourceNotFoundViewError,
     TokenViewError,
@@ -18,42 +18,6 @@ from django.core.mail import EmailMessage
 from django.http.request import HttpRequest
 from django.urls import reverse
 from typing import Any, Dict
-from enum import Enum
-
-
-class ActionLinkManagerErrors(Enum):
-    """
-    Error enumeration for the email communication module related to user account
-    management.
-    """
-
-    DEFAULT = {
-        "message": "Lo sentimos, se ha producido un error inesperado en nuestro sistema. No se ha podido completar tu solicitud en este momento. Por favor, inténtalo de nuevo más tarde. Si el problema persiste, puedes ponerte en contacto con nuestro equipo de soporte al cliente para obtener más ayuda. Disculpa las molestias y gracias por tu paciencia.",
-        "redirect": {
-            "action": "Ir al inicio",
-            "url": HOME_URL,
-        },
-    }
-    USER_NOT_FOUND = {
-        "message": "Ha ocurrido un error y no hemos podido identificarte. Por favor, regístrate en nuestra plataforma para disfrutar de nuestros servicios.",
-        "redirect": {
-            "action": "Registrarse",
-            "url": REGISTER_URL,
-        },
-    }
-    TOKEN_EXPIRED = {
-        "message": "El enlace ha expirado. Para tu seguridad, estos enlaces son válidos solo por un tiempo limitado. Por favor, solicita un nuevo enlace para {action}",
-        "redirect": {
-            "action": "Solicitar nuevo enlace",
-        },
-    }
-    TOKEN_INVALID = {
-        "message": "Lo sentimos, este enlace es de un solo uso y ya ha sido utilizado. Para acceder a nuestros servicios o realizar otras acciones, por favor inicia sesión en tu cuenta.",
-        "redirect": {
-            "action": "Iniciar sesión",
-            "url": LOGIN_URL,
-        },
-    }
 
 
 class ActionLinkManager:

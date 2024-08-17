@@ -1,5 +1,5 @@
 from apps.users.domain.typing import UserUUID
-from apps.emails.utils import decode_b64
+from apps.utils.generators import decode_b64
 from apps.utils.validators import is_valid_uuid
 from rest_framework import serializers
 import base64

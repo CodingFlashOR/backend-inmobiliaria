@@ -1,4 +1,4 @@
-from apps.emails.applications import AccountActivation
+from apps.emails.applications.account_management import AccountActivation
 from .views.account_management import SendTokenAPIView, AccountActivationView
 from django.urls import path
 

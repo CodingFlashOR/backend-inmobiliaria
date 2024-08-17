@@ -1,39 +1,16 @@
 from apps.emails.applications.managers import ActionLinkManager
-from apps.emails.domain.constants import SubjectsMail, LOGIN_URL, REGISTER_URL
+from apps.emails.domain.constants import SubjectsMail
 from apps.emails.domain.typing import Token
 from apps.emails.paths import TEMPLATES
 from apps.users.domain.typing import UserUUID
 from apps.users.models import User
+from apps.utils.messages import ActivationErrors
 from apps.api_exceptions import (
     AccountActivationAPIError,
     ResourceNotFoundAPIError,
 )
 from rest_framework.request import Request
 from django.http.request import HttpRequest
-from enum import Enum
-
-
-class ActivationErrors(Enum):
-    """
-    Enum class for error messages related to the use case in charge of sending the
-    account activation message. The errors that are in English are messages that the
-    user will see.
-    """
-
-    USER_NOT_FOUND = {
-        "message": "Ha ocurrido un error y no hemos podido identificarte. Por favor, regístrate en nuestra plataforma y activa tu cuenta para que puedas disfrutar de nuestros servicios.",
-        "redirect": {
-            "action": "Registrarse",
-            "url": REGISTER_URL,
-        },
-    }
-    ACTIVE_ACCOUNT = {
-        "message": "¡Parece que tu cuenta ya estaba activada! Inicia sesión cuando quieras y comienza a disfrutar de nuestros servicios.",
-        "redirect": {
-            "action": "Iniciar sesión",
-            "url": LOGIN_URL,
-        },
-    }
 
 
 class AccountActivation(ActionLinkManager):
