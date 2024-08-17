@@ -1,4 +1,4 @@
-from apps.emails.applications import ActivationErrors
+from apps.utils.messages import ActivationErrors
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,
     ResourceNotFoundAPIError,
@@ -33,7 +33,7 @@ class TestSendAccountActivationTokenAPIView:
             kwargs={"user_uuid": url_params["user_uuid"]},
         )
 
-    def test_request_valid_data(self) -> None:
+    def test_if_valid_data(self) -> None:
         """
         This test is responsible for validating the expected behavior of the view
         when the request data is valid.
@@ -53,7 +53,7 @@ class TestSendAccountActivationTokenAPIView:
         # Asserting that response data is correct
         assert response.status_code == status.HTTP_200_OK
 
-    def test_request_invalid_data(self) -> None:
+    def test_if_invalid_data(self) -> None:
         """
         This test is responsible for validating the expected behavior of the view
         when the request data is invalid.
