@@ -2,10 +2,8 @@ from apps.users.domain.constants import USER_ROLE_PERMISSIONS, UserRoles
 from apps.users.domain.abstractions import (
     IUserRepository,
     IJWTRepository,
-    ITokenClass,
 )
-from apps.emails.domain.abstractions import ITokenRepository
-from apps.emails.utils import TokenGenerator
+from apps.emails.domain.abstractions import ITokenRepository, ITokenGenerator
 from django.contrib.auth.models import Group, Permission
 from django.db.models.query import QuerySet
 from unittest.mock import Mock
@@ -21,8 +19,12 @@ def setup_database(db) -> None:
     for role in [UserRoles.SEARCHER.value]:
         # Create the group and assign permissions
         group = Group.objects.create(name=role)
+        perm_list = [
+            value.split(".")[-1]
+            for value in USER_ROLE_PERMISSIONS[role].values()
+        ]
 
-        for perm_codename in USER_ROLE_PERMISSIONS[role]["perm_codename_list"]:
+        for perm_codename in perm_list:
             perm = Permission.objects.get(codename=perm_codename)
             group.permissions.add(perm)
 
@@ -64,18 +66,9 @@ def token_repository() -> Mock:
 
 
 @pytest.fixture
-def jwt_class() -> Mock:
-    """
-    Mock the `TokenClass` class.
-    """
-
-    return Mock(spec_set=ITokenClass, name="TokenClassMock")
-
-
-@pytest.fixture
 def token_class() -> Mock:
     """
-    Mock the `TokenGenerator` class.
+    Mock the `ITokenGenerator` class.
     """
 
-    return Mock(spec_set=TokenGenerator, name="TokenGeneratorMock")
+    return Mock(spec_set=ITokenGenerator, name="ITokenGeneratorMock")

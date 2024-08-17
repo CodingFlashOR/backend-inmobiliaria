@@ -1,16 +1,20 @@
-from apps.users.infrastructure.serializers import TokenObtainPairSerializer
 from apps.users.infrastructure.db import JWTRepository, UserRepository
-from apps.users.applications import JWTUsesCases
-from apps.users.models import User, JWT, JWTBlacklist
+from apps.users.applications import JWTUpdate
+from apps.users.models import User
 from apps.users.domain.constants import UserRoles
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,
     ResourceNotFoundAPIError,
     JWTAPIError,
 )
+from authentication.jwt import AccessToken, RefreshToken
 from settings.environments.base import SIMPLE_JWT
 from tests.factory import JWTFactory, UserFactory
 from tests.utils import empty_queryset
+from rest_framework_simplejwt.token_blacklist.models import (
+    OutstandingToken,
+    BlacklistedToken,
+)
 from unittest.mock import Mock
 from jwt import decode
 import pytest
@@ -21,76 +25,91 @@ class TestUpdateTokensApplication:
     """
     This class encapsulates all the tests of the JWT use case responsible for updating
     the tokens of a user.
+
+    #### Clarifications:
+
+    - To facilitate certain tests focused on the validation of JSON Web Tokens, a user
+    with the role `searcher` is used, since these validations are not dependent on the
+    user's role.
+    - The execution of this logic does not depend on the user's permissions; that is,
+    the user's permissions are not validated.
     """
 
-    application_class = JWTUsesCases
+    application_class = JWTUpdate
     user_factory = UserFactory
     jwt_factory = JWTFactory
 
     @pytest.mark.parametrize(
-        argnames="role",
+        argnames="role_user",
         argvalues=[UserRoles.SEARCHER.value],
         ids=["searcher_user"],
     )
-    def test_updated_tokens(self, role: str) -> None:
+    def test_updated_tokens(self, role_user: str) -> None:
         """
         This test case is responsible for testing the successful update of the tokens
         of a user.
         """
 
-        # Creating the user data and the JWTs to be used in the test
+        # Creating the JWTs to be used in the test
         user, _ = self.user_factory.create_user(
-            role=role, active=True, save=True, add_perm=False
+            role_user=role_user, active=True, save=True, add_perm=False
         )
         jwt_data = self.jwt_factory.access_and_refresh(
+            role_user=user.content_type.model,
             user=user,
-            role=role,
             exp_access=True,
             exp_refresh=False,
             save=True,
         )
+        access_token = AccessToken(
+            payload=jwt_data["payloads"]["access_token"], verify=False
+        )
+        refresh_token = RefreshToken(
+            payload=jwt_data["payloads"]["refresh_token"]
+        )
 
         # Instantiating the application
-        tokens = self.application_class(
+        app = self.application_class(
             user_repository=UserRepository,
             jwt_repository=JWTRepository,
-            jwt_class=TokenObtainPairSerializer,
-        ).update_tokens(data=jwt_data["payloads"])
+        )
+        tokens = app.new_tokens(
+            data={"refresh_token": refresh_token, "access_token": access_token},
+        )
 
         # Asserting that the tokens were generated
-        access = tokens.get("access", False)
-        refresh = tokens.get("refresh", False)
+        response_access_token = tokens.get("access_token", False)
+        response_refresh_token = tokens.get("refresh_token", False)
 
-        assert access
-        assert refresh
+        assert response_access_token
+        assert response_refresh_token
 
         # Assert that the refresh token was added to the blacklist
-        assert JWTBlacklist.objects.filter(
-            token__jti=jwt_data["payloads"]["refresh"]["jti"]
+        assert BlacklistedToken.objects.filter(
+            token__jti=refresh_token.payload["jti"]
         ).exists()
-        assert not JWTBlacklist.objects.filter(
-            token__jti=jwt_data["payloads"]["access"]["jti"]
+        assert not BlacklistedToken.objects.filter(
+            token__jti=access_token.payload["jti"]
         ).exists()
 
         # Assert that the generated tokens were saved in the database
-        access_payload = decode(
-            jwt=access,
+        response_access_payload = decode(
+            jwt=response_access_token,
             key=SIMPLE_JWT["SIGNING_KEY"],
             algorithms=[SIMPLE_JWT["ALGORITHM"]],
         )
-        refresh_payload = decode(
-            jwt=refresh,
+        response_refresh_payload = decode(
+            jwt=response_refresh_token,
             key=SIMPLE_JWT["SIGNING_KEY"],
             algorithms=[SIMPLE_JWT["ALGORITHM"]],
         )
-
         access_obj = (
-            JWT.objects.filter(jti=access_payload["jti"])
+            OutstandingToken.objects.filter(jti=response_access_payload["jti"])
             .select_related("user")
             .first()
         )
         refresh_obj = (
-            JWT.objects.filter(jti=refresh_payload["jti"])
+            OutstandingToken.objects.filter(jti=response_refresh_payload["jti"])
             .select_related("user")
             .first()
         )
@@ -99,69 +118,92 @@ class TestUpdateTokensApplication:
         assert refresh_obj
 
         # Asserting that the tokens were created with the correct data
-        assert access_obj.user.uuid.__str__() == access_payload["user_uuid"]
-        assert access_obj.jti == access_payload["jti"]
-        assert access_obj.token == tokens["access"]
-        assert refresh_obj.user.uuid.__str__() == refresh_payload["user_uuid"]
-        assert refresh_obj.jti == refresh_payload["jti"]
-        assert refresh_obj.token == tokens["refresh"]
-        assert access_payload["role"] == role
-        assert refresh_payload["role"] == role
+        assert (
+            access_obj.user.uuid.__str__()
+            == response_access_payload["user_uuid"]
+        )
+        assert access_obj.jti == response_access_payload["jti"]
+        assert access_obj.token == tokens["access_token"]
+        assert (
+            refresh_obj.user.uuid.__str__()
+            == response_refresh_payload["user_uuid"]
+        )
+        assert refresh_obj.jti == response_refresh_payload["jti"]
+        assert refresh_obj.token == tokens["refresh_token"]
+        assert response_access_payload["role_user"] == role_user
+        assert response_refresh_payload["role_user"] == role_user
 
     def test_if_token_not_found(self) -> None:
         """
-        This test checks if the application raises an exception when the JWT is not
-        found.
+        This test is responsible for validating the expected behavior of the use case
+        when the JWTs are not found in the database.
         """
 
-        # Creating the user data and the JWTs to be used in the test
+        # Creating the JWTs to be used in the test
         user, _ = self.user_factory.create_searcher_user(
             active=True, save=True, add_perm=False
         )
         jwt_data = self.jwt_factory.access_and_refresh(
+            role_user=user.content_type.model,
             user=user,
-            role="AnyUser",
             exp_access=True,
             exp_refresh=False,
             save=False,
+        )
+        access_token = AccessToken(
+            payload=jwt_data["payloads"]["access_token"], verify=False
+        )
+        refresh_token = RefreshToken(
+            payload=jwt_data["payloads"]["refresh_token"]
         )
 
         # Instantiating the application
         with pytest.raises(ResourceNotFoundAPIError):
-            _ = self.application_class(
+            app = self.application_class(
                 user_repository=UserRepository,
                 jwt_repository=JWTRepository,
-                jwt_class=TokenObtainPairSerializer,
-            ).update_tokens(data=jwt_data["payloads"])
+            )
+            _ = app.new_tokens(
+                data={
+                    "refresh_token": refresh_token,
+                    "access_token": access_token,
+                },
+            )
 
         # Asserting that the tokens were not generated
-        assert JWT.objects.count() == 0
+        assert OutstandingToken.objects.count() == 0
 
         # Assert that the refresh token was not added to the blacklist
-        assert JWTBlacklist.objects.count() == 0
+        assert BlacklistedToken.objects.count() == 0
 
     def test_if_tokens_not_match_user_last_tokens(self) -> None:
         """
-        This test checks if the application raises an exception when the JWT does not
-        match the user.
+        This test is responsible for validating the expected behavior of the use case
+        when the JWTs do not match the user.
         """
 
-        # Creating the user data and the JWTs to be used in the test
+        # Creating the JWTs to be used in the test
         user, _ = self.user_factory.create_searcher_user(
             active=True, save=True, add_perm=False
         )
         jwt_data = self.jwt_factory.access_and_refresh(
+            role_user=user.content_type.model,
             user=user,
-            role="AnyUser",
             exp_access=True,
             exp_refresh=False,
-            save=False,
+            save=True,
+        )
+        access_token = AccessToken(
+            payload=jwt_data["payloads"]["access_token"], verify=False
+        )
+        refresh_token = RefreshToken(
+            payload=jwt_data["payloads"]["refresh_token"]
         )
 
         # Other tokens are created in order to raise the exception
         _ = self.jwt_factory.access_and_refresh(
+            role_user=user.content_type.model,
             user=user,
-            role="AnyUser",
             exp_access=True,
             exp_refresh=False,
             save=True,
@@ -169,88 +211,107 @@ class TestUpdateTokensApplication:
 
         # Instantiating the application
         with pytest.raises(JWTAPIError):
-            self.application_class(
+            app = self.application_class(
                 user_repository=UserRepository,
                 jwt_repository=JWTRepository,
-            ).logout_user(data=jwt_data["payloads"])
+            )
+            _ = app.new_tokens(
+                data={
+                    "refresh_token": refresh_token,
+                    "access_token": access_token,
+                },
+            )
+
+        # Asserting that the tokens were not generated
+        assert OutstandingToken.objects.count() <= 4
 
         # Assert that the refresh token was not added to the blacklist
-        assert JWTBlacklist.objects.count() == 0
+        assert BlacklistedToken.objects.count() == 0
 
-    def test_if_user_not_found(
-        self, user_repository: Mock, jwt_repository: Mock, jwt_class: Mock
-    ) -> None:
+    def test_if_user_not_found(self, user_repository: Mock) -> None:
         """
-        This test checks if the application raises an exception when the user is not
-        found.
+        This test is responsible for validating the expected behavior of the use case
+        when the user is not found in the database.
         """
 
         # Mocking the methods
         get_user_data: Mock = user_repository.get_user_data
-        get_jwt: Mock = jwt_repository.get
-        add_to_blacklist: Mock = jwt_repository.add_to_blacklist
-        add_to_checklist: Mock = jwt_repository.add_to_checklist
-        get_token: Mock = jwt_class.get_token
         get_user_data.return_value = empty_queryset(model=User)
 
         # Creating the JWTs to be used in the test
         jwt_data = self.jwt_factory.access_and_refresh(
             user=User(),
-            role="AnyUser",
+            role_user="AnyUser",
             exp_access=True,
             exp_refresh=False,
             save=False,
         )
+        access_token = AccessToken(
+            payload=jwt_data["payloads"]["access_token"], verify=False
+        )
+        refresh_token = RefreshToken(
+            payload=jwt_data["payloads"]["refresh_token"]
+        )
 
         # Instantiating the application
         with pytest.raises(ResourceNotFoundAPIError):
-            _ = self.application_class(
+            app = self.application_class(
                 user_repository=user_repository,
-                jwt_repository=jwt_repository,
-                jwt_class=jwt_class,
-            ).update_tokens(data=jwt_data["payloads"])
+                jwt_repository=JWTRepository,
+            )
+            _ = app.new_tokens(
+                data={
+                    "refresh_token": refresh_token,
+                    "access_token": access_token,
+                },
+            )
 
-        # Asserting that the methods not called
-        get_jwt.assert_not_called()
-        add_to_blacklist.assert_not_called()
-        add_to_checklist.assert_not_called()
-        get_token.assert_not_called()
+        # Asserting that the tokens were not generated
+        assert OutstandingToken.objects.count() == 0
 
-    def test_if_conection_db_failed(
-        self, user_repository: Mock, jwt_repository: Mock, jwt_class: Mock
-    ) -> None:
+        # Assert that the refresh token was not added to the blacklist
+        assert BlacklistedToken.objects.count() == 0
+
+    def test_if_conection_db_failed(self, user_repository: Mock) -> None:
         """
-        Test that validates the expected behavior of the view when the connection to
-        the database fails.
+        Test that validates the expected behavior of the use case when the connection
+        to the database fails.
         """
 
         # Mocking the methods
         get_user_data: Mock = user_repository.get_user_data
-        get_jwt: Mock = jwt_repository.get
-        add_to_blacklist: Mock = jwt_repository.add_to_blacklist
-        add_to_checklist: Mock = jwt_repository.add_to_checklist
-        get_token: Mock = jwt_class.get_token
         get_user_data.side_effect = DatabaseConnectionAPIError
 
         # Creating the JWTs to be used in the test
         jwt_data = self.jwt_factory.access_and_refresh(
             user=User(),
-            role="AnyUser",
+            role_user="AnyUser",
             exp_access=True,
             exp_refresh=False,
             save=False,
         )
+        access_token = AccessToken(
+            payload=jwt_data["payloads"]["access_token"], verify=False
+        )
+        refresh_token = RefreshToken(
+            payload=jwt_data["payloads"]["refresh_token"]
+        )
 
         # Instantiating the application
         with pytest.raises(DatabaseConnectionAPIError):
-            _ = self.application_class(
+            app = self.application_class(
                 user_repository=user_repository,
-                jwt_class=jwt_class,
-                jwt_repository=jwt_repository,
-            ).update_tokens(data=jwt_data["payloads"])
+                jwt_repository=JWTRepository,
+            )
+            _ = app.new_tokens(
+                data={
+                    "refresh_token": refresh_token,
+                    "access_token": access_token,
+                },
+            )
 
-        # Asserting that the methods not called
-        get_jwt.assert_not_called()
-        add_to_blacklist.assert_not_called()
-        add_to_checklist.assert_not_called()
-        get_token.assert_not_called()
+        # Asserting that the tokens were not generated
+        assert OutstandingToken.objects.count() == 0
+
+        # Assert that the refresh token was not added to the blacklist
+        assert BlacklistedToken.objects.count() == 0

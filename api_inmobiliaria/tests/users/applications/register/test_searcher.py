@@ -5,7 +5,6 @@ from apps.users.models import User, Searcher
 from apps.emails.domain.constants import SubjectsMail
 from apps.api_exceptions import DatabaseConnectionAPIError
 from tests.factory import UserFactory
-from django.contrib.auth.models import Permission
 from django.test import RequestFactory
 from django.core import mail
 from unittest.mock import Mock
@@ -13,7 +12,7 @@ from typing import Callable
 import pytest
 
 
-class TestCreateSearcherApplication:
+class TestRegisterSearcherApplication:
     """
     This class encapsulates the tests for the use case or business logic
     responsible for creating a user with the "Searcher" role.
@@ -26,8 +25,7 @@ class TestCreateSearcherApplication:
     def test_created_successfully(self, setup_database: Callable) -> None:
         """
         This test is responsible for validating the expected behavior of the
-        `create_user` method when the user data is valid. This method is
-        responsible for creating a user with the "Searcher" role.
+        use case when the request data is valid.
         """
 
         # Creating the user data to be used in the test
@@ -65,13 +63,10 @@ class TestCreateSearcherApplication:
         user.save()
 
         # Asserting that the user has the correct permissions
-        for codename in USER_ROLE_PERMISSIONS[UserRoles.SEARCHER.value][
-            "perm_codename_list"
-        ]:
-            perm = Permission.objects.get(codename=codename)
-            assert user.has_perm(
-                perm=f"{perm.content_type.app_label}.{perm.codename}"
-            )
+        for permission in list(
+            USER_ROLE_PERMISSIONS[UserRoles.SEARCHER.value].values()
+        ):
+            assert user.has_perm(perm=permission)
 
         # Asserting that the email was sent
         assert len(mail.outbox) == 1
@@ -81,7 +76,7 @@ class TestCreateSearcherApplication:
     def test_if_conection_db_failed(self, user_repository: Mock) -> None:
         """
         This test is responsible for validating the expected behavior of the
-        view when a DatabaseConnectionAPIError exception is raised.
+        use case when a DatabaseConnectionAPIError exception is raised.
         """
 
         # Creating the user data to be used in the test

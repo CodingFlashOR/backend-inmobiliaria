@@ -25,7 +25,7 @@ class TestSearcherUserAPIView:
     user_factory = UserFactory
     client = Client()
 
-    def test_request_valid_data(self, setup_database: Callable) -> None:
+    def test_if_valid_data(self, setup_database: Callable) -> None:
         """
         This test is responsible for validating the expected behavior of the
         view when the request data is valid.
@@ -139,7 +139,7 @@ class TestSearcherUserAPIView:
             "password_no_upper_lower",
         ],
     )
-    def test_request_invalid_data(
+    def test_if_invalid_data(
         self,
         data: Dict[str, Dict],
         error_messages: Dict[str, Dict],

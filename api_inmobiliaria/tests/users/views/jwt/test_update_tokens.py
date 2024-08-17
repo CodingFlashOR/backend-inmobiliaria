@@ -1,8 +1,6 @@
-from apps.users.infrastructure.serializers import (
-    JWTErrorMessages as SerializerErrorMessages,
-)
-from apps.users.applications import JWTErrorMessages
+from apps.users.domain.constants import UserRoles
 from apps.users.models import User
+from apps.utils.messages import JWTErrorMessages
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,
     ResourceNotFoundAPIError,
@@ -15,7 +13,7 @@ from rest_framework.fields import CharField
 from django.test import Client
 from django.urls import reverse
 from unittest.mock import Mock, patch
-from typing import Dict, List
+from typing import Dict
 import pytest
 
 
@@ -31,6 +29,14 @@ class TestUpdateTokensAPIView:
 
     In order for the user to keep his session active, new JWTs can be generated using
     the refresh token, as long as the access token has expired.
+
+    #### Clarifications:
+
+    - To facilitate certain tests focused on the validation of JSON Web Tokens, a user
+    with the role `searcher` is used, since these validations are not dependent on the
+    user's role.
+    - The execution of this logic does not depend on the user's permissions; that is,
+    the user's permissions are not validated.
     """
 
     path = reverse(viewname="update_jwt")
@@ -38,19 +44,24 @@ class TestUpdateTokensAPIView:
     jwt_factory = JWTFactory
     client = Client()
 
-    def test_request_valid_data(self) -> None:
+    @pytest.mark.parametrize(
+        argnames="role_user",
+        argvalues=[UserRoles.SEARCHER.value],
+        ids=["searcher_user"],
+    )
+    def test_if_valid_data(self, role_user: str) -> None:
         """
         This test is responsible for validating the expected behavior of the view
         when the request data is valid.
         """
 
-        # Creating the user data and the JWTs to be used in the test
-        user, _ = self.user_factory.create_searcher_user(
-            active=True, save=True, add_perm=False
+        # Creating the JWTs to be used in the test
+        user, _ = self.user_factory.create_user(
+            role_user=role_user, active=True, save=True, add_perm=False
         )
         jwt_data = self.jwt_factory.access_and_refresh(
+            role_user=user.content_type.model,
             user=user,
-            role="AnyUser",
             exp_access=True,
             exp_refresh=False,
             save=True,
@@ -65,75 +76,24 @@ class TestUpdateTokensAPIView:
 
         # Asserting that response data is correct
         assert response.status_code == status.HTTP_200_OK
-        assert "access" in response.data
-        assert "refresh" in response.data
+        assert "access_token" in response.data
+        assert "refresh_token" in response.data
 
-    @pytest.mark.parametrize(
-        argnames="data, error_messages",
-        argvalues=[
-            (
-                {},
-                {
-                    "refresh": [DEFAULT_ERROR_MESSAGES["required"]],
-                    "access": [DEFAULT_ERROR_MESSAGES["required"]],
-                },
-            ),
-            (
-                {
-                    "refresh": JWTFactory.refresh_invalid(),
-                    "access": JWTFactory.access_invalid(),
-                },
-                {
-                    "refresh": [SerializerErrorMessages.REFRESH_INVALID.value],
-                    "access": [SerializerErrorMessages.ACCESS_INVALID.value],
-                },
-            ),
-            (
-                JWTFactory.access_and_refresh(
-                    role="AnyUser",
-                    exp_access=False,
-                    exp_refresh=True,
-                    save=False,
-                ).get("tokens"),
-                {
-                    "refresh": [SerializerErrorMessages.REFRESH_EXPIRED.value],
-                },
-            ),
-            (
-                JWTFactory.access_and_refresh(
-                    role="AnyUser",
-                    exp_access=False,
-                    exp_refresh=False,
-                    save=False,
-                ).get("tokens"),
-                {
-                    "access": [
-                        SerializerErrorMessages.ACCESS_NOT_EXPIRED.value
-                    ],
-                },
-            ),
-        ],
-        ids=[
-            "empty_data",
-            "tokens_invalid",
-            "refresh_expired",
-            "access_not_expired",
-        ],
-    )
-    def test_request_invalid_data(
-        self,
-        data: Dict[str, str],
-        error_messages: Dict[str, List],
-    ) -> None:
+    def test_if_empty_data(self) -> None:
         """
         This test is responsible for validating the expected behavior of the view
-        when the request data is invalid.
+        when the request data is empty.
         """
+
+        error_messages_expected = {
+            "refresh_token": [DEFAULT_ERROR_MESSAGES["required"]],
+            "access_token": [DEFAULT_ERROR_MESSAGES["required"]],
+        }
 
         # Simulating the request
         response = self.client.post(
             path=self.path,
-            data=data,
+            data={},
             content_type="application/json",
         )
 
@@ -147,8 +107,196 @@ class TestUpdateTokensAPIView:
             for field, errors in response.data["detail"].items()
         }
 
-        for field, message in error_messages.items():
+        for field, message in error_messages_expected.items():
             assert response_errors_formated[field] == message
+
+    @pytest.mark.parametrize(
+        argnames="data, error_message",
+        argvalues=[
+            (
+                {
+                    "access_token": JWTFactory.access_invalid(),
+                    "refresh_token": JWTFactory.refresh(
+                        exp=False, save=False
+                    ).get("token"),
+                },
+                JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
+                    token_type="access"
+                ),
+            ),
+            (
+                {
+                    "access_token": JWTFactory.access(
+                        exp=True, save=False  # fmt: off
+                    ).get("token"),
+                    "refresh_token": JWTFactory.refresh_invalid(),
+                },
+                JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
+                    token_type="refresh"
+                ),
+            ),
+            (
+                {
+                    "access_token": JWTFactory.access(
+                        exp=False, save=False
+                    ).get("token"),
+                    "refresh_token": JWTFactory.refresh(
+                        exp=False, save=False
+                    ).get("token"),
+                },
+                JWTErrorMessages.ACCESS_NOT_EXPIRED.value,
+            ),
+            (
+                {
+                    "access_token": JWTFactory.access(
+                        exp=True, save=False  # fmt: off
+                    ).get("token"),
+                    "refresh_token": JWTFactory.refresh(
+                        exp=True, save=False
+                    ).get("token"),
+                },
+                JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
+                    token_type="refresh"
+                ),
+            ),
+            (
+                {
+                    "access_token": JWTFactory.access(
+                        exp=True, save=False  # fmt: off
+                    ).get("token"),
+                    "refresh_token": JWTFactory.refresh(
+                        exp=False, save=False
+                    ).get("token"),
+                },
+                JWTErrorMessages.USER_NOT_MATCH.value,
+            ),
+        ],
+        ids=[
+            "access_token_invalid",
+            "refresh_token_invalid",
+            "access_token_not_expired",
+            "refresh_token_expired",
+            "user_not_match",
+        ],
+    )
+    def test_if_token_validation_failed(
+        self,
+        data: Dict[str, str],
+        error_message: str,
+    ) -> None:
+        """
+        This test is responsible for validating the expected behavior of the view
+        when the JWTs are invalid or expired.
+        """
+
+        # Simulating the request
+        response = self.client.post(
+            path=self.path,
+            data=data,
+            content_type="application/json",
+        )
+
+        # Asserting that response data is correct
+        status_code_expected = JWTAPIError.status_code
+        code_expected = JWTAPIError.default_code
+
+        assert response.status_code == status_code_expected
+        assert response.data["code"] == code_expected
+        assert response.data["detail"] == error_message
+
+    @pytest.mark.parametrize(
+        argnames="access_blacklist, refresh_blacklist, error_message",
+        argvalues=[
+            (
+                True,
+                False,
+                JWTErrorMessages.BLACKLISTED.value.format(token_type="access"),
+            ),
+            (
+                False,
+                True,
+                JWTErrorMessages.BLACKLISTED.value.format(token_type="refresh"),
+            ),
+        ],
+        ids=[
+            "access_token_blacklisted",
+            "refresh_token_blacklisted",
+        ],
+    )
+    def test_if_token_blacklisted(
+        self,
+        access_blacklist: bool,
+        refresh_blacklist: bool,
+        error_message: str,
+    ) -> None:
+        """
+        This test is responsible for validating the expected behavior of the view
+        when the JWTs are blacklisted.
+        """
+
+        # Creating the JWTs to be used in the test
+        user, _ = self.user_factory.create_searcher_user(
+            active=True, save=True, add_perm=False
+        )
+        access_token = self.jwt_factory.access(
+            role_user=user.content_type.model,
+            user=user,
+            exp=True,
+            save=True,
+            add_blacklist=access_blacklist,
+        ).get("token")
+        refresh_token = self.jwt_factory.refresh(
+            role_user=user.content_type.model,
+            user=user,
+            exp=False,
+            save=True,
+            add_blacklist=refresh_blacklist,
+        ).get("token")
+
+        # Simulating the request
+        response = self.client.post(
+            path=self.path,
+            data={"access_token": access_token, "refresh_token": refresh_token},
+            content_type="application/json",
+        )
+
+        # Asserting that response data is correct
+        status_code_expected = JWTAPIError.status_code
+        code_expected = JWTAPIError.default_code
+
+        assert response.status_code == status_code_expected
+        assert response.data["code"] == code_expected
+        assert response.data["detail"] == error_message
+
+    def test_if_user_not_match(self) -> None:
+        """
+        This test is responsible for validating the expected behavior of the view
+        when the user does not match the JWT data.
+        """
+
+        # Creating the JWTs to be used in the test
+        access_token = self.jwt_factory.access(
+            exp=True, save=False  # fmt: off
+        ).get("token")
+        refresh_token = self.jwt_factory.refresh(
+            exp=False, save=False  # fmt: off
+        ).get("token")
+
+        # Simulating the request
+        response = self.client.post(
+            path=self.path,
+            data={"access_token": access_token, "refresh_token": refresh_token},
+            content_type="application/json",
+        )
+
+        # Asserting that response data is correct
+        status_code_expected = JWTAPIError.status_code
+        code_expected = JWTAPIError.default_code
+        response_data_expected = JWTErrorMessages.USER_NOT_MATCH.value
+
+        assert response.status_code == status_code_expected
+        assert response.data["code"] == code_expected
+        assert response.data["detail"] == response_data_expected
 
     def test_if_token_not_found(self) -> None:
         """
@@ -156,13 +304,13 @@ class TestUpdateTokensAPIView:
         when the JWTs are not found in the database.
         """
 
-        # Creating the user data and the JWTs to be used in the test
+        # Creating the JWTs to be used in the test
         user, _ = self.user_factory.create_searcher_user(
             active=True, save=True, add_perm=False
         )
         jwt_data = self.jwt_factory.access_and_refresh(
+            role_user=user.content_type.model,
             user=user,
-            role="AnyUser",
             exp_access=True,
             exp_refresh=False,
             save=False,
@@ -177,8 +325,11 @@ class TestUpdateTokensAPIView:
 
         # Asserting that response data is correct
         status_code_expected = ResourceNotFoundAPIError.status_code
-        response_code_expected = JWTErrorMessages.TOKEN_NOT_FOUND_CODE.value
-        response_data_expected = JWTErrorMessages.TOKEN_NOT_FOUND.value
+        message = JWTErrorMessages.TOKEN_NOT_FOUND.value
+        response_code_expected = message["code"]
+        response_data_expected = message["detail"].format(
+            token_type="access or refresh"
+        )
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == response_code_expected
@@ -190,22 +341,22 @@ class TestUpdateTokensAPIView:
         when the JWTs do not match the user.
         """
 
-        # Creating the user data and the JWTs to be used in the test
+        # Creating the JWTs to be used in the test
         user, _ = self.user_factory.create_searcher_user(
             active=True, save=True, add_perm=False
         )
         jwt_data = self.jwt_factory.access_and_refresh(
+            role_user=user.content_type.model,
             user=user,
-            role="AnyUser",
             exp_access=True,
             exp_refresh=False,
-            save=False,
+            save=True,
         )
 
         # Other tokens are created in order to raise the exception
         _ = self.jwt_factory.access_and_refresh(
+            role_user=user.content_type.model,
             user=user,
-            role="AnyUser",
             exp_access=True,
             exp_refresh=False,
             save=True,
@@ -221,7 +372,7 @@ class TestUpdateTokensAPIView:
         # Asserting that response data is correct
         status_code_expected = JWTAPIError.status_code
         response_code_expected = JWTAPIError.default_code
-        response_data_expected = JWTErrorMessages.JWT_ERROR.value
+        response_data_expected = JWTErrorMessages.LAST_TOKENS.value
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == response_code_expected
@@ -241,7 +392,7 @@ class TestUpdateTokensAPIView:
         # Creating the JWTs to be used in the test
         jwt_data = self.jwt_factory.access_and_refresh(
             user=User(),
-            role="AnyUser",
+            role_user="AnyUser",
             exp_access=True,
             exp_refresh=False,
             save=False,
@@ -256,8 +407,9 @@ class TestUpdateTokensAPIView:
 
         # Asserting that response data is correct
         status_code_expected = ResourceNotFoundAPIError.status_code
-        response_code_expected = JWTErrorMessages.USER_NOT_FOUND_CODE.value
-        response_data_expected = JWTErrorMessages.USER_NOT_FOUND.value
+        message = JWTErrorMessages.USER_NOT_FOUND.value
+        response_code_expected = message["code"]
+        response_data_expected = message["detail"]
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == response_code_expected
@@ -277,7 +429,7 @@ class TestUpdateTokensAPIView:
         # Creating the JWTs to be used in the test
         jwt_data = self.jwt_factory.access_and_refresh(
             user=User(),
-            role="AnyUser",
+            role_user="AnyUser",
             exp_access=True,
             exp_refresh=False,
             save=False,
