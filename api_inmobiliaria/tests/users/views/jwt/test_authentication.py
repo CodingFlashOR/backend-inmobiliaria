@@ -1,16 +1,18 @@
-from apps.users.applications.jwt import JWTErrorMessages
-from apps.users.domain.constants import UserRoles
+from apps.users.domain.constants import UserRoles, UserProperties
+from apps.utils.messages import JWTErrorMessages
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,
     PermissionDeniedAPIError,
     AuthenticationFailedAPIError,
 )
+from apps.utils.messages import ERROR_MESSAGES
 from tests.factory import UserFactory
+from tests.utils import fake
 from rest_framework import status
 from django.test import Client
 from django.urls import reverse
 from unittest.mock import Mock, patch
-from typing import Callable
+from typing import Callable, Dict, List
 import pytest
 
 
@@ -30,12 +32,12 @@ class TestAuthenticationAPIView:
     client = Client()
 
     @pytest.mark.parametrize(
-        argnames="role",
+        argnames="role_user",
         argvalues=[UserRoles.SEARCHER.value],
         ids=["searcher_user"],
     )
-    def test_request_valid_data(
-        self, role: str, setup_database: Callable
+    def test_if_valid_data(
+        self, role_user: str, setup_database: Callable
     ) -> None:
         """
         This test is responsible for validating the expected behavior of the view
@@ -44,7 +46,7 @@ class TestAuthenticationAPIView:
 
         # Creating the user data to be used in the test
         _, data = self.user_factory.create_user(
-            role=role, active=True, save=True, add_perm=True
+            role_user=role_user, active=True, save=True, add_perm=True
         )
 
         # Simulating the request
@@ -57,8 +59,62 @@ class TestAuthenticationAPIView:
 
         # Asserting that response data is correct
         assert response.status_code == status.HTTP_200_OK
-        assert "access" in response.data
-        assert "refresh" in response.data
+        assert "access_token" in response.data
+        assert "refresh_token" in response.data
+        assert "role_user" in response.data
+
+    @pytest.mark.parametrize(
+        argnames="credentials, error_messages",
+        argvalues=[
+            (
+                {},
+                {
+                    "email": [ERROR_MESSAGES["required"]],
+                    "password": [ERROR_MESSAGES["required"]],
+                },
+            ),
+            (
+                {
+                    "email": f"user{fake.random_number(digits=41)}@email.com",
+                    "password": fake.password(length=41, special_chars=True),
+                },
+                {
+                    "email": [
+                        ERROR_MESSAGES["max_length"].format(
+                            max_length=UserProperties.EMAIL_MAX_LENGTH.value,
+                        ),
+                    ],
+                    "password": [
+                        ERROR_MESSAGES["max_length"].format(
+                            max_length=UserProperties.PASSWORD_MAX_LENGTH.value,
+                        ),
+                    ],
+                },
+            ),
+        ],
+        ids=["missing_fields", "max_length_data"],
+    )
+    def test_if_invalid_data(
+        self, credentials: Dict[str, str], error_messages: Dict[str, List]
+    ) -> None:
+        """
+        This test is responsible for validating the expected behavior of the view
+        when the data to update the tokens is invalid.
+        """
+
+        # Simulating the request
+        response = self.client.post(
+            path=self.path,
+            data=credentials,
+            content_type="application/json",
+        )
+
+        # Asserting that response data is correct
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data["code"] == "invalid_request_data"
+
+        for field, message in error_messages.items():
+            assert response.data["detail"][field] == message
 
     def test_if_credentials_invalid(self) -> None:
         """
@@ -84,12 +140,12 @@ class TestAuthenticationAPIView:
         assert response.data["detail"] == response_data_expected
 
     @pytest.mark.parametrize(
-        argnames="role",
+        argnames="role_user",
         argvalues=[UserRoles.SEARCHER.value],
         ids=["searcher_user"],
     )
     def test_if_inactive_user_account(
-        self, role: str, setup_database: Callable
+        self, role_user: str, setup_database: Callable
     ) -> None:
         """
         This test is responsible for validating the expected behavior of the view
@@ -98,7 +154,7 @@ class TestAuthenticationAPIView:
 
         # Creating the user data to be used in the test
         _, data = self.user_factory.create_user(
-            role=role, active=False, save=True, add_perm=True
+            role_user=role_user, active=False, save=True, add_perm=True
         )
 
         # Simulating the request
@@ -119,11 +175,11 @@ class TestAuthenticationAPIView:
         assert response.data["detail"] == response_data_expected
 
     @pytest.mark.parametrize(
-        argnames="role",
+        argnames="role_user",
         argvalues=[UserRoles.SEARCHER.value],
         ids=["searcher_user"],
     )
-    def test_if_user_has_not_permission(self, role: str) -> None:
+    def test_if_user_has_not_permission(self, role_user: str) -> None:
         """
         This test is responsible for validating the expected behavior of the view
         when the user does not have the necessary permissions to perform the action.
@@ -131,7 +187,7 @@ class TestAuthenticationAPIView:
 
         # Creating the user data to be used in the test
         _, data = self.user_factory.create_user(
-            role=role, active=True, save=True, add_perm=False
+            role_user=role_user, active=True, save=True, add_perm=False
         )
 
         # Simulating the request
