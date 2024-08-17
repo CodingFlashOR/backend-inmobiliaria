@@ -1,7 +1,7 @@
-from apps.emails.applications import ActionLinkManagerErrors
 from apps.emails.domain.constants import LOGIN_URL, TOKEN_EXPIRATION
 from apps.emails.paths import TEMPLATES
 from apps.api_exceptions import DatabaseConnectionAPIError
+from apps.utils.messages import ActionLinkManagerErrors
 from apps.view_exceptions import ResourceNotFoundViewError, TokenViewError
 from tests.factory import UserFactory, TokenFactory
 from rest_framework import status
@@ -10,8 +10,8 @@ from django.utils.encoding import force_bytes
 from django.urls import reverse
 from django.test import Client
 from unittest.mock import Mock, patch
-from uuid import uuid4
 from datetime import timedelta
+from uuid import uuid4
 import pytest
 
 
@@ -134,7 +134,9 @@ class TestAccountActivationView:
         assert "url" in context["redirect"]
 
         message = ActionLinkManagerErrors.USER_NOT_FOUND.value["message"]
-        action = ActionLinkManagerErrors.USER_NOT_FOUND.value["redirect"]["action"]
+        action = ActionLinkManagerErrors.USER_NOT_FOUND.value["redirect"][
+            "action"
+        ]
         url = ActionLinkManagerErrors.USER_NOT_FOUND.value["redirect"]["url"]
 
         assert context["message"] == message

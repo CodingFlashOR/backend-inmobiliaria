@@ -1,10 +1,10 @@
 from apps.emails.infrastructure.db import TokenRepository
-from apps.emails.applications import AccountActivation
+from apps.emails.applications.account_management import AccountActivation
 from apps.emails.domain.constants import TOKEN_EXPIRATION
 from apps.emails.models import Token
-from apps.emails.utils import TokenGenerator
 from apps.users.infrastructure.db import UserRepository
 from apps.users.models import User
+from apps.utils.generators import TokenGenerator
 from apps.api_exceptions import (
     AccountActivationAPIError,
     ResourceNotFoundAPIError,
@@ -34,7 +34,7 @@ class TestApplicationSendMail:
     def test_send_success(self) -> None:
         """
         This test is responsible for validating the expected behavior of the
-        `send_email` method when the user data is valid.
+        use case when the user data is valid.
         """
 
         # Creating the user data to be used in the test
@@ -71,7 +71,7 @@ class TestApplicationSendMail:
     def test_if_user_already_active(self) -> None:
         """
         This test is responsible for validating the expected behavior of the
-        `send_email` method when the user account is already active.
+        use case when the user account is already active.
         """
 
         # Instantiating the application and calling the method
@@ -93,8 +93,8 @@ class TestApplicationSendMail:
 
     def test_if_conection_db_failed(self, token_repository: Mock) -> None:
         """
-        Test that validates the expected behavior of the view when the connection to
-        the database fails.
+        Test that validates the expected behavior of the use case when the connection
+        to the database fails.
         """
 
         # Mocking the methods
@@ -132,7 +132,7 @@ class TestApplicationCheckToken:
     def test_check_token_success(self) -> None:
         """
         This test is responsible for validating the expected behavior of the
-        `check_token` method when the token is valid.
+        use case when the token is valid.
         """
 
         # Creating the user and token to be used in the test
@@ -162,7 +162,7 @@ class TestApplicationCheckToken:
     def test_if_user_not_found(self, user_repository: Mock) -> None:
         """
         This test is responsible for validating the expected behavior of the
-        `check_token` method when the user is not found.
+        use case when the user is not found.
         """
 
         user = User(uuid=uuid4(), email="user@gmail.com", is_active=False)
@@ -187,7 +187,7 @@ class TestApplicationCheckToken:
     def test_if_token_expired(self) -> None:
         """
         This test is responsible for validating the expected behavior of the
-        `check_token` method when the token is expired.
+        use case when the token is expired.
         """
 
         # Creating the user and token to be used in the test
@@ -222,7 +222,7 @@ class TestApplicationCheckToken:
     def test_if_token_invalid(self) -> None:
         """
         This test is responsible for validating the expected behavior of the
-        `check_token` method when the token is invalid.
+        use case when the token is invalid.
         """
 
         # Creating the user and token to be used in the test
@@ -257,8 +257,8 @@ class TestApplicationCheckToken:
         self, user_repository: Mock, token_repository: Mock
     ) -> None:
         """
-        Test that validates the expected behavior of the view when the connection to
-        the database fails.
+        Test that validates the expected behavior of the use case when the connection
+        to the database fails.
         """
 
         # Creating the user to be used in the test
