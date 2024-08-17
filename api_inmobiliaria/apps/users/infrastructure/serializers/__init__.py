@@ -4,8 +4,6 @@ from .searcher import (
 )
 from .jwt import (
     AuthenticationSerializer,
-    TokenObtainPairSerializer,
     UpdateTokenSerializer,
     LogoutSerializer,
-    JWTErrorMessages,
 )

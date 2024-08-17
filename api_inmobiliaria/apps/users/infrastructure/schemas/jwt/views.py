@@ -1,4 +1,4 @@
-from apps.users.applications.jwt import JWTErrorMessages
+from apps.utils.messages import JWTErrorMessages
 from apps.users.domain.constants import UserProperties
 from apps.api_exceptions import (
     JWTAPIError,
@@ -242,7 +242,6 @@ UpdateTokensSchema = extend_schema(
                     description="The provided JSON Web Tokens do not match the user's last generated tokens.",
                     value={
                         "code": JWTAPIError.default_code,
-                        "detail": JWTErrorMessages.JWT_ERROR.value,
                     },
                 ),
             ],
@@ -261,7 +260,6 @@ UpdateTokensSchema = extend_schema(
                     summary="Token not found",
                     description="The JSON Web Tokens provided do not exist in the database.",
                     value={
-                        "code": JWTErrorMessages.TOKEN_NOT_FOUND_CODE.value,
                         "detail": JWTErrorMessages.TOKEN_NOT_FOUND.value,
                     },
                 ),
@@ -270,7 +268,6 @@ UpdateTokensSchema = extend_schema(
                     summary="User not found",
                     description="The user in the provided JSON Web Tokens does not exist in the database.",
                     value={
-                        "code": JWTErrorMessages.USER_NOT_FOUND_CODE.value,
                         "detail": JWTErrorMessages.USER_NOT_FOUND.value,
                     },
                 ),
@@ -322,7 +319,6 @@ LogoutSchema = extend_schema(
                     description="The provided JSON Web Tokens do not match the user's last generated tokens.",
                     value={
                         "code": JWTAPIError.default_code,
-                        "detail": JWTErrorMessages.JWT_ERROR.value,
                     },
                 ),
             ],
@@ -341,7 +337,6 @@ LogoutSchema = extend_schema(
                     summary="Token not found",
                     description="The JSON Web Tokens provided do not exist in the database.",
                     value={
-                        "code": JWTErrorMessages.TOKEN_NOT_FOUND_CODE.value,
                         "detail": JWTErrorMessages.TOKEN_NOT_FOUND.value,
                     },
                 ),
@@ -350,7 +345,6 @@ LogoutSchema = extend_schema(
                     summary="User not found",
                     description="The user in the provided JSON Web Tokens does not exist in the database.",
                     value={
-                        "code": JWTErrorMessages.USER_NOT_FOUND_CODE.value,
                         "detail": JWTErrorMessages.USER_NOT_FOUND.value,
                     },
                 ),

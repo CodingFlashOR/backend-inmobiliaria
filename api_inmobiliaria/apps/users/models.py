@@ -7,7 +7,6 @@ from django.contrib.auth.models import (
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.utils import timezone
 from apps.users.domain.constants import UserProperties, SearcherProperties
 from uuid import uuid4
 from typing import Dict, Any
@@ -231,85 +230,3 @@ class Searcher(models.Model):
         """
 
         return f"{self.name.capitalize()} {self.last_name.capitalize()}"
-
-
-class JWT(models.Model):
-    """
-    This model represents a JWT token in the system.
-    """
-
-    uuid = models.UUIDField(db_column="uuid", default=uuid4, primary_key=True)
-    user = models.ForeignKey(
-        db_column="user",
-        to="User",
-        to_field="uuid",
-        on_delete=models.SET_NULL,
-        db_index=True,
-        null=True,
-    )
-    jti = models.CharField(
-        db_column="jti",
-        max_length=255,
-        unique=True,
-        db_index=True,
-        null=False,
-        blank=False,
-    )
-    token = models.TextField(db_column="token", null=False, blank=False)
-    expires_at = models.DateTimeField(
-        db_column="expires_at", null=False, blank=False
-    )
-    date_joined = models.DateTimeField(
-        db_column="date_joined", auto_now_add=True
-    )
-
-    class Meta:
-        db_table = "jwt"
-        verbose_name = "JWT"
-        verbose_name_plural = "JWT's"
-
-    def is_expired(self) -> bool:
-        """
-        Check if the token is expired.
-        """
-
-        return self.expires_at < timezone.now()
-
-    def __str__(self) -> str:
-        """
-        Return the string representation of the model.
-        """
-
-        return "Token for {} ({})".format(
-            self.user,
-            self.jti,
-        )
-
-
-class JWTBlacklist(models.Model):
-    """
-    This model represents a blacklisted JWT token.
-    """
-
-    uuid = models.UUIDField(db_column="uuid", default=uuid4, primary_key=True)
-    token = models.OneToOneField(
-        db_column="token_id",
-        to="JWT",
-        to_field="uuid",
-        on_delete=models.CASCADE,
-    )
-    date_joined = models.DateTimeField(
-        db_column="date_joined", auto_now_add=True
-    )
-
-    class Meta:
-        db_table = "jwt_blacklist"
-        verbose_name = "JWT blacklist"
-        verbose_name_plural = "JWT blacklist"
-
-    def __str__(self) -> str:
-        """
-        Return the string representation of the model.
-        """
-
-        return f"Blacklisted token for {self.token}"

@@ -47,10 +47,7 @@ class APIException(BaseAPIException, DetailDictMixin):
         parameters.
         """
 
-        if isinstance(detail, dict):
-            self.detail = {"detail": detail or self.default_detail}
-        else:
-            self.detail = detail or self.default_detail
+        self.detail = detail or self.default_detail
         self.code = code or self.default_code
         super().__init__(detail=self.detail, code=self.code)
 
@@ -101,8 +98,8 @@ class JWTAPIError(APIException):
     """
 
     status_code = status.HTTP_401_UNAUTHORIZED
-    default_detail = "JWT error."
-    default_code = "JWT_error"
+    default_detail = "token error."
+    default_code = "jwt_error"
 
 
 class NotAuthenticatedAPIError(APIException):
