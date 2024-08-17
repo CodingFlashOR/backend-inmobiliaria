@@ -11,6 +11,7 @@ from drf_spectacular.utils import (
 SearcherRegisterSchema = extend_schema(
     operation_id="create_searcher_user",
     tags=["Users"],
+    auth=[],
     responses={
         201: OpenApiResponse(
             description="**(CREATED)** User created correctly."
