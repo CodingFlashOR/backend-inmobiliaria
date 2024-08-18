@@ -1,6 +1,5 @@
-from apps.users.infrastructure.db import JWTRepository
 from apps.users.applications import JWTLogout
-from apps.api_exceptions import DatabaseConnectionAPIError, JWTAPIError
+from apps.api_exceptions import DatabaseConnectionAPIError
 from authentication.jwt import AccessToken, RefreshToken
 from tests.factory import JWTFactory, UserFactory
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
@@ -57,10 +56,8 @@ class TestLogoutApplication:
         assert BlacklistedToken.objects.count() == 0
 
         # Instantiating the application
-        app = self.application_class(jwt_repository=JWTRepository)
-        app.logout_user(
+        self.application_class.logout_user(
             data={"refresh_token": refresh_token, "access_token": access_token},
-            user=user,
         )
 
         # Assert that the refresh token was added to the blacklist
@@ -71,86 +68,25 @@ class TestLogoutApplication:
             token__jti=access_token.payload["jti"]
         ).exists()
 
-    def test_if_tokens_not_match_user_last_tokens(self) -> None:
-        """
-        This test is responsible for validating the expected behavior of the use case
-        when the JWTs do not match the user's last tokens.
-        """
-
-        # Creating the JWTs to be used in the test
-        user, _ = self.user_factory.create_searcher_user(
-            active=True, save=True, add_perm=False
-        )
-        jwt_data = self.jwt_factory.access_and_refresh(
-            role_user=user.content_type.model,
-            user=user,
-            exp_access=False,
-            exp_refresh=False,
-            save=True,
-        )
-        access_token = AccessToken(payload=jwt_data["payloads"]["access_token"])
-        refresh_token = RefreshToken(
-            payload=jwt_data["payloads"]["refresh_token"]
-        )
-
-        # Other tokens are created in order to raise the exception
-        _ = self.jwt_factory.access_and_refresh(
-            role_user=user.content_type.model,
-            user=user,
-            exp_access=False,
-            exp_refresh=False,
-            save=True,
-        )
-
-        # Instantiating the application
-        with pytest.raises(JWTAPIError):
-            app = self.application_class(jwt_repository=JWTRepository)
-            app.logout_user(
-                data={
-                    "refresh_token": refresh_token,
-                    "access_token": access_token,
-                },
-                user=user,
-            )
-
-        # Assert that the refresh token was not added to the blacklist
-        assert BlacklistedToken.objects.count() == 0
-
-    def test_if_conection_db_failed(self, jwt_repository: Mock) -> None:
+    def test_if_conection_db_failed(self) -> None:
         """
         Test that validates the expected behavior of the use case when the connection
         to the database fails.
         """
 
         # Mocking the methods
-        get_checklist_token: Mock = jwt_repository.get_checklist_token
-        get_checklist_token.side_effect = DatabaseConnectionAPIError
-
-        # Creating the JWTs to be used in the test
-        user, _ = self.user_factory.create_searcher_user(
-            active=True, save=True, add_perm=False
-        )
-        jwt_data = self.jwt_factory.access_and_refresh(
-            role_user=user.content_type.model,
-            user=user,
-            exp_access=False,
-            exp_refresh=False,
-            save=True,
-        )
-        access_token = AccessToken(payload=jwt_data["payloads"]["access_token"])
-        refresh_token = RefreshToken(
-            payload=jwt_data["payloads"]["refresh_token"]
-        )
+        access_token = Mock()
+        refresh_token = Mock()
+        blacklist = refresh_token.blacklist
+        blacklist.side_effect = DatabaseConnectionAPIError
 
         # Instantiating the application
         with pytest.raises(DatabaseConnectionAPIError):
-            app = self.application_class(jwt_repository=jwt_repository)
-            app.logout_user(
+            self.application_class.logout_user(
                 data={
                     "refresh_token": refresh_token,
                     "access_token": access_token,
                 },
-                user=user,
             )
 
         # Assert that the refresh token was not added to the blacklist

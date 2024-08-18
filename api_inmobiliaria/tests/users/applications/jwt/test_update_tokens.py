@@ -5,9 +5,8 @@ from apps.users.domain.constants import UserRoles
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,
     ResourceNotFoundAPIError,
-    JWTAPIError,
 )
-from authentication.jwt import AccessToken, RefreshToken
+from authentication.jwt import RefreshToken
 from settings.environments.base import SIMPLE_JWT
 from tests.factory import JWTFactory, UserFactory
 from tests.utils import empty_queryset
@@ -54,28 +53,20 @@ class TestUpdateTokensApplication:
         user, _ = self.user_factory.create_user(
             role_user=role_user, active=True, save=True, add_perm=False
         )
-        jwt_data = self.jwt_factory.access_and_refresh(
+        refresh_data = self.jwt_factory.refresh(
             role_user=user.content_type.model,
             user=user,
-            exp_access=True,
-            exp_refresh=False,
+            exp=False,
             save=True,
         )
-        access_token = AccessToken(
-            payload=jwt_data["payloads"]["access_token"], verify=False
-        )
-        refresh_token = RefreshToken(
-            payload=jwt_data["payloads"]["refresh_token"]
-        )
+        refresh_token = RefreshToken(payload=refresh_data["payload"])
 
         # Instantiating the application
         app = self.application_class(
             user_repository=UserRepository,
             jwt_repository=JWTRepository,
         )
-        tokens = app.new_tokens(
-            data={"refresh_token": refresh_token, "access_token": access_token},
-        )
+        tokens = app.new_tokens(refresh_token=refresh_token)
 
         # Asserting that the tokens were generated
         response_access_token = tokens.get("access_token", False)
@@ -87,9 +78,6 @@ class TestUpdateTokensApplication:
         # Assert that the refresh token was added to the blacklist
         assert BlacklistedToken.objects.filter(
             token__jti=refresh_token.payload["jti"]
-        ).exists()
-        assert not BlacklistedToken.objects.filter(
-            token__jti=access_token.payload["jti"]
         ).exists()
 
         # Assert that the generated tokens were saved in the database
@@ -143,19 +131,13 @@ class TestUpdateTokensApplication:
         user, _ = self.user_factory.create_searcher_user(
             active=True, save=True, add_perm=False
         )
-        jwt_data = self.jwt_factory.access_and_refresh(
+        refresh_data = self.jwt_factory.refresh(
             role_user=user.content_type.model,
             user=user,
-            exp_access=True,
-            exp_refresh=False,
+            exp=False,
             save=False,
         )
-        access_token = AccessToken(
-            payload=jwt_data["payloads"]["access_token"], verify=False
-        )
-        refresh_token = RefreshToken(
-            payload=jwt_data["payloads"]["refresh_token"]
-        )
+        refresh_token = RefreshToken(payload=refresh_data["payload"])
 
         # Instantiating the application
         with pytest.raises(ResourceNotFoundAPIError):
@@ -163,67 +145,10 @@ class TestUpdateTokensApplication:
                 user_repository=UserRepository,
                 jwt_repository=JWTRepository,
             )
-            _ = app.new_tokens(
-                data={
-                    "refresh_token": refresh_token,
-                    "access_token": access_token,
-                },
-            )
+            _ = app.new_tokens(refresh_token=refresh_token)
 
         # Asserting that the tokens were not generated
         assert OutstandingToken.objects.count() == 0
-
-        # Assert that the refresh token was not added to the blacklist
-        assert BlacklistedToken.objects.count() == 0
-
-    def test_if_tokens_not_match_user_last_tokens(self) -> None:
-        """
-        This test is responsible for validating the expected behavior of the use case
-        when the JWTs do not match the user.
-        """
-
-        # Creating the JWTs to be used in the test
-        user, _ = self.user_factory.create_searcher_user(
-            active=True, save=True, add_perm=False
-        )
-        jwt_data = self.jwt_factory.access_and_refresh(
-            role_user=user.content_type.model,
-            user=user,
-            exp_access=True,
-            exp_refresh=False,
-            save=True,
-        )
-        access_token = AccessToken(
-            payload=jwt_data["payloads"]["access_token"], verify=False
-        )
-        refresh_token = RefreshToken(
-            payload=jwt_data["payloads"]["refresh_token"]
-        )
-
-        # Other tokens are created in order to raise the exception
-        _ = self.jwt_factory.access_and_refresh(
-            role_user=user.content_type.model,
-            user=user,
-            exp_access=True,
-            exp_refresh=False,
-            save=True,
-        )
-
-        # Instantiating the application
-        with pytest.raises(JWTAPIError):
-            app = self.application_class(
-                user_repository=UserRepository,
-                jwt_repository=JWTRepository,
-            )
-            _ = app.new_tokens(
-                data={
-                    "refresh_token": refresh_token,
-                    "access_token": access_token,
-                },
-            )
-
-        # Asserting that the tokens were not generated
-        assert OutstandingToken.objects.count() <= 4
 
         # Assert that the refresh token was not added to the blacklist
         assert BlacklistedToken.objects.count() == 0
@@ -239,19 +164,13 @@ class TestUpdateTokensApplication:
         get_user_data.return_value = empty_queryset(model=User)
 
         # Creating the JWTs to be used in the test
-        jwt_data = self.jwt_factory.access_and_refresh(
-            user=User(),
+        refresh_data = self.jwt_factory.refresh(
             role_user="AnyUser",
-            exp_access=True,
-            exp_refresh=False,
+            user=User(),
+            exp=False,
             save=False,
         )
-        access_token = AccessToken(
-            payload=jwt_data["payloads"]["access_token"], verify=False
-        )
-        refresh_token = RefreshToken(
-            payload=jwt_data["payloads"]["refresh_token"]
-        )
+        refresh_token = RefreshToken(payload=refresh_data["payload"])
 
         # Instantiating the application
         with pytest.raises(ResourceNotFoundAPIError):
@@ -259,12 +178,7 @@ class TestUpdateTokensApplication:
                 user_repository=user_repository,
                 jwt_repository=JWTRepository,
             )
-            _ = app.new_tokens(
-                data={
-                    "refresh_token": refresh_token,
-                    "access_token": access_token,
-                },
-            )
+            _ = app.new_tokens(refresh_token=refresh_token)
 
         # Asserting that the tokens were not generated
         assert OutstandingToken.objects.count() == 0
@@ -283,19 +197,13 @@ class TestUpdateTokensApplication:
         get_user_data.side_effect = DatabaseConnectionAPIError
 
         # Creating the JWTs to be used in the test
-        jwt_data = self.jwt_factory.access_and_refresh(
-            user=User(),
+        refresh_data = self.jwt_factory.refresh(
             role_user="AnyUser",
-            exp_access=True,
-            exp_refresh=False,
+            user=User(),
+            exp=False,
             save=False,
         )
-        access_token = AccessToken(
-            payload=jwt_data["payloads"]["access_token"], verify=False
-        )
-        refresh_token = RefreshToken(
-            payload=jwt_data["payloads"]["refresh_token"]
-        )
+        refresh_token = RefreshToken(payload=refresh_data["payload"])
 
         # Instantiating the application
         with pytest.raises(DatabaseConnectionAPIError):
@@ -303,12 +211,7 @@ class TestUpdateTokensApplication:
                 user_repository=user_repository,
                 jwt_repository=JWTRepository,
             )
-            _ = app.new_tokens(
-                data={
-                    "refresh_token": refresh_token,
-                    "access_token": access_token,
-                },
-            )
+            _ = app.new_tokens(refresh_token=refresh_token)
 
         # Asserting that the tokens were not generated
         assert OutstandingToken.objects.count() == 0
