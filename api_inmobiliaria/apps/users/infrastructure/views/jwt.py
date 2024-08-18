@@ -105,7 +105,9 @@ class UpdateTokenAPIView(GenericAPIView):
             jwt_repository=JWTRepository,
             user_repository=UserRepository,
         )
-        tokens = app.new_tokens(data=serializer.validated_data)
+        tokens = app.new_tokens(
+            refresh_token=serializer.validated_data["refresh_token"]
+        )
 
         return Response(
             data=tokens,
@@ -151,8 +153,7 @@ class LogoutAPIView(PermissionMixin, GenericAPIView):
 
         data = serializer.validated_data
         data["access_token"] = request.auth
-        app = self.application_class(jwt_repository=JWTRepository)
-        app.logout_user(data=data, user=request.user)
+        self.application_class.logout_user(data=data)
 
         return Response(
             status=status.HTTP_200_OK,

@@ -327,52 +327,7 @@ class TestUpdateTokensAPIView:
         status_code_expected = ResourceNotFoundAPIError.status_code
         message = JWTErrorMessages.TOKEN_NOT_FOUND.value
         response_code_expected = message["code"]
-        response_data_expected = message["detail"].format(
-            token_type="access or refresh"
-        )
-
-        assert response.status_code == status_code_expected
-        assert response.data["code"] == response_code_expected
-        assert response.data["detail"] == response_data_expected
-
-    def test_if_tokens_not_match_user_last_tokens(self) -> None:
-        """
-        This test is responsible for validating the expected behavior of the view
-        when the JWTs do not match the user.
-        """
-
-        # Creating the JWTs to be used in the test
-        user, _ = self.user_factory.create_searcher_user(
-            active=True, save=True, add_perm=False
-        )
-        jwt_data = self.jwt_factory.access_and_refresh(
-            role_user=user.content_type.model,
-            user=user,
-            exp_access=True,
-            exp_refresh=False,
-            save=True,
-        )
-
-        # Other tokens are created in order to raise the exception
-        _ = self.jwt_factory.access_and_refresh(
-            role_user=user.content_type.model,
-            user=user,
-            exp_access=True,
-            exp_refresh=False,
-            save=True,
-        )
-
-        # Simulating the request
-        response = self.client.post(
-            path=self.path,
-            data=jwt_data["tokens"],
-            content_type="application/json",
-        )
-
-        # Asserting that response data is correct
-        status_code_expected = JWTAPIError.status_code
-        response_code_expected = JWTAPIError.default_code
-        response_data_expected = JWTErrorMessages.LAST_TOKENS.value
+        response_data_expected = message["detail"].format(token_type="refresh")
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == response_code_expected
