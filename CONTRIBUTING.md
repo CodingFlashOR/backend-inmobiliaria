@@ -28,7 +28,7 @@ Usamos la biblioteca [commitizen](https://commitizen-tools.github.io/commitizen/
 - **Realización del commit fallida:** Cuando se intenta ejecutar una confirmación y el código no está formateado correctamente, el proceso de confirmación se cancelará. La consola mostrará los archivos que necesitan formato y las áreas específicas dentro de cada archivo que no se adhieren al formato de código establecido. No se realizará un commit con éxito hasta que sé de el formato correcto a los archivos que lo requieren.
 
 <div>
-    <img src="/images/CommitizenExanple1.png">
+    <img src="/images/CommitizenExample1.png">
 </div>
 
 Al existir un fichero con un formato incorrecto puede usar la biblioteca **black** para dar formato al codigo de manera automatica con el siguiente commando.
