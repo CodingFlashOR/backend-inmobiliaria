@@ -1,4 +1,4 @@
-from apps.emails.domain.typing import Token
+from apps.emails.typing import Token
 from apps.emails import models
 from apps.api_exceptions import DatabaseConnectionAPIError
 from django.db import OperationalError
