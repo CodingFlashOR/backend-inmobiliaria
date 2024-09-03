@@ -3,7 +3,7 @@ from apps.users.interfaces import (
     IUserRepository,
     IJWTRepository,
 )
-from apps.emails.domain.abstractions import ITokenRepository, ITokenGenerator
+from apps.emails.interfaces import ITokenRepository, ITokenGenerator
 from django.contrib.auth.models import Group, Permission
 from django.db.models.query import QuerySet
 from unittest.mock import Mock
