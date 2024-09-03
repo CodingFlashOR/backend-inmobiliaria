@@ -1,5 +1,5 @@
-from apps.emails.domain.abstractions import ITokenGenerator, ITokenRepository
 from apps.emails.domain.typing import Token
+from apps.emails.interfaces import ITokenGenerator, ITokenRepository
 from apps.emails.paths import TEMPLATES
 from apps.users.typing import UserUUID
 from apps.users.interfaces import IUserRepository
