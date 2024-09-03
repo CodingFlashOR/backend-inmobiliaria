@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group, Permission
-from apps.users.domain.constants import USER_ROLE_PERMISSIONS, UserRoles
+from apps.users.constants import USER_ROLE_PERMISSIONS, UserRoles
 from typing import List
 
 

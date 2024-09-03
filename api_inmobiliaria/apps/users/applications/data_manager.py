@@ -1,4 +1,4 @@
-from apps.users.domain.constants import USER_ROLE_PERMISSIONS
+from apps.users.constants import USER_ROLE_PERMISSIONS
 from apps.users.interfaces import IUserRepository
 from apps.users.models import BaseUser
 from apps.api_exceptions import PermissionDeniedAPIError

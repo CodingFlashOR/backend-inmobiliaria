@@ -10,7 +10,7 @@ from apps.users.infrastructure.schemas.searcher import (
     PATCHearcherSchema,
 )
 from apps.users.applications import RegisterUser, UserDataManager
-from apps.users.domain.constants import UserRoles
+from apps.users.constants import UserRoles
 from apps.utils.views import MethodHTTPMapped, PermissionMixin
 from apps.api_exceptions import PermissionDeniedAPIError
 from authentication.jwt import JWTAuthentication

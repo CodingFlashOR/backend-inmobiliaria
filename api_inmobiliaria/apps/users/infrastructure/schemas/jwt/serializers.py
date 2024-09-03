@@ -1,4 +1,4 @@
-from apps.users.domain.constants import UserProperties
+from apps.users.constants import UserProperties
 from drf_spectacular.utils import (
     extend_schema_serializer,
     OpenApiExample,

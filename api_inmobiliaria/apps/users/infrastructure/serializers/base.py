@@ -1,5 +1,5 @@
 from apps.users.infrastructure.db import UserRepository
-from apps.users.domain.constants import UserProperties
+from apps.users.constants import UserProperties
 from apps.utils.messages import ErrorMessagesSerializer, ERROR_MESSAGES
 from rest_framework import serializers
 from django.core.validators import RegexValidator
