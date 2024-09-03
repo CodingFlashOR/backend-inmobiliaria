@@ -1,4 +1,4 @@
-from apps.users.domain.typing import JSONWebToken, JWTPayload
+from apps.users.typing import JSONWebToken, JWTPayload
 from apps.users.models import BaseUser
 from apps.api_exceptions import DatabaseConnectionAPIError
 from rest_framework_simplejwt.token_blacklist.models import (
@@ -6,7 +6,6 @@ from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken,
 )
 from rest_framework_simplejwt.utils import datetime_from_epoch
-from django.db.models import QuerySet
 from django.db import OperationalError
 from django.utils import timezone
 

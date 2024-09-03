@@ -2,7 +2,7 @@ from apps.emails.applications.managers import ActionLinkManager
 from apps.emails.domain.constants import SubjectsMail
 from apps.emails.domain.typing import Token
 from apps.emails.paths import TEMPLATES
-from apps.users.domain.typing import UserUUID
+from apps.users.typing import UserUUID
 from apps.users.models import BaseUser
 from apps.utils.messages import ActivationErrors
 from apps.api_exceptions import (

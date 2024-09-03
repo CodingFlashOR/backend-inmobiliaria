@@ -1,5 +1,5 @@
 from apps.users.infrastructure.db import JWTRepository, UserRepository
-from apps.users.domain.typing import JWTPayload
+from apps.users.typing import JWTPayload
 from apps.users.models import BaseUser
 from apps.utils.messages import JWTErrorMessages
 from apps.api_exceptions import (
