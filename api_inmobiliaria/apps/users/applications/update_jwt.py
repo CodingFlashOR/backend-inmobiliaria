@@ -1,5 +1,5 @@
-from apps.users.domain.abstractions import IJWTRepository, IUserRepository
 from apps.users.domain.typing import JSONWebToken
+from apps.users.interfaces import IJWTRepository, IUserRepository
 from apps.api_exceptions import ResourceNotFoundAPIError
 from apps.utils.messages import JWTErrorMessages
 from authentication.jwt import AccessToken, RefreshToken

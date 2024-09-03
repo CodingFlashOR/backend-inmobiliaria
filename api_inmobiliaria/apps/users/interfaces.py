@@ -1,7 +1,7 @@
-from apps.users.models import BaseUser
-from django.db.models import Model
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
-from .typing import JSONWebToken, JWTPayload
+from django.db.models import Model
+from apps.users.domain.typing import JSONWebToken, JWTPayload
+from apps.users.models import BaseUser
 from typing import Dict, Any, Protocol
 
 
