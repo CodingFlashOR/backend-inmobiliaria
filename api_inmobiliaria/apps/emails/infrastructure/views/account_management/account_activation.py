@@ -3,7 +3,7 @@ from apps.emails.infrastructure.serializers import (
     Base64UserTokenSerializer,
 )
 from apps.emails.applications.account_management import AccountActivation
-from apps.emails.domain.constants import LOGIN_URL
+from apps.emails.constants import LOGIN_URL
 from apps.emails.paths import TEMPLATES
 from apps.users.infrastructure.db import UserRepository
 from apps.utils.generators import TokenGenerator
