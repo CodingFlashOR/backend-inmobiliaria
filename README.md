@@ -139,7 +139,7 @@ Si está interesado en contribuir a este proyecto, consulte nuestra guía [CONTR
 ## 6. Documentación
 | Título | Descripción | 
 |----------|----------|
-| [Especifcación de requerimientos](https://writer.zoho.com/writer/open/gvaj1411213d7d4bb4c818860a3bea679ecbb) | Este documento detalla los requerimientos funcionales, no funcionales y el comportamiento de las diferentes interfaces del sistema. |
+| [Especificación de requerimientos](https://writer.zoho.com/writer/open/gvaj1411213d7d4bb4c818860a3bea679ecbb) | Este documento detalla los requerimientos funcionales, no funcionales y el comportamiento de las diferentes interfaces del sistema. |
 | [Base de datos](https://app.diagrams.net/?title=EsquemaDB.drawio#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1uJAsYcVnTEviwOq5JZ_q_2VWnpvgPfBd%26export%3Ddownload)   | Esquema de la base de datos del proyecto. |
 | [Documentación de la API](https://carlosandresaguirreariza.pythonanywhere.com/) | Esta es la documentación para la API del proyecto, que incluye detalles sobre los endpoints disponibles y los datos que se pueden enviar y recibir. |
 
@@ -150,9 +150,14 @@ Si está interesado en contribuir a este proyecto, consulte nuestra guía [CONTR
 ## 8. Colaboradores
 A continuación se presentan a las personas que están aportando al desarrollo de este proyecto.
 
-| Nombre | Enlaces | Roles | 
+
+| Nombre | Enlaces | Roles |
 |----------|:--------:|:--------:|
 | Lucas A Bravi | [LinkedIn](https://www.linkedin.com/in/lucasandr%C3%A9sbravi/) - [Portafolio](https://lucasbravidi1062b1.myportfolio.com/) | Diseño UX/UI |
+| Anabel García Lannes | [LinkedIn](https://www.linkedin.com/in/anabelgarc%C3%ADalannes/) - [GitHub](https://github.com/anabelgl) | Diseño UX/UI |
 | Flor Rivas Luna | [LinkedIn](https://www.linkedin.com/in/floridesign/) - [GitHub](https://github.com/FlorRivas) - [Behance](https://www.behance.net/floridesign) | Diseño UX/UI |
+| Leandro Emanuel Diaz | [GitHub]( https://github.com/leandiazz) - [LinkedIn](https://www.linkedin.com/in/leandiaz/) | Frontend |
 | Ignacio Nicolas Basilio Buracco | [GitHub](https://github.com/NachoBasilio) - [LinkedIn](https://www.linkedin.com/in/ignacio-nicolas-basilio-buracco/) | Frontend |
 | Carlos Andres Aguirre Ariza | [GitHub](https://github.com/The-Asintota) - [LinkedIn](https://www.linkedin.com/in/carlosaguirredev/) | Backend - Frontend |
+| Nadia Mariana | [LinkedIn](https://www.linkedin.com/in/nadia-mariana-fridel-490ab263/) | QA |
+| Yisell Coello Labrada | [LinkedIn](https://www.linkedin.com/in/yisell-coello-labrada-725668250/) | QA |
