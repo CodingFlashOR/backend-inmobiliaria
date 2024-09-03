@@ -10,7 +10,9 @@ from apps.users.infrastructure.schemas.searcher import (
     PATCHearcherSchema,
 )
 from apps.users.applications import RegisterUser, UserDataManager
+from apps.users.domain.constants import UserRoles
 from apps.utils.views import MethodHTTPMapped, PermissionMixin
+from apps.api_exceptions import PermissionDeniedAPIError
 from authentication.jwt import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.serializers import Serializer
@@ -49,6 +51,17 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
         "PATCH": SearcherRoleDataSerializer,
     }
 
+    @staticmethod
+    def _check_user_role(request: Request) -> None:
+        """
+        Check if the user has the correct role to access the view.
+        """
+
+        user_role = request.auth.payload["user_role"]
+
+        if user_role != UserRoles.SEARCHER.value:
+            raise PermissionDeniedAPIError()
+
     @GETSearcherSchema
     def get(self, request: Request, *args, **kwargs) -> Response:
         """
@@ -59,6 +72,7 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
         permission to read their own information.
         """
 
+        self._check_user_role(request=request)
         data_manager: UserDataManager = self.get_application_class(
             user_repository=UserRepository
         )
@@ -118,6 +132,7 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
         information, provided the user has permission to update their own information.
         """
 
+        self._check_user_role(request=request)
         serializer_class = self.get_serializer_class()
         serializer: Serializer = serializer_class(
             data=request.data, partial=True

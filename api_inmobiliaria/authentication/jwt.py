@@ -24,7 +24,7 @@ class Token(BaseToken):
     JWT.
     """
 
-    _jwt_repository: JWTRepository
+    _jwt_repository = JWTRepository
 
     def __init__(
         self,
@@ -90,7 +90,7 @@ class BlacklistMixin:
 
     payload: Dict[str, Any]
     token_type: str
-    _jwt_repository = JWTRepository
+    _jwt_repository: JWTRepository
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
