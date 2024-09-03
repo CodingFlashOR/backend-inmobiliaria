@@ -37,12 +37,19 @@ class Command(BaseCommand):
         for perm_codename in permissions:
             try:
                 perm = Permission.objects.get(codename=perm_codename)
-                group.permissions.add(perm)
 
-                self.stdout.write(
-                    msg=f"  Added {self.style.MIGRATE_LABEL(text=perm_codename)} permission... "
-                    + self.style.SUCCESS(text="OK")
-                )
+                if group.permissions.filter(id=perm.id).exists():
+                    self.stdout.write(
+                        msg=f"  Permission {self.style.MIGRATE_LABEL(text=perm_codename)} already exists... "
+                        + self.style.NOTICE(text="SKIPPED")
+                    )
+                else:
+                    group.permissions.add(perm)
+
+                    self.stdout.write(
+                        msg=f"  Added {self.style.MIGRATE_LABEL(text=perm_codename)} permission... "
+                        + self.style.SUCCESS(text="OK")
+                    )
             except Permission.DoesNotExist:
                 self.stdout.write(
                     msg=f"  Permission {self.style.MIGRATE_LABEL(text=perm_codename)} not found... "
