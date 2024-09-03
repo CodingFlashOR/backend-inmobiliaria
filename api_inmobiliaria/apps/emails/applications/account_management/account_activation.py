@@ -1,6 +1,6 @@
 from apps.emails.applications.managers import ActionLinkManager
 from apps.emails.constants import SubjectsMail
-from apps.emails.domain.typing import Token
+from apps.emails.typing import Token
 from apps.emails.paths import TEMPLATES
 from apps.users.typing import UserUUID
 from apps.users.models import BaseUser

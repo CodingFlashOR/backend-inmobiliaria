@@ -1,5 +1,5 @@
 from apps.users.models import BaseUser
-from apps.emails.domain.typing import Token
+from apps.emails.typing import Token
 from apps.emails import models
 from typing import Protocol
 
