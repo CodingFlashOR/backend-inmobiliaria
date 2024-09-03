@@ -1,6 +1,6 @@
 from apps.users.infrastructure.db import UserRepository
 from apps.users.applications import RegisterUser
-from apps.users.domain.constants import USER_ROLE_PERMISSIONS, UserRoles
+from apps.users.constants import USER_ROLE_PERMISSIONS, UserRoles
 from apps.users.models import BaseUser, Searcher
 from apps.emails.domain.constants import SubjectsMail
 from apps.api_exceptions import DatabaseConnectionAPIError

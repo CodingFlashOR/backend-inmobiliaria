@@ -4,7 +4,7 @@ from apps.users.infrastructure.schemas.searcher import (
     SearcherRegisterSerializerSchema,
     RoleDataSerializerSchema,
 )
-from apps.users.domain.constants import UserRoles, SearcherProperties
+from apps.users.constants import UserRoles, SearcherProperties
 from apps.users.models import BaseUser, Searcher
 from apps.utils.messages import ErrorMessagesSerializer, ERROR_MESSAGES
 from rest_framework import serializers

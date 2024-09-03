@@ -1,7 +1,7 @@
 from apps.users.infrastructure.db import JWTRepository, UserRepository
 from apps.users.applications import JWTUpdate
 from apps.users.models import BaseUser
-from apps.users.domain.constants import UserRoles
+from apps.users.constants import UserRoles
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,
     ResourceNotFoundAPIError,

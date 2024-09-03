@@ -7,7 +7,7 @@ from django.contrib.auth.models import (
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from apps.users.domain.constants import UserProperties, SearcherProperties
+from apps.users.constants import UserProperties, SearcherProperties
 from typing import Dict, Any
 from uuid import uuid4
 

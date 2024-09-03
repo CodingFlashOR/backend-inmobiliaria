@@ -1,4 +1,4 @@
-from apps.users.domain.constants import SearcherProperties
+from apps.users.constants import SearcherProperties
 from apps.users.models import Searcher
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,

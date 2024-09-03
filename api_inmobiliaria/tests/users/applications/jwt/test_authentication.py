@@ -1,5 +1,5 @@
 from apps.users.applications import JWTLogin
-from apps.users.domain.constants import UserRoles
+from apps.users.constants import UserRoles
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,
     PermissionDeniedAPIError,

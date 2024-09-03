@@ -1,4 +1,4 @@
-from apps.users.domain.constants import UserRoles
+from apps.users.constants import UserRoles
 from apps.users.models import BaseUser
 from apps.utils.messages import JWTErrorMessages
 from apps.api_exceptions import (

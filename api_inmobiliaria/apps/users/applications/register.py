@@ -1,4 +1,4 @@
-from apps.users.domain.constants import UserRoles
+from apps.users.constants import UserRoles
 from apps.users.interfaces import IUserRepository
 from apps.users.models import BaseUser
 from apps.users.signals import account_activation_mail

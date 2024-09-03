@@ -1,4 +1,4 @@
-from apps.users.domain.constants import UserRoles, UserProperties
+from apps.users.constants import UserRoles, UserProperties
 from apps.utils.messages import JWTErrorMessages
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,

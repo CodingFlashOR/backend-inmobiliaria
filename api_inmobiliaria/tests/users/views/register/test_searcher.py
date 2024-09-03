@@ -1,4 +1,4 @@
-from apps.users.domain.constants import (
+from apps.users.constants import (
     SearcherProperties,
     UserProperties,
 )

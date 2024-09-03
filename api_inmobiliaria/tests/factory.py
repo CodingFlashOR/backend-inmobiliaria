@@ -1,5 +1,5 @@
 from settings.environments.base import SIMPLE_JWT
-from apps.users.domain.constants import (
+from apps.users.constants import (
     ACCESS_TOKEN_LIFETIME,
     REFRESH_TOKEN_LIFETIME,
     UserRoles,
