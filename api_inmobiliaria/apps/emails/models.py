@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from apps.emails.constants import TOKEN_EXPIRATION
 
 
 class Token(models.Model):
@@ -31,8 +32,6 @@ class Token(models.Model):
         """
         Check if the token is expired.
         """
-
-        from apps.emails.domain.constants import TOKEN_EXPIRATION
 
         time_limit = self.date_joined + TOKEN_EXPIRATION
         current_datetime = timezone.now()

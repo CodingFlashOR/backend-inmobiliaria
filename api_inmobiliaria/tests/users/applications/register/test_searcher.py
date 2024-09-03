@@ -2,7 +2,7 @@ from apps.users.infrastructure.db import UserRepository
 from apps.users.applications import RegisterUser
 from apps.users.constants import USER_ROLE_PERMISSIONS, UserRoles
 from apps.users.models import BaseUser, Searcher
-from apps.emails.domain.constants import SubjectsMail
+from apps.emails.constants import SubjectsMail
 from apps.api_exceptions import DatabaseConnectionAPIError
 from tests.factory import UserFactory
 from django.test import RequestFactory

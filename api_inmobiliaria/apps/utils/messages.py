@@ -1,4 +1,4 @@
-from apps.emails.domain.constants import LOGIN_URL, REGISTER_URL, HOME_URL
+from apps.emails.constants import LOGIN_URL, REGISTER_URL, HOME_URL
 from rest_framework.serializers import Serializer
 from enum import Enum
 

@@ -1,4 +1,4 @@
-from apps.emails.domain.constants import LOGIN_URL, TOKEN_EXPIRATION
+from apps.emails.constants import LOGIN_URL, TOKEN_EXPIRATION
 from apps.emails.paths import TEMPLATES
 from apps.api_exceptions import DatabaseConnectionAPIError
 from apps.utils.messages import ActionLinkManagerErrors

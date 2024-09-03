@@ -1,6 +1,6 @@
 from apps.emails.infrastructure.db import TokenRepository
 from apps.emails.applications.account_management import AccountActivation
-from apps.emails.domain.constants import TOKEN_EXPIRATION
+from apps.emails.constants import TOKEN_EXPIRATION
 from apps.emails.models import Token
 from apps.users.infrastructure.db import UserRepository
 from apps.users.models import BaseUser
