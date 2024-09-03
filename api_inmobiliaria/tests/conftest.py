@@ -1,5 +1,5 @@
 from apps.users.domain.constants import USER_ROLE_PERMISSIONS, UserRoles
-from apps.users.domain.abstractions import (
+from apps.users.interfaces import (
     IUserRepository,
     IJWTRepository,
 )
