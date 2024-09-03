@@ -1,4 +1,4 @@
-from apps.users.domain.typing import JSONWebToken
+from apps.users.typing import JSONWebToken
 from apps.users.interfaces import IJWTRepository, IUserRepository
 from apps.api_exceptions import ResourceNotFoundAPIError
 from apps.utils.messages import JWTErrorMessages

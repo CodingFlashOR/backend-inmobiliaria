@@ -1,7 +1,7 @@
 from apps.emails.domain.abstractions import ITokenGenerator, ITokenRepository
 from apps.emails.domain.typing import Token
 from apps.emails.paths import TEMPLATES
-from apps.users.domain.typing import UserUUID
+from apps.users.typing import UserUUID
 from apps.users.interfaces import IUserRepository
 from apps.users.models import BaseUser
 from apps.utils.messages import ActionLinkManagerErrors

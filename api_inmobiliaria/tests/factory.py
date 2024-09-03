@@ -4,7 +4,7 @@ from apps.users.constants import (
     REFRESH_TOKEN_LIFETIME,
     UserRoles,
 )
-from apps.users.domain.typing import (
+from apps.users.typing import (
     AccessToken,
     RefreshToken,
     JSONWebToken,
