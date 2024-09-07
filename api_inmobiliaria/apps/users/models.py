@@ -148,8 +148,12 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(db_column="is_superuser", default=False)
     is_active = models.BooleanField(db_column="is_active", default=False)
     is_deleted = models.BooleanField(db_column="is_deleted", default=False)
-    deleted_at = models.DateTimeField(db_column="deleted_at", null=True, blank=True)
-    last_login = models.DateTimeField(db_column="last_login", null=True, blank=True)
+    deleted_at = models.DateTimeField(
+        db_column="deleted_at", null=True, blank=True
+    )
+    last_login = models.DateTimeField(
+        db_column="last_login", null=True, blank=True
+    )
     date_joined = models.DateTimeField(
         db_column="date_joined", auto_now_add=True
     )
