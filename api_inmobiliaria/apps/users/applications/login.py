@@ -60,5 +60,4 @@ class JWTLogin:
         return {
             "access_token": str(access_token),
             "refresh_token": str(refresh_token),
-            "user_role": user_role,
         }
