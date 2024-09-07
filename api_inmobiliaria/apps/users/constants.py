@@ -2,7 +2,7 @@ from enum import Enum
 from datetime import timedelta
 
 
-ACCESS_TOKEN_LIFETIME = timedelta(minutes=120)
+ACCESS_TOKEN_LIFETIME = timedelta(hours=2)
 REFRESH_TOKEN_LIFETIME = timedelta(days=1)
 
 

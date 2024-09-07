@@ -43,7 +43,7 @@ class JWTAuth(OpenApiAuthenticationExtension):
             "type": "http",
             "scheme": "bearer",
             "bearerFormat": "JWT",
-            "description": "To use endpoints that employ **JSON Web Token** as an authentication tool, you must enter the access token you obtained when using the endpoint (`POST api/v1/user/jwt/login/`).\n\n**Example:**\n\nBearer <access_token>",
+            "description": "To use endpoints that employ **JSON Web Token** as an authentication tool, you must enter the access token you obtained when using the endpoint (`POST api/v1/user/jwt/login/`).\n\n**Example:**\n\n<access_token>",
         }
 
 
@@ -68,11 +68,10 @@ AuthenticationSchema = extend_schema(
                 OpenApiExample(
                     name="response_ok",
                     summary="User authenticated",
-                    description=f"The user has been successfully authenticated and the access and refresh tokens are returned. The access token with a duration of {ACCESS_TOKEN_LIFETIME} minutes used to access protected API resources. This token is sent with each request to the server to authenticate the user, while the refresh token with a duration of {REFRESH_TOKEN_LIFETIME} day that is used to obtain new JSON Web Tokens without requiring the user to authenticate again. This is useful when the access token has expired, but the user should still be authenticated.",
+                    description=f"The user has been successfully authenticated and the access and refresh tokens are returned. The access token with a duration of **{int(ACCESS_TOKEN_LIFETIME.total_seconds() / 60)}** minutes used to access protected API resources. This token is sent with each request to the server to authenticate the user, while the refresh token with a duration of **{REFRESH_TOKEN_LIFETIME.days}** day that is used to obtain new JSON Web Tokens without requiring the user to authenticate again. This is useful when the access token has expired, but the user should still be authenticated.",
                     value={
                         "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzExMDU0MzYyLCJpYXQiOjE3MTEwNDcxNjIsImp0aSI6IjY0MTE2YzgyYjhmMDQzOWJhNTJkZGZmMzgyNzQ2ZTIwIiwidXNlcl9pZCI6IjJhNmI0NTNiLWZhMmItNDMxOC05YzM1LWIwZTk2ZTg5NGI2MyJ9.gfhWpy5rYY6P3Xrg0usS6j1KhEvF1HqWMiU7AaFkp9A",
                         "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A",
-                        "user_role": UserRoles.SEARCHER.value,
                     },
                 ),
             ],
@@ -128,7 +127,7 @@ AuthenticationSchema = extend_schema(
                 OpenApiExample(
                     name="authentication_failed",
                     summary="Credentials invalid",
-                    description="The email or password provided is incorrect.",
+                    description="This response is displayed when a user with the provided email is not found or the password is incorrect.",
                     value={
                         "code": AuthenticationFailedAPIError.default_code,
                         "detail": JWTErrorMessages.AUTHENTICATION_FAILED.value,
@@ -137,7 +136,7 @@ AuthenticationSchema = extend_schema(
                 OpenApiExample(
                     name="user_inactive",
                     summary="Inactive user account",
-                    description="The user account is inactive.",
+                    description="This response is displayed when the user trying to authenticate has an inactive account.",
                     value={
                         "code": AuthenticationFailedAPIError.default_code,
                         "detail": JWTErrorMessages.INACTIVE_ACCOUNT.value,
@@ -269,7 +268,7 @@ UpdateTokensSchema = extend_schema(
                 OpenApiExample(
                     name="token_blacklisted",
                     summary="Token exists in the blacklist",
-                    description="The access token exists in the blacklist. Tokens that exist in the blacklist cannot be used in authentication processes and creation of new tokens.",
+                    description="The access or refresh token exists in the blacklist. Tokens that exist in the blacklist cannot be used in authentication processes and creation of new tokens.",
                     value={
                         "code": JWTAPIError.default_code,
                         "detail": JWTErrorMessages.BLACKLISTED.value.format(
@@ -370,7 +369,7 @@ LogoutSchema = extend_schema(
                 OpenApiExample(
                     name="token_blacklisted",
                     summary="Token exists in the blacklist",
-                    description="The access token exists in the blacklist. Tokens that exist in the blacklist cannot be used in authentication processes and creation of new tokens.",
+                    description="The access or refresh token exists in the blacklist.",
                     value={
                         "code": JWTAPIError.default_code,
                         "detail": JWTErrorMessages.BLACKLISTED.value.format(
@@ -381,7 +380,7 @@ LogoutSchema = extend_schema(
                 OpenApiExample(
                     name="access_token_not_provided",
                     summary="Access token not provided",
-                    description="The access token was not provided.",
+                    description="The access token was not provided in the request header.",
                     value={
                         "code": NotAuthenticatedAPIError.default_code,
                         "detail": NotAuthenticatedAPIError.default_detail,
@@ -399,9 +398,9 @@ LogoutSchema = extend_schema(
             },
             examples=[
                 OpenApiExample(
-                    name="is_authenticated",
-                    summary="User is not authenticated",
-                    description="The user is not authenticated.",
+                    name="permission_denied",
+                    summary="Permission denied",
+                    description="This response is displayed when the user does not have permission to read your data or does not have the required role.",
                     value={
                         "code": PermissionDeniedAPIError.default_code,
                         "detail": PermissionDeniedAPIError.default_detail,

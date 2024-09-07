@@ -162,7 +162,7 @@ GETSearcherSchema = extend_schema(
                 OpenApiExample(
                     name="invalid_expired",
                     summary="Access token invalid or expired",
-                    description="The access token is invalid or has expired.",
+                    description="The access token sent in the request header is invalid or has expired.",
                     value={
                         "code": JWTAPIError.default_code,
                         "detail": JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
@@ -173,7 +173,7 @@ GETSearcherSchema = extend_schema(
                 OpenApiExample(
                     name="token_blacklisted",
                     summary="Access token exists in the blacklist",
-                    description="The access token exists in the blacklist.",
+                    description="The access token sent in the request header exists in the blacklist.",
                     value={
                         "code": JWTAPIError.default_code,
                         "detail": JWTErrorMessages.BLACKLISTED.value.format(
@@ -184,7 +184,7 @@ GETSearcherSchema = extend_schema(
                 OpenApiExample(
                     name="access_token_not_provided",
                     summary="Access token not provided",
-                    description="The access token was not provided.",
+                    description="The access token was not provided in the request header.",
                     value={
                         "code": NotAuthenticatedAPIError.default_code,
                         "detail": NotAuthenticatedAPIError.default_detail,
@@ -202,9 +202,9 @@ GETSearcherSchema = extend_schema(
             },
             examples=[
                 OpenApiExample(
-                    name="is_authenticated",
-                    summary="User is not authenticated",
-                    description="The user is not authenticated.",
+                    name="permission_denied",
+                    summary="Permission denied",
+                    description="This response is displayed when the user does not have permission to read your data or does not have the required role.",
                     value={
                         "code": PermissionDeniedAPIError.default_code,
                         "detail": PermissionDeniedAPIError.default_detail,
@@ -382,7 +382,7 @@ PATCHearcherSchema = extend_schema(
                 OpenApiExample(
                     name="invalid_expired",
                     summary="Access token invalid or expired",
-                    description="The access token is invalid or has expired.",
+                    description="The access token sent in the request header is invalid or has expired.",
                     value={
                         "code": JWTAPIError.default_code,
                         "detail": JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
@@ -393,7 +393,7 @@ PATCHearcherSchema = extend_schema(
                 OpenApiExample(
                     name="token_blacklisted",
                     summary="Access token exists in the blacklist",
-                    description="The access token exists in the blacklist.",
+                    description="The access token sent in the request header exists in the blacklist.",
                     value={
                         "code": JWTAPIError.default_code,
                         "detail": JWTErrorMessages.BLACKLISTED.value.format(
@@ -404,7 +404,7 @@ PATCHearcherSchema = extend_schema(
                 OpenApiExample(
                     name="access_token_not_provided",
                     summary="Access token not provided",
-                    description="The access token was not provided.",
+                    description="The access token was not provided in the request header.",
                     value={
                         "code": NotAuthenticatedAPIError.default_code,
                         "detail": NotAuthenticatedAPIError.default_detail,
@@ -422,9 +422,9 @@ PATCHearcherSchema = extend_schema(
             },
             examples=[
                 OpenApiExample(
-                    name="is_authenticated",
-                    summary="User is not authenticated",
-                    description="The user is not authenticated.",
+                    name="permission_denied",
+                    summary="Permission denied",
+                    description="This response is displayed when the user does not have permission to read your data or does not have the required role.",
                     value={
                         "code": PermissionDeniedAPIError.default_code,
                         "detail": PermissionDeniedAPIError.default_detail,
