@@ -1,4 +1,4 @@
-from apps.users.constants import SearcherProperties, UserProperties
+from apps.users.constants import SearcherProperties, BaseUserProperties
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,
     NotAuthenticatedAPIError,
@@ -60,7 +60,7 @@ POSTSearcherSchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=UserProperties.EMAIL_MAX_LENGTH.value,
+                                    max_length=BaseUserProperties.EMAIL_MAX_LENGTH.value,
                                 ),
                                 ERROR_MESSAGES["email_in_use"],
                             ],
@@ -70,10 +70,10 @@ POSTSearcherSchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=UserProperties.PASSWORD_MAX_LENGTH.value,
+                                    max_length=BaseUserProperties.PASSWORD_MAX_LENGTH.value,
                                 ),
                                 ERROR_MESSAGES["min_length"].format(
-                                    min_length=UserProperties.PASSWORD_MIN_LENGTH.value,
+                                    min_length=BaseUserProperties.PASSWORD_MIN_LENGTH.value,
                                 ),
                             ],
                             "confirm_password": [

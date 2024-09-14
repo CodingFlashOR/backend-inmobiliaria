@@ -1,4 +1,4 @@
-from apps.users.constants import UserRoles, UserProperties
+from apps.users.constants import UserRoles, BaseUserProperties
 from apps.utils.messages import JWTErrorMessages
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,
@@ -80,12 +80,12 @@ class TestAuthenticationAPIView:
                 {
                     "email": [
                         ERROR_MESSAGES["max_length"].format(
-                            max_length=UserProperties.EMAIL_MAX_LENGTH.value,
+                            max_length=BaseUserProperties.EMAIL_MAX_LENGTH.value,
                         ),
                     ],
                     "password": [
                         ERROR_MESSAGES["max_length"].format(
-                            max_length=UserProperties.PASSWORD_MAX_LENGTH.value,
+                            max_length=BaseUserProperties.PASSWORD_MAX_LENGTH.value,
                         ),
                     ],
                 },

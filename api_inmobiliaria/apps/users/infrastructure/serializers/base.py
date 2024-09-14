@@ -1,5 +1,5 @@
 from apps.users.infrastructure.repositories import UserRepository
-from apps.users.constants import UserProperties
+from apps.users.constants import BaseUserProperties
 from apps.utils.messages import ErrorMessagesSerializer, ERROR_MESSAGES
 from rest_framework import serializers
 from django.core.validators import RegexValidator
@@ -18,7 +18,7 @@ class BaseUserDataSerializer(ErrorMessagesSerializer):
 
     email = serializers.CharField(
         required=True,
-        max_length=UserProperties.EMAIL_MAX_LENGTH.value,
+        max_length=BaseUserProperties.EMAIL_MAX_LENGTH.value,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -35,8 +35,8 @@ class BaseUserDataSerializer(ErrorMessagesSerializer):
     password = serializers.CharField(
         required=True,
         write_only=True,
-        max_length=UserProperties.PASSWORD_MAX_LENGTH.value,
-        min_length=UserProperties.PASSWORD_MIN_LENGTH.value,
+        max_length=BaseUserProperties.PASSWORD_MAX_LENGTH.value,
+        min_length=BaseUserProperties.PASSWORD_MIN_LENGTH.value,
         style={"input_type": "password"},
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
