@@ -43,7 +43,7 @@ class JWTRepository:
 
     @classmethod
     def add_checklist(
-        cls, token: JSONWebToken, payload: JWTPayload, base_user: BaseUser
+        cls, token: JSONWebToken, payload: JWTPayload, user: BaseUser
     ) -> None:
         """
         Associate a JSON Web Token with a user by adding it to the checklist.
@@ -54,7 +54,7 @@ class JWTRepository:
         #### Parameters:
         - token: A JSONWebToken.
         - payload: The payload of the token.
-        - base_user: An instance of the BaseUser model.
+        - user: An instance of the BaseUser model.
 
         #### Raises:
         - DatabaseConnectionAPIError: If there is an operational error with the database.
@@ -64,7 +64,7 @@ class JWTRepository:
             cls._jwt_model.objects.create(
                 jti=payload["jti"],
                 token=token,
-                user=base_user,
+                user=user,
                 expires_at=datetime_from_epoch(ts=payload["exp"]),
             )
         except OperationalError:

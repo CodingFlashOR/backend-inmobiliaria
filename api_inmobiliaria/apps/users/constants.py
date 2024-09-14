@@ -24,9 +24,9 @@ USER_ROLE_PERMISSIONS = {
 }
 
 
-class UserProperties(Enum):
+class BaseUserProperties(Enum):
     """
-    Define the data properties of a user.
+    Define the data properties of a base user.
     """
 
     EMAIL_MAX_LENGTH = 40

@@ -1,7 +1,7 @@
 from apps.users.constants import (
     ACCESS_TOKEN_LIFETIME,
     REFRESH_TOKEN_LIFETIME,
-    UserProperties,
+    BaseUserProperties,
     UserRoles,
 )
 from apps.utils.messages import ERROR_MESSAGES, JWTErrorMessages
@@ -98,7 +98,7 @@ AuthenticationSchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=UserProperties.EMAIL_MAX_LENGTH.value,
+                                    max_length=BaseUserProperties.EMAIL_MAX_LENGTH.value,
                                 ),
                             ],
                             "password": [
@@ -107,7 +107,7 @@ AuthenticationSchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=UserProperties.PASSWORD_MAX_LENGTH.value,
+                                    max_length=BaseUserProperties.PASSWORD_MAX_LENGTH.value,
                                 ),
                             ],
                         },

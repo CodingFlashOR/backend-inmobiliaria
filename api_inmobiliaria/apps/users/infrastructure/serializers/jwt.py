@@ -3,7 +3,7 @@ from apps.users.infrastructure.schemas.jwt import (
     UpdateTokenSerializerSchema,
     LogoutSerializerSchema,
 )
-from apps.users.constants import UserProperties
+from apps.users.constants import BaseUserProperties
 from apps.utils.messages import (
     ErrorMessagesSerializer,
     JWTErrorMessages,
@@ -27,7 +27,7 @@ class AuthenticationSerializer(ErrorMessagesSerializer):
 
     email = serializers.CharField(
         required=True,
-        max_length=UserProperties.EMAIL_MAX_LENGTH.value,
+        max_length=BaseUserProperties.EMAIL_MAX_LENGTH.value,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -36,7 +36,7 @@ class AuthenticationSerializer(ErrorMessagesSerializer):
     )
     password = serializers.CharField(
         required=True,
-        max_length=UserProperties.PASSWORD_MAX_LENGTH.value,
+        max_length=BaseUserProperties.PASSWORD_MAX_LENGTH.value,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"

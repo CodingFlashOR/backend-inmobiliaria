@@ -7,7 +7,7 @@ from django.contrib.auth.models import (
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from apps.users.constants import UserProperties, SearcherProperties
+from apps.users.constants import BaseUserProperties, SearcherProperties
 from typing import Dict, Any
 from uuid import uuid4
 
@@ -122,7 +122,7 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
     )
     email = models.EmailField(
         db_column="email",
-        max_length=UserProperties.EMAIL_MAX_LENGTH.value,
+        max_length=BaseUserProperties.EMAIL_MAX_LENGTH.value,
         unique=True,
         null=False,
         blank=False,

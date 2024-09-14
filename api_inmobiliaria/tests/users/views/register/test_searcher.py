@@ -1,6 +1,6 @@
 from apps.users.constants import (
     SearcherProperties,
-    UserProperties,
+    BaseUserProperties,
 )
 from apps.api_exceptions import DatabaseConnectionAPIError
 from apps.utils.messages import ERROR_MESSAGES
@@ -96,12 +96,12 @@ class TestSearcherRegisterUserAPIView:
                     ],
                     "email": [
                         ERROR_MESSAGES["max_length"].format(
-                            max_length=UserProperties.EMAIL_MAX_LENGTH.value,
+                            max_length=BaseUserProperties.EMAIL_MAX_LENGTH.value,
                         ),
                     ],
                     "password": [
                         ERROR_MESSAGES["max_length"].format(
-                            max_length=UserProperties.PASSWORD_MAX_LENGTH.value,
+                            max_length=BaseUserProperties.PASSWORD_MAX_LENGTH.value,
                         ),
                     ],
                     "confirm_password": [ERROR_MESSAGES["required"]],

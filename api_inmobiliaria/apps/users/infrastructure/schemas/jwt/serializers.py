@@ -1,4 +1,4 @@
-from apps.users.constants import UserProperties
+from apps.users.constants import BaseUserProperties
 from drf_spectacular.utils import (
     extend_schema_serializer,
     OpenApiExample,
@@ -10,7 +10,7 @@ AuthenticationSerializerSchema = extend_schema_serializer(
         OpenApiExample(
             name="data_valid",
             summary="Valid data for the request.",
-            description=f"Valid credentials for a user. The following validations will be applied:\n- **Email:** This field is required and must not exceed {UserProperties.EMAIL_MAX_LENGTH.value} characters.\n- **Password:** This field is required and must not exceed {UserProperties.PASSWORD_MAX_LENGTH.value} characters.\n\nRequest responses that include messages in Spanish indicate that these are messages intended for use on the frontend by the client.",
+            description=f"Valid credentials for a user. The following validations will be applied:\n- **Email:** This field is required and must not exceed {BaseUserProperties.EMAIL_MAX_LENGTH.value} characters.\n- **Password:** This field is required and must not exceed {BaseUserProperties.PASSWORD_MAX_LENGTH.value} characters.\n\nRequest responses that include messages in Spanish indicate that these are messages intended for use on the frontend by the client.",
             value={
                 "email": "user1@email.com",
                 "password": "contraseña1234",
