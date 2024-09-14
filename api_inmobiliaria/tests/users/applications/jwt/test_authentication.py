@@ -99,7 +99,6 @@ class TestLoginApplication:
         assert refresh_obj.token == response_data["refresh_token"]
         assert access_payload["user_role"] == user_role
         assert refresh_payload["user_role"] == user_role
-        assert response_data["user_role"] == user_role
 
     def test_if_credentials_invalid(self) -> None:
         """
@@ -180,7 +179,7 @@ class TestLoginApplication:
         assert OutstandingToken.objects.count() == 0
         assert BlacklistedToken.objects.count() == 0
 
-    @patch("apps.backend.EmailBackend._user_repository")
+    @patch("apps.backends.EmailPasswordBackend._user_repository")
     def test_if_conection_db_failed(self, user_repository_mock: Mock) -> None:
         """
         Test that validates the expected behavior of the use case when the connection

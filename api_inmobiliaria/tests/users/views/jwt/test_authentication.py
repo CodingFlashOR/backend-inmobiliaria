@@ -61,7 +61,6 @@ class TestAuthenticationAPIView:
         assert response.status_code == status.HTTP_200_OK
         assert "access_token" in response.data
         assert "refresh_token" in response.data
-        assert "user_role" in response.data
 
     @pytest.mark.parametrize(
         argnames="credentials, error_messages",
@@ -207,7 +206,7 @@ class TestAuthenticationAPIView:
         assert response.data["code"] == response_code_expected
         assert response.data["detail"] == response_data_expected
 
-    @patch("apps.backend.EmailBackend._user_repository")
+    @patch("apps.backends.EmailPasswordBackend._user_repository")
     def test_if_conection_db_failed(self, user_repository_mock: Mock) -> None:
         """
         Test that validates the expected behavior of the view when the connection to

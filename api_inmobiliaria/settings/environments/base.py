@@ -27,7 +27,7 @@ BASE_APPS = [
     "django.contrib.staticfiles",
 ]
 
-LOCAL_APPS = ["apps.users", "apps.emails"]
+LOCAL_APPS = ["apps.users", "apps.emails", "apps.authentication"]
 
 THIRD_APPS = [
     "rest_framework",
@@ -118,7 +118,7 @@ AUTH_USER_MODEL = "users.BaseUser"
 
 # Model Backend
 AUTHENTICATION_BACKENDS = [
-    "apps.backend.EmailBackend",
+    "apps.backends.EmailPasswordBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
 

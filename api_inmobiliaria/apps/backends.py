@@ -4,7 +4,7 @@ from rest_framework.request import Request
 from django.contrib.auth.backends import ModelBackend
 
 
-class EmailBackend(ModelBackend):
+class EmailPasswordBackend(ModelBackend):
     """
     A `custom authentication backend` that authenticates users based on their email
     and password.
