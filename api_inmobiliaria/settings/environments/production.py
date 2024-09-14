@@ -7,13 +7,15 @@ DEBUG = config("DEBUG", cast=bool)
 ALLOWED_HOSTS = [
     config("BACKEND_HOST", cast=str),
     config("FRONTEND_PRODUCTION_HOST", cast=str),
-    config("FRONTEND_DEVLOPMENT_HOST", cast=str),
+    config("FRONTEND_DEVLOPMENT_HOST1", cast=str),
+    config("FRONTEND_DEVLOPMENT_HOST2", cast=str),
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    f"https://{config('BACKEND_HOST', cast=str)}",
-    f"https://{config("FRONTEND_PRODUCTION_HOST", cast=str)}",
-    f"https://{config("FRONTEND_DEVLOPMENT_HOST", cast=str)}",
+    f"https://{config('BACKEND_HOST', cast=str)}/",
+    f"https://{config('FRONTEND_PRODUCTION_HOST', cast=str)}/",
+    f"https://{config('FRONTEND_DEVLOPMENT_HOST1', cast=str)}/",
+    f"{config('PREFIX_HOST2', cast=str)}{config('FRONTEND_DEVLOPMENT_HOST2', cast=str)}/",
 ]
 
 CSRF_COOKIE_SECURE = True
@@ -25,8 +27,9 @@ SESSION_COOKIE_SECURE = True
 CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = [
-    f"https://{config("FRONTEND_PRODUCTION_HOST", cast=str)}",
-    f"https://{config("FRONTEND_DEVLOPMENT_HOST", cast=str)}",
+    f"https://{config('FRONTEND_PRODUCTION_HOST', cast=str)}/",
+    f"https://{config('FRONTEND_DEVLOPMENT_HOST1', cast=str)}/",
+    f"{config('PREFIX_HOST2', cast=str)}{config('FRONTEND_DEVLOPMENT_HOST2', cast=str)}/",
 ]
 
 
