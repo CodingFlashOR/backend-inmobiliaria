@@ -1,4 +1,4 @@
-from apps.users.infrastructure.db import JWTRepository, UserRepository
+from apps.users.infrastructure.repositories import JWTRepository, UserRepository
 from apps.users.typing import JWTPayload
 from apps.users.models import BaseUser
 from apps.utils.messages import JWTErrorMessages

@@ -1,11 +1,11 @@
-from apps.emails.infrastructure.db import TokenRepository
+from apps.emails.infrastructure.repositories import TokenRepository
 from apps.emails.infrastructure.serializers import (
     Base64UserTokenSerializer,
 )
 from apps.emails.applications.account_management import AccountActivation
 from apps.emails.constants import LOGIN_URL
 from apps.emails.paths import TEMPLATES
-from apps.users.infrastructure.db import UserRepository
+from apps.users.infrastructure.repositories import UserRepository
 from apps.utils.generators import TokenGenerator
 from apps.utils.messages import ActionLinkManagerErrors
 from apps.utils.exceptions import view_exception_handler

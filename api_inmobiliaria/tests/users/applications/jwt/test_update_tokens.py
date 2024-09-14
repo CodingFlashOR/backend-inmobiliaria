@@ -1,4 +1,4 @@
-from apps.users.infrastructure.db import JWTRepository, UserRepository
+from apps.users.infrastructure.repositories import JWTRepository, UserRepository
 from apps.users.applications import JWTUpdate
 from apps.users.models import BaseUser
 from apps.users.constants import UserRoles
