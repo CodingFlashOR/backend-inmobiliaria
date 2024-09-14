@@ -1,4 +1,4 @@
-from apps.users.infrastructure.db import UserRepository
+from apps.users.infrastructure.repositories import UserRepository
 from apps.users.models import BaseUser
 from rest_framework.request import Request
 from django.contrib.auth.backends import ModelBackend

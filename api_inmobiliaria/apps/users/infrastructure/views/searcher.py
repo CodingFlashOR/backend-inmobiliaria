@@ -1,4 +1,4 @@
-from apps.users.infrastructure.db import UserRepository
+from apps.users.infrastructure.repositories import UserRepository
 from apps.users.infrastructure.serializers import (
     SearcherRegisterUserSerializer,
     SearcherUserReadOnlySerializer,

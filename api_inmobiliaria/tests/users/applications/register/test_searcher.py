@@ -1,4 +1,4 @@
-from apps.users.infrastructure.db import UserRepository
+from apps.users.infrastructure.repositories import UserRepository
 from apps.users.applications import RegisterUser
 from apps.users.constants import USER_ROLE_PERMISSIONS, UserRoles
 from apps.users.models import BaseUser, Searcher

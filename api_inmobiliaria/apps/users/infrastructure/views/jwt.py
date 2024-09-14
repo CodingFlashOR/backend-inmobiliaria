@@ -8,7 +8,7 @@ from apps.users.infrastructure.serializers import (
     UpdateTokenSerializer,
     LogoutSerializer,
 )
-from apps.users.infrastructure.db import JWTRepository, UserRepository
+from apps.users.infrastructure.repositories import JWTRepository, UserRepository
 from apps.users.applications import JWTLogout, JWTLogin, JWTUpdate
 from apps.utils.views import PermissionMixin
 from authentication.jwt import JWTAuthentication

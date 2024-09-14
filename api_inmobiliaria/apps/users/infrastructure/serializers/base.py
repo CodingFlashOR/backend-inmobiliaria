@@ -1,4 +1,4 @@
-from apps.users.infrastructure.db import UserRepository
+from apps.users.infrastructure.repositories import UserRepository
 from apps.users.constants import UserProperties
 from apps.utils.messages import ErrorMessagesSerializer, ERROR_MESSAGES
 from rest_framework import serializers
