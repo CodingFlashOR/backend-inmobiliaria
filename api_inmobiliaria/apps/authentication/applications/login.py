@@ -21,7 +21,7 @@ class JWTLogin:
     @classmethod
     def authenticate_user(
         cls, credentials: Dict[str, str]
-    ) -> typing.AccessToken:
+    ) -> Dict[str, typing.JSONWebToken]:
         """
         Authenticate a user with the given credentials and return access token.
 
