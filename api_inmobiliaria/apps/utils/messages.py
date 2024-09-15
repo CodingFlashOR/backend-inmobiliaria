@@ -32,7 +32,7 @@ class JWTErrorMessages(Enum):
     Spanish are messages that the user will see.
     """
 
-    AUTHENTICATION_FAILED = "Correo o contraseña incorrectas."
+    AUTHENTICATION_FAILED = "Correo o contraseña incorrecta."
     INACTIVE_ACCOUNT = "Tu cuenta está inactiva. Te recomendamos revisar la bandeja de entrada de tu correo electrónico para encontrar el mensaje que te enviamos al registrarte. Ese correo incluye las instrucciones para activar tu cuenta."
     LAST_TOKENS = (
         "The JWTs sent in the request do not match the user's last tokens."

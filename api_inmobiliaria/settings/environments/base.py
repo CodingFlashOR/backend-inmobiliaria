@@ -189,13 +189,12 @@ SPECTACULAR_SETTINGS = {
             "description": "Includes all the endpoints that manage all the functionality related to a user in the API.",
         },
         {
-            "name": "JWT",
+            "name": "Authentication",
             "description": "Includes all endpoints that manage all functionality related to authenticating a user in the API.",
         },
     ],
     "SERVE_INCLUDE_SCHEMA": False,
     "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
-    "AUTHENTICATION_CLASSES": ["apps.authentication.jwt.JWTAuthentication"],
     "SWAGGER_UI_SETTINGS": {
         "persistAuthorization": True,
     },
