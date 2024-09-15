@@ -1,9 +1,4 @@
 from enum import Enum
-from datetime import timedelta
-
-
-ACCESS_TOKEN_LIFETIME = timedelta(hours=2)
-REFRESH_TOKEN_LIFETIME = timedelta(days=1)
 
 
 class UserRoles(Enum):
@@ -16,7 +11,7 @@ class UserRoles(Enum):
 
 USER_ROLE_PERMISSIONS = {
     UserRoles.SEARCHER.value: {
-        "jwt_auth": "token_blacklist.add_outstandingtoken",
+        "jwt_auth": "authentication.add_jwt",
         "change_data": "users.change_baseuser",
         "delete_data": "users.delete_baseuser",
         "view_data": "users.view_baseuser",
