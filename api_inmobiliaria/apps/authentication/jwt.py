@@ -1,6 +1,7 @@
-from apps.users.infrastructure.repositories import JWTRepository, UserRepository
-from apps.authentication.constants import ACCESS_TOKEN_LIFETIME
+from apps.users.infrastructure.repositories import UserRepository
 from apps.users.models import BaseUser
+from apps.authentication.infrastructure.repositories import JWTRepository
+from apps.authentication.constants import ACCESS_TOKEN_LIFETIME
 from apps.authentication.typing import JWTPayload
 from apps.utils.messages import JWTErrorMessages
 from apps.api_exceptions import (

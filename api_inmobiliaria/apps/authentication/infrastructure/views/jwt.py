@@ -3,6 +3,11 @@ from apps.authentication.infrastructure.serializers import (
     UpdateTokenSerializer,
     LoginSerializer,
 )
+from apps.authentication.infrastructure.schemas.jwt import (
+    UpdateTokenSchema,
+    LoginSchema,
+    LogoutSchema,
+)
 from apps.authentication.applications import JWTLogout, JWTLogin, JWTUpdate
 from apps.authentication.jwt import JWTAuthentication
 from apps.users.infrastructure.repositories import UserRepository
@@ -28,13 +33,14 @@ class LoginAPIView(TokenObtainPairView):
     serializer_class = LoginSerializer
     application_class = JWTLogin
 
+    @LoginSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
         """
         Handle POST requests for user authentication.
 
         This method allows for the authentication of a user, it expects a POST request
         with their credentials. Successful authentication will result in the creation
-        of the user's JSON Web Tokens if their credentials are valid, their account is
+        of the user access token if their credentials are valid, their account is
         active, and they have the necessary permissions to perform this action.
         """
 
@@ -64,7 +70,7 @@ class LoginAPIView(TokenObtainPairView):
 class UpdateTokenAPIView(GenericAPIView):
     """
     API View for refreshing user tokens. This view handles the request to
-    refresh a user's access and refresh tokens in the system.
+    refresh a user access token in the system.
     """
 
     authentication_classes = []
@@ -72,13 +78,14 @@ class UpdateTokenAPIView(GenericAPIView):
     serializer_class = UpdateTokenSerializer
     application_class = JWTUpdate
 
+    @UpdateTokenSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
         """
         Handle POST requests for token refresh.
 
         This method allows updating the JSON Web Tokens of an authenticated user,
         waiting for a POST request with the access and update tokens. A successful
-        refresh will consist of creating new tokens to keep the user authenticated and
+        refresh will consist of creating new access token to keep the user authenticated and
         invalidating the previous refresh token by adding it to the blacklist.
         """
 
@@ -117,13 +124,14 @@ class LogoutAPIView(PermissionMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     application_class = JWTLogout
 
+    @LogoutSchema
     def post(self, request: Request, *args, **kwargs) -> Response:
         """
         Handles POST requests for user logout.
 
         This method allows to logout an authenticated user. Wait for a POST request
         with the update token. A successful logout will consist of invalidating the
-        access and refresh token by adding them to the blacklist.
+        access token by adding them to the blacklist.
         """
 
         self.application_class.logout_user(access_token=request.auth)

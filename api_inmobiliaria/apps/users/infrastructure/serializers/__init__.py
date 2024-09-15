@@ -3,8 +3,3 @@ from .searcher import (
     SearcherUserReadOnlySerializer,
     SearcherRoleDataSerializer,
 )
-from .jwt import (
-    AuthenticationSerializer,
-    UpdateTokenSerializer,
-    LogoutSerializer,
-)

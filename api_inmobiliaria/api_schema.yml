@@ -13,7 +13,7 @@ info:
     name: MIT License
     url: https://opensource.org/licenses/MIT
 paths:
-  /api/v1/user/jwt/login/:
+  /api/v1/jwt/login/:
     post:
       operationId: jwt_authenticate_user
       description: |-
@@ -21,15 +21,15 @@ paths:
 
         This method allows for the authentication of a user, it expects a POST request
         with their credentials. Successful authentication will result in the creation
-        of the user's JSON Web Tokens if their credentials are valid, their account is
+        of the user access token if their credentials are valid, their account is
         active, and they have the necessary permissions to perform this action.
       tags:
-      - Users
+      - Authentication
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuthenticationRequest'
+              $ref: '#/components/schemas/LoginRequest'
             examples:
               DataValid:
                 value:
@@ -44,10 +44,10 @@ paths:
                   Request responses that include messages in Spanish indicate that these are messages intended for use on the frontend by the client.
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AuthenticationRequest'
+              $ref: '#/components/schemas/LoginRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AuthenticationRequest'
+              $ref: '#/components/schemas/LoginRequest'
         required: true
       security:
       - {}
@@ -59,24 +59,14 @@ paths:
                 properties:
                   access_token:
                     type: string
-                  refresh_token:
-                    type: string
-                  user_role:
-                    type: string
               examples:
                 ResponseOk:
                   value:
                     access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzExMDU0MzYyLCJpYXQiOjE3MTEwNDcxNjIsImp0aSI6IjY0MTE2YzgyYjhmMDQzOWJhNTJkZGZmMzgyNzQ2ZTIwIiwidXNlcl9pZCI6IjJhNmI0NTNiLWZhMmItNDMxOC05YzM1LWIwZTk2ZTg5NGI2MyJ9.gfhWpy5rYY6P3Xrg0usS6j1KhEvF1HqWMiU7AaFkp9A
-                    refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMTEzMzU2MiwiaWF0IjoxNzExMDQ3MTYyLCJqdGkiOiI2ZTRmNTdkMGJjNTc0NWY0OWMzODg4YjQ2YTM1OTJjNSIsInVzZXJfaWQiOiIyYTZiNDUzYi1mYTJiLTQzMTgtOWMzNS1iMGU5NmU4OTRiNjMifQ.81pQ3WftFZs5O50vGqwY2a6yPkXArQK6WKyrwus3s6A
                   summary: User authenticated
                   description: The user has been successfully authenticated and the
-                    access and refresh tokens are returned. The access token with
-                    a duration of **120** minutes used to access protected API resources.
-                    This token is sent with each request to the server to authenticate
-                    the user, while the refresh token with a duration of **1** day
-                    that is used to obtain new JSON Web Tokens without requiring the
-                    user to authenticate again. This is useful when the access token
-                    has expired, but the user should still be authenticated.
+                    access token is returned, with a duration of **120** minutes used
+                    to access protected API resources.
           description: '**(OK)** Authenticated user.'
         '400':
           content:
@@ -121,7 +111,7 @@ paths:
                 AuthenticationFailed:
                   value:
                     code: authentication_failed
-                    detail: Credenciales inválidas.
+                    detail: Correo o contraseña incorrecta.
                   summary: Credentials invalid
                   description: This response is displayed when a user with the provided
                     email is not found or the password is incorrect.
@@ -176,7 +166,7 @@ paths:
                   summary: Database connection error
                   description: The connection to the database could not be established.
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
-  /api/v1/user/jwt/logout/:
+  /api/v1/jwt/logout/:
     post:
       operationId: logout_user
       description: |-
@@ -184,29 +174,9 @@ paths:
 
         This method allows to logout an authenticated user. Wait for a POST request
         with the update token. A successful logout will consist of invalidating the
-        access and refresh token by adding them to the blacklist.
+        access token by adding them to the blacklist.
       tags:
-      - Users
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LogoutRequest'
-            examples:
-              DataValid:
-                value:
-                  refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
-                summary: Valid data for the request.
-                description: |-
-                  Valid data for the request. The following validations will be applied:
-                  - **Refresh token:** It is required, must be a valid token, it must not be expired and it should not exist on the blacklist.
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/LogoutRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/LogoutRequest'
-        required: true
+      - Authentication
       security:
       - JWTAuth: []
       responses:
@@ -227,13 +197,13 @@ paths:
                     code: jwt_error
                     detail: access token is invalid or expired.
                   summary: Invalid or expired
-                  description: The access or refresh token is invalid or has expired.
+                  description: The access token is invalid or has expired.
                 TokenBlacklisted:
                   value:
                     code: jwt_error
                     detail: access token is blacklisted.
                   summary: Token exists in the blacklist
-                  description: The access or refresh token exists in the blacklist.
+                  description: The access token exists in the blacklist.
                 AccessTokenNotProvided:
                   value:
                     code: authentication_failed
@@ -298,18 +268,18 @@ paths:
                   summary: Database connection error
                   description: The connection to the database could not be established.
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
-  /api/v1/user/jwt/update/:
+  /api/v1/jwt/update/:
     post:
-      operationId: update_tokens
+      operationId: update_token
       description: |-
         Handle POST requests for token refresh.
 
         This method allows updating the JSON Web Tokens of an authenticated user,
         waiting for a POST request with the access and update tokens. A successful
-        refresh will consist of creating new tokens to keep the user authenticated and
+        refresh will consist of creating new access token to keep the user authenticated and
         invalidating the previous refresh token by adding it to the blacklist.
       tags:
-      - Users
+      - Authentication
       requestBody:
         content:
           application/json:
@@ -319,12 +289,10 @@ paths:
               DataValid:
                 value:
                   access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw
-                  refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
                 summary: Valid data for the request.
                 description: |-
                   Valid data for the request. The following validations will be applied:
                   - **Access token:** It is required, must be a valid token, must be expired and it should not exist on the blacklist.
-                  - **Refresh token:** It is required, must be a valid token, it must not be expired and it should not exist on the blacklist.
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/UpdateTokenRequest'
@@ -348,11 +316,10 @@ paths:
                 ResponseOk:
                   value:
                     access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw
-                    refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNTcyNzMwMiwiaWF0IjoxNzE1NjQwOTAyLCJqdGkiOiI0YjgwNjA2YTk3ODI0Y2U3YjZjNzIxZTBkYTE3YmUzMiIsInVzZXJfdXVpZCI6ImQ3YmEzNDcxLWVkMzktNDU0MS1hZjk5LWVlZmMxYzFkZWJiZCIsInJvbGUiOiJTZWFyY2hlclVzZXIifQ.JpRoGrk7GVDQmHrJnc1LelgzGMKmKvmXYKvAKQzhsWg
                   summary: New tokens generated
-                  description: The new access and refresh tokens have been generated
-                    successfully, you can use these new tokens to keep the user authenticated.
-          description: '**(OK)** New tokens are generated.'
+                  description: The new access token have been generated successfully,
+                    you can use these new token to keep the user authenticated.
+          description: '**(OK)** New access token is generated.'
         '400':
           content:
             application/json:
@@ -396,22 +363,22 @@ paths:
                     code: jwt_error
                     detail: refresh token is invalid or expired.
                   summary: Invalid or expired
-                  description: The access or refresh token is invalid or has expired.
+                  description: The access token is invalid or has expired.
                 TokenBlacklisted:
                   value:
                     code: jwt_error
                     detail: access token is blacklisted.
                   summary: Token exists in the blacklist
-                  description: The access or refresh token exists in the blacklist.
-                    Tokens that exist in the blacklist cannot be used in authentication
-                    processes and creation of new tokens.
+                  description: The access token exists in the blacklist. Tokens that
+                    exist in the blacklist cannot be used in authentication processes
+                    and creation of new tokens.
                 AccessTokenNotExpired:
                   value:
                     code: jwt_error
                     detail: Access token is not expired.
                   summary: Access token not expired
-                  description: New JSON Web Tokens can only be created for a user
-                    if their access token has expired.
+                  description: New JSON Web Token can only be created for a user if
+                    their access token has expired.
           description: '**(UNAUTHORIZED)** The user''s JSON Web Token is not valid
             for logout.'
         '404':
@@ -909,7 +876,7 @@ paths:
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
 components:
   schemas:
-    AuthenticationRequest:
+    LoginRequest:
       type: object
       description: |-
         Handles the data for user authentication. Checks that the provided email and
@@ -926,15 +893,6 @@ components:
       required:
       - email
       - password
-    LogoutRequest:
-      type: object
-      description: Handles data to logout user.
-      properties:
-        refresh_token:
-          type: string
-          minLength: 1
-      required:
-      - refresh_token
     PatchedSearcherRoleDataRequest:
       type: object
       description: Defines the fields that are required for the searcher user profile.
@@ -998,17 +956,13 @@ components:
       - password
     UpdateTokenRequest:
       type: object
-      description: Handles data to refresh tokens of a user.
+      description: Handles data to update access token of a user.
       properties:
         access_token:
           type: string
           minLength: 1
-        refresh_token:
-          type: string
-          minLength: 1
       required:
       - access_token
-      - refresh_token
   securitySchemes:
     JWTAuth:
       type: http
@@ -1022,5 +976,8 @@ components:
         <access_token>
 tags:
 - name: Users
-  description: It comprises all the endpoints that manage all the functionality related
+  description: Includes all the endpoints that manage all the functionality related
     to a user in the API.
+- name: Authentication
+  description: Includes all endpoints that manage all functionality related to authenticating
+    a user in the API.

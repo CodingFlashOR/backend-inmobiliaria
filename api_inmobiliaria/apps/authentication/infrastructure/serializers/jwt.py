@@ -1,3 +1,7 @@
+from apps.authentication.infrastructure.schemas.jwt import (
+    UpdateTokenSerializerSchema,
+    LoginSerializerSchema,
+)
 from apps.authentication.jwt import AccessToken
 from apps.users.constants import BaseUserProperties
 from apps.utils.messages import (
@@ -12,6 +16,7 @@ from rest_framework import serializers
 from jwt import decode, DecodeError, ExpiredSignatureError
 
 
+@LoginSerializerSchema
 class LoginSerializer(ErrorMessagesSerializer):
     """
     Handles the data for user authentication. Checks that the provided email and
@@ -38,6 +43,7 @@ class LoginSerializer(ErrorMessagesSerializer):
     )
 
 
+@UpdateTokenSerializerSchema
 class UpdateTokenSerializer(serializers.Serializer):
     """
     Handles data to update access token of a user.

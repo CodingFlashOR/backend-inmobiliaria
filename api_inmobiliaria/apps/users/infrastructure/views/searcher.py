@@ -11,9 +11,9 @@ from apps.users.infrastructure.schemas.searcher import (
 )
 from apps.users.applications import RegisterUser, UserDataManager
 from apps.users.constants import UserRoles
+from apps.authentication.jwt import JWTAuthentication
 from apps.utils.views import MethodHTTPMapped, PermissionMixin
 from apps.api_exceptions import PermissionDeniedAPIError
-from authentication.jwt import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.serializers import Serializer
 from rest_framework.response import Response

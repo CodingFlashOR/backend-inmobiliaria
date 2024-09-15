@@ -1,7 +1,7 @@
 from apps.authentication.typing import JSONWebToken
 from apps.authentication.jwt import AccessToken
-from apps.users.interfaces import IJWTRepository, IUserRepository
-from apps.users.typing import UserUUID
+from apps.authentication.interfaces import IJWTRepository
+from apps.users.interfaces import IUserRepository
 from apps.api_exceptions import ResourceNotFoundAPIError
 from apps.utils.messages import JWTErrorMessages
 from typing import Dict
