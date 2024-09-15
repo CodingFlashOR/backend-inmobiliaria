@@ -1,7 +1,4 @@
-from apps.users.constants import (
-    ACCESS_TOKEN_LIFETIME,
-    REFRESH_TOKEN_LIFETIME,
-)
+from apps.authentication.constants import ACCESS_TOKEN_LIFETIME
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
@@ -32,7 +29,6 @@ LOCAL_APPS = ["apps.users", "apps.emails", "apps.authentication"]
 THIRD_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
-    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "drf_spectacular",
     "django_extensions",
@@ -126,7 +122,7 @@ AUTHENTICATION_BACKENDS = [
 # API settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "authentication.jwt.JWTAuthentication",
+        "apps.authentication.jwt.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
@@ -149,8 +145,8 @@ EMAIL_USE_TLS = True
 # JWT authentication settings
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": ACCESS_TOKEN_LIFETIME,
-    "REFRESH_TOKEN_LIFETIME": REFRESH_TOKEN_LIFETIME,
-    "ROTATE_REFRESH_TOKENS": True,
+    "REFRESH_TOKEN_LIFETIME": None,
+    "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
     "ALGORITHM": "HS256",
@@ -190,12 +186,16 @@ SPECTACULAR_SETTINGS = {
     "TAGS": [
         {
             "name": "Users",
-            "description": "It comprises all the endpoints that manage all the functionality related to a user in the API.",
+            "description": "Includes all the endpoints that manage all the functionality related to a user in the API.",
+        },
+        {
+            "name": "JWT",
+            "description": "Includes all endpoints that manage all functionality related to authenticating a user in the API.",
         },
     ],
     "SERVE_INCLUDE_SCHEMA": False,
     "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
-    "AUTHENTICATION_CLASSES": ["authentication.jwt.JWTAuthentication"],
+    "AUTHENTICATION_CLASSES": ["apps.authentication.jwt.JWTAuthentication"],
     "SWAGGER_UI_SETTINGS": {
         "persistAuthorization": True,
     },
