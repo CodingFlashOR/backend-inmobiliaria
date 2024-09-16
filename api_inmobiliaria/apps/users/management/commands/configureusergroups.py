@@ -6,7 +6,7 @@ from typing import List
 
 class Command(BaseCommand):
     """
-    Create user groups and assign permissions.
+    Configure user groups and assign permissions.
     """
 
     help = "Create user groups and assign permissions"
