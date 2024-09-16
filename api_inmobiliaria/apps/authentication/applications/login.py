@@ -1,8 +1,8 @@
-from apps.utils.messages import JWTErrorMessages
-from apps.authentication import typing
+from apps.authentication.typing import JSONWebToken
+from apps.authentication.jwt import AccessToken
 from apps.users.constants import USER_ROLE_PERMISSIONS
 from apps.users.models import BaseUser
-from apps.authentication.jwt import AccessToken
+from apps.utils.messages import JWTErrorMessages
 from apps.api_exceptions import (
     PermissionDeniedAPIError,
     AuthenticationFailedAPIError,
@@ -19,9 +19,7 @@ class JWTLogin:
     _access_token_class = AccessToken
 
     @classmethod
-    def authenticate_user(
-        cls, credentials: Dict[str, str]
-    ) -> Dict[str, typing.JSONWebToken]:
+    def authenticate_user(cls, credentials: Dict[str, str]) -> JSONWebToken:
         """
         Authenticate a user with the given credentials and return access token.
 
@@ -52,4 +50,4 @@ class JWTLogin:
         ):
             raise PermissionDeniedAPIError()
 
-        return {"access_token": str(cls._access_token_class(user=base_user))}
+        return str(cls._access_token_class(user=base_user))

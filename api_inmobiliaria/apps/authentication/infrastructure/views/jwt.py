@@ -56,12 +56,12 @@ class LoginAPIView(TokenObtainPairView):
                 content_type="application/json",
             )
 
-        data = self.application_class.authenticate_user(
+        access_token = self.application_class.authenticate_user(
             credentials=serializer.validated_data
         )
 
         return Response(
-            data=data,
+            data={"access_token": access_token},
             status=status.HTTP_200_OK,
             content_type="application/json",
         )
@@ -105,10 +105,12 @@ class UpdateTokenAPIView(GenericAPIView):
             jwt_repository=JWTRepository,
             user_repository=UserRepository,
         )
-        tokens = app.new_tokens(token=serializer.validated_data["access_token"])
+        new_access_token = app.new_tokens(
+            access_token=serializer.validated_data["access_token"]
+        )
 
         return Response(
-            data=tokens,
+            data={"access_token": new_access_token},
             status=status.HTTP_200_OK,
             content_type="application/json",
         )
