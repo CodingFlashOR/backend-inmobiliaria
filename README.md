@@ -97,7 +97,7 @@ Primero debes seguir las siguientes instrucciones y dependiendo de que manera qu
     ```bash
     python3 api_inmobiliaria/manage.py migrate --settings=settings.environments.development
     ```
-
+    
 - **Paso 3 (configurar grupo de usuarios):** Un grupo de usuarios se refiere a una entidad dentro de un sistema o aplicación que agrupa a varios usuarios bajo un mismo conjunto de permisos, roles o privilegios. Esto se utiliza para simplificar la gestión de acceso y permisos en sistemas donde hay múltiples usuarios. Para crear los grupos configurados paraeste proyecto ejecuta el siguiente comando.
     
     ```bash
@@ -126,30 +126,46 @@ Primero debes seguir las siguientes instrucciones y dependiendo de que manera qu
     
 De esta manera podrás usar todas las funcionalidades que este proyecto tiene para ofrecer. Es importante que hayas seguido todos los pasos explicados en el orden establecido.
 
-## 4. Tests
+## 4. Comandos disponibles
+Este proyecto incluye algunos comandos personalizados de Django que puedes utilizar para facilitar el desarrollo y la administración. A continuación se describe cada uno de los comandos y su funcionalidad.
+
+### 4.1. Configurar grupos de usuarios
+Este comando configura los grupos de usuarios predefinidos en el sistema, asignando los permisos necesarios a cada uno. Facilita la administración de roles y permisos en la plataforma.
+
+```bash
+python3 api_inmobiliaria/manage.py flushexpiredjwt --settings=settings.environments.development
+```
+
+### 4.2. Borrar JWT expirados en la base de datos
+Este comando elimina de la base de datos todos los JSON Web Tokens que hayan expirado. Es útil para mantener la base de datos limpia y optimizar su rendimiento.
+
+```bash
+python3 api_inmobiliaria/manage.py configureusergroups --settings=settings.environments.development
+```
+
+## 5. Tests
 Para correr las pruebas del proyecto debes ejecutar el siguiente comando.
 
 ```bash
 pytest
 ```
 
-## 5. Contributores
+## 6. Contributores
 Si está interesado en contribuir a este proyecto, consulte nuestra guía [CONTRIBUTING](CONTRIBUTING.md) para obtener información sobre cómo comenzar. Proporciona pautas sobre cómo configurar su entorno de desarrollo, proponer cambios y más. ¡Esperamos sus contribuciones!
 
-## 6. Documentación
+## 7. Documentación
 | Título | Descripción | 
 |----------|----------|
 | [Especificación de requerimientos](https://writer.zoho.com/writer/open/gvaj1411213d7d4bb4c818860a3bea679ecbb) | Este documento detalla los requerimientos funcionales, no funcionales y el comportamiento de las diferentes interfaces del sistema. |
 | [Base de datos](https://app.diagrams.net/?title=EsquemaDB.drawio#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1uJAsYcVnTEviwOq5JZ_q_2VWnpvgPfBd%26export%3Ddownload)   | Esquema de la base de datos del proyecto. |
 | [Documentación de la API](https://carlosandresaguirreariza.pythonanywhere.com/) | Esta es la documentación para la API del proyecto, que incluye detalles sobre los endpoints disponibles y los datos que se pueden enviar y recibir. |
 
-## 7. Repositorios relacionados
+## 8. Repositorios relacionados
 - [Repositorio Principal](https://github.com/CodingFlashOR#11-inmobiliaria-bonpland).
 - [Repositorio Frontend](https://github.com/CodingFlashOR/frontend-inmobiliaria/tree/dev).
 
-## 8. Colaboradores
+## 9. Colaboradores
 A continuación se presentan a las personas que están aportando al desarrollo de este proyecto.
-
 
 | Nombre | Enlaces | Roles |
 |----------|:--------:|:--------:|
