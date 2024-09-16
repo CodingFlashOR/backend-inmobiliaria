@@ -116,7 +116,7 @@ class TestSendAccountActivationTokenAPIView:
         assert response.data["detail"] == response_data_expected
 
     @patch(
-        "apps.emails.infrastructure.views.account_management.send_token.TokenRepository"
+        target="apps.emails.infrastructure.views.account_management.send_token.TokenRepository"
     )
     def test_if_conection_db_failed(
         self,

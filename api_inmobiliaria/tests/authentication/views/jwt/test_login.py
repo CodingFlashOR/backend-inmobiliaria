@@ -12,7 +12,7 @@ from rest_framework import status
 from django.test import Client
 from django.urls import reverse
 from unittest.mock import Mock, patch
-from typing import Callable, Dict, List
+from typing import Dict, List
 import pytest
 
 
@@ -27,7 +27,7 @@ class TestAuthenticationAPIView:
     JSON Web Token.
     """
 
-    path = reverse(viewname="jwt_authenticate_user")
+    path = reverse(viewname="login_jwt")
     user_factory = UserFactory
     client = Client()
 
@@ -36,9 +36,7 @@ class TestAuthenticationAPIView:
         argvalues=[UserRoles.SEARCHER.value],
         ids=["searcher_user"],
     )
-    def test_if_valid_data(
-        self, user_role: str, setup_database: Callable
-    ) -> None:
+    def test_if_valid_data(self, user_role: str, setup_database) -> None:
         """
         This test is responsible for validating the expected behavior of the view
         when the request data is valid.
@@ -60,7 +58,6 @@ class TestAuthenticationAPIView:
         # Asserting that response data is correct
         assert response.status_code == status.HTTP_200_OK
         assert "access_token" in response.data
-        assert "refresh_token" in response.data
 
     @pytest.mark.parametrize(
         argnames="credentials, error_messages",
@@ -144,7 +141,7 @@ class TestAuthenticationAPIView:
         ids=["searcher_user"],
     )
     def test_if_inactive_user_account(
-        self, user_role: str, setup_database: Callable
+        self, user_role: str, setup_database
     ) -> None:
         """
         This test is responsible for validating the expected behavior of the view
@@ -206,7 +203,7 @@ class TestAuthenticationAPIView:
         assert response.data["code"] == response_code_expected
         assert response.data["detail"] == response_data_expected
 
-    @patch("apps.backends.EmailPasswordBackend._user_repository")
+    @patch(target="apps.backends.EmailPasswordBackend._user_repository")
     def test_if_conection_db_failed(self, user_repository_mock: Mock) -> None:
         """
         Test that validates the expected behavior of the view when the connection to

@@ -1,8 +1,8 @@
-from apps.users.applications import JWTLogout
+from apps.authentication.applications import JWTLogout
+from apps.authentication.models import JWTBlacklist
+from apps.authentication.jwt import AccessToken
 from apps.api_exceptions import DatabaseConnectionAPIError
-from authentication.jwt import AccessToken, RefreshToken
 from tests.factory import JWTFactory, UserFactory
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 from unittest.mock import Mock
 import pytest
 
@@ -40,31 +40,22 @@ class TestLogoutApplication:
         base_user, _, _ = self.user_factory.searcher_user(
             active=True, save=True, add_perm=False
         )
-        jwt_data = self.jwt_factory.access_and_refresh(
+        access_token_data = self.jwt_factory.access(
             user_role=base_user.content_type.model,
             user=base_user,
-            exp_access=False,
-            exp_refresh=False,
+            exp=False,
             save=True,
         )
-        access_token = AccessToken(payload=jwt_data["payloads"]["access_token"])
-        refresh_token = RefreshToken(
-            payload=jwt_data["payloads"]["refresh_token"]
-        )
+        access_token = AccessToken(payload=access_token_data["payload"])
 
         # Asserting the tokens are not in the blacklist
-        assert BlacklistedToken.objects.count() == 0
+        assert JWTBlacklist.objects.count() == 0
 
         # Instantiating the application
-        self.application_class.logout_user(
-            data={"refresh_token": refresh_token, "access_token": access_token},
-        )
+        self.application_class.logout_user(access_token=access_token)
 
         # Assert that the refresh token was added to the blacklist
-        assert BlacklistedToken.objects.filter(
-            token__jti=refresh_token.payload["jti"]
-        ).exists()
-        assert BlacklistedToken.objects.filter(
+        assert JWTBlacklist.objects.filter(
             token__jti=access_token.payload["jti"]
         ).exists()
 
@@ -76,18 +67,12 @@ class TestLogoutApplication:
 
         # Mocking the methods
         access_token = Mock()
-        refresh_token = Mock()
-        blacklist = refresh_token.blacklist
+        blacklist: Mock = access_token.blacklist
         blacklist.side_effect = DatabaseConnectionAPIError
 
         # Instantiating the application
         with pytest.raises(DatabaseConnectionAPIError):
-            self.application_class.logout_user(
-                data={
-                    "refresh_token": refresh_token,
-                    "access_token": access_token,
-                },
-            )
+            self.application_class.logout_user(access_token=access_token)
 
         # Assert that the refresh token was not added to the blacklist
-        assert BlacklistedToken.objects.count() == 0
+        assert JWTBlacklist.objects.count() == 0

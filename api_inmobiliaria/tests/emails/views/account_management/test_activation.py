@@ -268,7 +268,7 @@ class TestAccountActivationView:
         assert context["redirect"]["url"] == url
 
     @patch(
-        "apps.emails.infrastructure.views.account_management.account_activation.UserRepository"
+        target="apps.emails.infrastructure.views.account_management.account_activation.UserRepository"
     )
     def test_if_conection_db_failed(self, user_repository_mock: Mock) -> None:
         """

@@ -1,4 +1,5 @@
-from apps.users.applications import JWTLogin
+from apps.authentication.applications import JWTLogin
+from apps.authentication.models import JWT, JWTBlacklist
 from apps.users.constants import UserRoles
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,
@@ -7,12 +8,7 @@ from apps.api_exceptions import (
 )
 from settings.environments.base import SIMPLE_JWT
 from tests.factory import UserFactory
-from rest_framework_simplejwt.token_blacklist.models import (
-    OutstandingToken,
-    BlacklistedToken,
-)
 from unittest.mock import Mock, patch
-from typing import Callable
 from jwt import decode
 import pytest
 
@@ -36,9 +32,7 @@ class TestLoginApplication:
         argvalues=[UserRoles.SEARCHER.value],
         ids=["searcher_user"],
     )
-    def test_authenticated_user(
-        self, user_role: str, setup_database: Callable
-    ) -> None:
+    def test_authenticated_user(self, user_role: str, setup_database) -> None:
         """
         This test is responsible for validating the expected behavior of the use case
         when the request data is valid.
@@ -49,56 +43,33 @@ class TestLoginApplication:
             user_role=user_role, active=True, save=True, add_perm=True
         )
 
-        response_data = self.application_class.authenticate_user(
+        access_token = self.application_class.authenticate_user(
             credentials={
                 "email": data["email"],
                 "password": data["password"],
             }
         )
 
-        # Asserting that the tokens were generated
-        access = response_data.get("access_token", False)
-        refresh = response_data.get("refresh_token", False)
-
-        assert access
-        assert refresh
-
         # Assert that the generated tokens were saved in the database
         access_payload = decode(
-            jwt=access,
+            jwt=access_token,
             key=SIMPLE_JWT["SIGNING_KEY"],
             algorithms=[SIMPLE_JWT["ALGORITHM"]],
         )
-        refresh_payload = decode(
-            jwt=refresh,
-            key=SIMPLE_JWT["SIGNING_KEY"],
-            algorithms=[SIMPLE_JWT["ALGORITHM"]],
-        )
-
-        access_obj = (
-            OutstandingToken.objects.filter(jti=access_payload["jti"])
-            .select_related("user")
-            .first()
-        )
-        refresh_obj = (
-            OutstandingToken.objects.filter(jti=refresh_payload["jti"])
+        access_token_obj = (
+            JWT.objects.filter(jti=access_payload["jti"])
             .select_related("user")
             .first()
         )
 
-        assert access_obj
-        assert refresh_obj
-        assert BlacklistedToken.objects.count() == 0
+        assert access_token_obj
+        assert JWTBlacklist.objects.count() == 0
 
         # Asserting that the tokens were created with the correct data
-        assert access_obj.user.uuid.__str__() == access_payload["user_uuid"]
-        assert access_obj.jti == access_payload["jti"]
-        assert access_obj.token == response_data["access_token"]
-        assert refresh_obj.user.uuid.__str__() == refresh_payload["user_uuid"]
-        assert refresh_obj.jti == refresh_payload["jti"]
-        assert refresh_obj.token == response_data["refresh_token"]
+        assert str(access_token_obj.user.uuid) == access_payload["user_uuid"]
+        assert access_token_obj.jti == access_payload["jti"]
+        assert access_token_obj.token == access_token
         assert access_payload["user_role"] == user_role
-        assert refresh_payload["user_role"] == user_role
 
     def test_if_credentials_invalid(self) -> None:
         """
@@ -116,8 +87,8 @@ class TestLoginApplication:
             )
 
         # Asserting that the user does not exist in the database
-        assert OutstandingToken.objects.count() == 0
-        assert BlacklistedToken.objects.count() == 0
+        assert JWT.objects.count() == 0
+        assert JWTBlacklist.objects.count() == 0
 
     @pytest.mark.parametrize(
         argnames="user_role",
@@ -125,7 +96,7 @@ class TestLoginApplication:
         ids=["searcher_user"],
     )
     def test_if_inactive_user_account(
-        self, user_role: str, setup_database: Callable
+        self, user_role: str, setup_database
     ) -> None:
         """
         This test is responsible for validating the expected behavior of the use case
@@ -147,8 +118,8 @@ class TestLoginApplication:
             )
 
         # Asserting that the user does not exist in the database
-        assert OutstandingToken.objects.count() == 0
-        assert BlacklistedToken.objects.count() == 0
+        assert JWT.objects.count() == 0
+        assert JWTBlacklist.objects.count() == 0
 
     @pytest.mark.parametrize(
         argnames="user_role",
@@ -176,10 +147,10 @@ class TestLoginApplication:
             )
 
         # Asserting that the user does not exist in the database
-        assert OutstandingToken.objects.count() == 0
-        assert BlacklistedToken.objects.count() == 0
+        assert JWT.objects.count() == 0
+        assert JWTBlacklist.objects.count() == 0
 
-    @patch("apps.backends.EmailPasswordBackend._user_repository")
+    @patch(target="apps.backends.EmailPasswordBackend._user_repository")
     def test_if_conection_db_failed(self, user_repository_mock: Mock) -> None:
         """
         Test that validates the expected behavior of the use case when the connection
@@ -200,5 +171,5 @@ class TestLoginApplication:
             )
 
         # Asserting that the user does not exist in the database
-        assert OutstandingToken.objects.count() == 0
-        assert BlacklistedToken.objects.count() == 0
+        assert JWT.objects.count() == 0
+        assert JWTBlacklist.objects.count() == 0

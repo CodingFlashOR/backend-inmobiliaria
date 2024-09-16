@@ -1,8 +1,6 @@
 from apps.users.constants import USER_ROLE_PERMISSIONS, UserRoles
-from apps.users.interfaces import (
-    IUserRepository,
-    IJWTRepository,
-)
+from apps.users.interfaces import IUserRepository
+from apps.authentication.interfaces import IJWTRepository
 from apps.emails.interfaces import ITokenRepository, ITokenGenerator
 from django.contrib.auth.models import Group, Permission
 from django.db.models.query import QuerySet
