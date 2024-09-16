@@ -35,6 +35,6 @@ urlpatterns = [
     ),
     path("admin/", admin.site.urls),
     path("api/v1/user/", include("apps.users.infrastructure.urls")),
-    path("api/v1/jwt/", include("apps.authentication.infrastructure.urls")),
+    path("api/v1/auth/", include("apps.authentication.infrastructure.urls")),
     path("api/v1/email/", include("apps.emails.infrastructure.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

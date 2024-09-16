@@ -8,17 +8,17 @@ from .views import (
 
 urlpatterns = [
     path(
-        route="login/",
+        route="jwt/login/",
         view=LoginAPIView.as_view(),
         name="login_jwt",
     ),
     path(
-        route="update/",
+        route="jwt/update/",
         view=UpdateTokenAPIView.as_view(),
         name="update_jwt",
     ),
     path(
-        route="logout/",
+        route="jwt/logout/",
         view=LogoutAPIView.as_view(),
         name="logout_jwt",
     ),

@@ -80,7 +80,7 @@ class Token(BaseToken):
         """
 
         self._jwt_repository.add_checklist(
-            token=str(self), payload=self.payload, base_user=self.user
+            token=str(self), payload=self.payload, user=self.user
         )
 
 

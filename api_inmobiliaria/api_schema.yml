@@ -13,7 +13,7 @@ info:
     name: MIT License
     url: https://opensource.org/licenses/MIT
 paths:
-  /api/v1/jwt/login/:
+  /api/v1/auth/jwt/login/:
     post:
       operationId: jwt_authenticate_user
       description: |-
@@ -166,7 +166,7 @@ paths:
                   summary: Database connection error
                   description: The connection to the database could not be established.
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
-  /api/v1/jwt/logout/:
+  /api/v1/auth/jwt/logout/:
     post:
       operationId: logout_user
       description: |-
@@ -268,7 +268,7 @@ paths:
                   summary: Database connection error
                   description: The connection to the database could not be established.
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
-  /api/v1/jwt/update/:
+  /api/v1/auth/jwt/update/:
     post:
       operationId: update_token
       description: |-

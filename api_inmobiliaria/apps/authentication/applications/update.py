@@ -4,7 +4,6 @@ from apps.authentication.interfaces import IJWTRepository
 from apps.users.interfaces import IUserRepository
 from apps.api_exceptions import ResourceNotFoundAPIError
 from apps.utils.messages import JWTErrorMessages
-from typing import Dict
 
 
 class JWTUpdate:
@@ -21,18 +20,17 @@ class JWTUpdate:
         self._jwt_repository = jwt_repository
         self._user_repository = user_repository
 
-    def new_tokens(self, token: JSONWebToken) -> Dict[str, JSONWebToken]:
+    def new_tokens(self, access_token: AccessToken) -> JSONWebToken:
         """
         Update the user access token.
 
         #### Parameters:
-        -
+        - access_token: The user access token.
 
         #### Raises:
         - ResourceNotFoundAPIError: If the user does not exist.
         """
 
-        access_token = AccessToken(token=token)
         base_user = self._user_repository.get_base_data(
             uuid=access_token.payload["user_uuid"],
             is_active=True,
@@ -47,4 +45,4 @@ class JWTUpdate:
                 detail=message["detail"],
             )
 
-        return {"access_token": str(self._access_token_class(user=base_user))}
+        return str(self._access_token_class(user=base_user))
