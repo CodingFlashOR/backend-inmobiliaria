@@ -11,7 +11,7 @@ from django.test import Client
 from django.urls import reverse
 from django.db import OperationalError
 from unittest.mock import Mock, patch
-from typing import Callable, Dict
+from typing import Dict
 import pytest
 
 
@@ -26,7 +26,7 @@ class TestSearcherRegisterUserAPIView:
     user_factory = UserFactory
     client = Client()
 
-    def test_if_valid_data(self, setup_database: Callable) -> None:
+    def test_if_valid_data(self, setup_database) -> None:
         """
         This test is responsible for validating the expected behavior of the
         view when the request data is valid.
@@ -223,7 +223,7 @@ class TestSearcherRegisterUserAPIView:
         for field, message in error_messages.items():
             assert errors_formatted[field] == message
 
-    @patch("apps.users.applications.register.Group")
+    @patch(target="apps.users.applications.register.Group")
     def test_if_conection_db_failed(self, model_group_mock: Mock) -> None:
         """
         This test is responsible for validating the expected behavior of the

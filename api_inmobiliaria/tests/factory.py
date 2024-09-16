@@ -1,24 +1,13 @@
-from settings.environments.base import SIMPLE_JWT
-from apps.users.constants import (
-    ACCESS_TOKEN_LIFETIME,
-    REFRESH_TOKEN_LIFETIME,
-    UserRoles,
-)
-from apps.users.typing import (
-    AccessToken,
-    RefreshToken,
-    JSONWebToken,
-    JWTPayload,
-    UserUUID,
-)
+from apps.authentication.typing import AccessToken, JSONWebToken, JWTPayload
+from apps.authentication.constants import ACCESS_TOKEN_LIFETIME
+from apps.authentication.models import JWT, JWTBlacklist
+from apps.users.constants import UserRoles
+from apps.users.typing import UserUUID
 from apps.users.models import BaseUser
 from apps.emails.models import Token
 from apps.utils.generators import TokenGenerator
+from settings.environments.base import SIMPLE_JWT
 from tests.utils import fake
-from rest_framework_simplejwt.token_blacklist.models import (
-    OutstandingToken,
-    BlacklistedToken,
-)
 from rest_framework_simplejwt.utils import (
     aware_utcnow,
     datetime_to_epoch,
@@ -27,7 +16,6 @@ from rest_framework_simplejwt.utils import (
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Group
 from django.db.models import Model
-from django.utils import timezone
 from typing import Optional, Tuple, Dict, Any
 from datetime import datetime
 from jwt import encode
@@ -223,25 +211,24 @@ class JWTFactory:
     Factory for the JWT tokens.
     """
 
-    _model = OutstandingToken
-    _blacklist_model = BlacklistedToken
+    _jwt_model = JWT
+    _blacklist_model = JWTBlacklist
 
     @staticmethod
     def _get_payload(
-        token_type: str, exp: datetime, user_uuid: UserUUID, user_role: str
+        exp: datetime, user_uuid: UserUUID, user_role: str
     ) -> JWTPayload:
         """
         This method returns the payload for a token.
 
         #### Parameters:
-        - token_type: The type of token to create.
         - exp: The expiration date of the token.
         - user_uuid: The UUID of the user.
         - role: The role of the user.
         """
 
         return {
-            "token_type": token_type,
+            "token_type": "access",
             "exp": datetime_to_epoch(dt=exp),
             "iat": datetime_to_epoch(dt=aware_utcnow()),
             "jti": uuid4().hex,
@@ -256,7 +243,6 @@ class JWTFactory:
         user: BaseUser,
         user_role: str,
         add_blacklist: bool,
-        token_type: str = None,
         exp: datetime = None,
         payload: JWTPayload = None,
     ) -> Dict[str, Any]:
@@ -277,7 +263,6 @@ class JWTFactory:
             if payload
             else cls._get_payload(
                 user_uuid=user.uuid.__str__(),
-                token_type=token_type,
                 user_role=user_role,
                 exp=exp,
             )
@@ -300,7 +285,7 @@ class JWTFactory:
     @classmethod
     def _save(
         cls, user: BaseUser, payload: JWTPayload, token: JSONWebToken
-    ) -> OutstandingToken:
+    ) -> JWT:
         """
         This method saves the token in the database.
 
@@ -310,16 +295,15 @@ class JWTFactory:
         - token: A JSONWebToken.
         """
 
-        return cls._model.objects.create(
+        return cls._jwt_model.objects.create(
             user=user,
             jti=payload["jti"],
             token=token,
-            created_at=timezone.now(),
             expires_at=datetime_from_epoch(ts=payload["exp"]),
         )
 
     @classmethod
-    def _add_blacklist(cls, token: OutstandingToken) -> None:
+    def _add_blacklist(cls, token: JWT) -> None:
         """
         Invalidates a JSON Web Token by adding it to the blacklist.
         """
@@ -375,131 +359,11 @@ class JWTFactory:
             ),
             user_role=user_role,
             save=save,
-            token_type="access",
             add_blacklist=add_blacklist,
             exp=exp_token,
         )
-
-    @classmethod
-    def refresh(
-        cls,
-        exp: bool,
-        save: bool,
-        user: BaseUser = None,
-        add_blacklist: bool = False,
-        user_role: str = UserRoles.SEARCHER.value,
-    ) -> Dict[str, Any]:
-        """
-        Creates a refresh token.
-
-        #### Parameters:
-        - exp: If the token should be expired.
-        - user_role: The role of the user.
-        - save: If the token should be saved in the database.
-        - user: An instance of the BaseUser model.
-        - add_blacklist: If the token should be added to the blacklist.
-        """
-
-        exp_token = (
-            aware_utcnow() - REFRESH_TOKEN_LIFETIME
-            if exp
-            else aware_utcnow() + REFRESH_TOKEN_LIFETIME
-        )
-
-        return cls._create(
-            user=(
-                user if user else cls._get_user(user_role=user_role, save=save)
-            ),
-            user_role=user_role,
-            token_type="refresh",
-            exp=exp_token,
-            save=save,
-            add_blacklist=add_blacklist,
-        )
-
-    @classmethod
-    def access_and_refresh(
-        cls,
-        save: bool,
-        exp_access: bool,
-        exp_refresh: bool,
-        user: BaseUser = None,
-        add_blacklist: bool = False,
-        user_role: str = UserRoles.SEARCHER.value,
-    ) -> Dict[str, Any]:
-        """
-        Creates an access and a refresh token.
-
-        #### Parameters:
-        - exp_access: If the access token should be expired.
-        - exp_refresh: If the refresh token should be expired.
-        - role: The role of the user.
-        - save: If the token should be saved in the database.
-        - user: An instance of the BaseUser model.
-        - add_blacklist: If the token should be added to the blacklist.
-        """
-
-        exp_access = (
-            aware_utcnow() - ACCESS_TOKEN_LIFETIME
-            if exp_access
-            else aware_utcnow() + ACCESS_TOKEN_LIFETIME
-        )
-        exp_refresh = (
-            aware_utcnow() - REFRESH_TOKEN_LIFETIME
-            if exp_refresh
-            else aware_utcnow() + REFRESH_TOKEN_LIFETIME
-        )
-        user_obj = (
-            user if user else cls._get_user(user_role=user_role, save=save)
-        )
-
-        # Create the payloads
-        refresh_payload = cls._get_payload(
-            user_uuid=user_obj.uuid.__str__(),
-            token_type="refresh",
-            user_role=user_role,
-            exp=exp_refresh,
-        )
-        access_payload = cls._get_payload(
-            user_uuid=user_obj.uuid.__str__(),
-            token_type="access",
-            user_role=user_role,
-            exp=exp_access,
-        )
-        access_payload["iat"] = refresh_payload["iat"]
-
-        access_data = cls._create(
-            payload=access_payload,
-            user_role=user_role,
-            user=user_obj,
-            save=save,
-            add_blacklist=add_blacklist,
-        )
-        refresh_data = cls._create(
-            payload=refresh_payload,
-            user_role=user_role,
-            user=user_obj,
-            save=save,
-            add_blacklist=add_blacklist,
-        )
-
-        return {
-            "tokens": {
-                "access_token": access_data["token"],
-                "refresh_token": refresh_data["token"],
-            },
-            "payloads": {
-                "access_token": access_data["payload"],
-                "refresh_token": refresh_data["payload"],
-            },
-        }
 
     @staticmethod
     def access_invalid() -> AccessToken:
 
         return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNzA5MDkxZjY1MDlU3IiwidXNlcl9pZCI6IjUwNTI5MjBjLWE3ZDYtNDM4ZS1iZmQwLWVhNTUyMTM4ODM2YrCZDFxbgBxhvNBJZsLzsyCn5pabwKKKSX9VKmQ8g"
-
-    @staticmethod
-    def refresh_invalid() -> RefreshToken:
-
-        return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlCI6MTcwNToxNzA1ODcyMjgyLCJqdGkiOiI3YWRkNjhmNTczNjY0YzNjYTNmOWUyZGRmZjZkNTI4YyIsInVzZXJfaWQiOiI1ODllMGE1NC00YmFkLTRjNTAtYTVjMi03MWIzNzY2NzdjZjULS2WTFL3YiPh3YZD-oIxXDWICs3LJ-u9BQ"

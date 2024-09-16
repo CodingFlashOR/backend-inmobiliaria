@@ -14,7 +14,7 @@ from rest_framework import status
 from django.test import Client
 from django.urls import reverse
 from unittest.mock import Mock, patch
-from typing import Callable, Dict, Any
+from typing import Dict, Any
 import pytest
 
 
@@ -51,7 +51,7 @@ class TestGetSearcherUserAPIView:
         assert response.data["code"] == code_expected
         assert response.data["detail"] == message_expected
 
-    def test_if_get_user(self, setup_database: Callable) -> None:
+    def test_if_get_user(self, setup_database) -> None:
         """
         This test is responsible for validating the expected behavior of the view
         when the request data is valid.
@@ -90,7 +90,7 @@ class TestGetSearcherUserAPIView:
         assert role_data["phone_number"] == user_role.phone_number
         assert role_data["is_phone_verified"] == user_role.is_phone_verified
 
-    def test_if_user_has_not_permission(self, setup_database: Callable) -> None:
+    def test_if_user_has_not_permission(self, setup_database) -> None:
         """
         This test is responsible for validating the expected behavior of the view
         when the user does not have the necessary permissions to perform the action.
@@ -235,7 +235,7 @@ class TestGetSearcherUserAPIView:
         assert response.data["code"] == response_code_expected
         assert response.data["detail"] == response_data_expected
 
-    @patch("authentication.jwt.JWTAuthentication._user_repository")
+    @patch(target="apps.authentication.jwt.JWTAuthentication._user_repository")
     def test_if_conection_db_failed(self, user_repository_mock: Mock) -> None:
         """
         This test is responsible for validating the expected behavior of the
@@ -328,9 +328,7 @@ class TestUpdateSearcherUserAPIView:
             },
         ],
     )
-    def test_if_valid_data(
-        self, data: Dict[str, Any], setup_database: Callable
-    ) -> None:
+    def test_if_valid_data(self, data: Dict[str, Any], setup_database) -> None:
         """
         This test is responsible for validating the expected behavior of the view
         when the request data is valid.
@@ -542,7 +540,7 @@ class TestUpdateSearcherUserAPIView:
         for field, message in error_messages.items():
             assert errors_formatted[field] == message
 
-    def test_if_user_has_not_permission(self, setup_database: Callable) -> None:
+    def test_if_user_has_not_permission(self, setup_database) -> None:
         """
         This test is responsible for validating the expected behavior of the view
         when the user does not have the necessary permissions to perform the action.
@@ -691,7 +689,7 @@ class TestUpdateSearcherUserAPIView:
         assert response.data["code"] == response_code_expected
         assert response.data["detail"] == response_data_expected
 
-    @patch("authentication.jwt.JWTAuthentication._user_repository")
+    @patch(target="apps.authentication.jwt.JWTAuthentication._user_repository")
     def test_if_conection_db_failed(self, user_repository_mock: Mock) -> None:
         """
         This test is responsible for validating the expected behavior of the

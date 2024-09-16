@@ -8,7 +8,6 @@ from tests.factory import UserFactory
 from django.test import RequestFactory
 from django.core import mail
 from unittest.mock import Mock
-from typing import Callable
 import pytest
 
 
@@ -22,7 +21,7 @@ class TestRegisterSearcherApplication:
     user_factory = UserFactory
 
     @pytest.mark.django_db
-    def test_created_successfully(self, setup_database: Callable) -> None:
+    def test_created_successfully(self, setup_database) -> None:
         """
         This test is responsible for validating the expected behavior of the
         use case when the request data is valid.
