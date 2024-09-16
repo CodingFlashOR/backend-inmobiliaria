@@ -101,7 +101,7 @@ Primero debes seguir las siguientes instrucciones y dependiendo de que manera qu
 - **Paso 3 (configurar grupo de usuarios):** Un grupo de usuarios se refiere a una entidad dentro de un sistema o aplicación que agrupa a varios usuarios bajo un mismo conjunto de permisos, roles o privilegios. Esto se utiliza para simplificar la gestión de acceso y permisos en sistemas donde hay múltiples usuarios. Para crear los grupos configurados paraeste proyecto ejecuta el siguiente comando.
     
     ```bash
-    python3 api_inmobiliaria/manage.py create_user_groups --settings=settings.environments.development
+    python3 api_inmobiliaria/manage.py configureusergroups --settings=settings.environments.development
     ```
 
 - **Paso 4 (iniciar el servidor):** Para iniciar el servidor de manera local ejecuta el siguiente comando.
@@ -133,14 +133,14 @@ Este proyecto incluye algunos comandos personalizados de Django que puedes utili
 Este comando configura los grupos de usuarios predefinidos en el sistema, asignando los permisos necesarios a cada uno. Facilita la administración de roles y permisos en la plataforma.
 
 ```bash
-python3 api_inmobiliaria/manage.py flushexpiredjwt --settings=settings.environments.development
+python3 api_inmobiliaria/manage.py configureusergroups --settings=settings.environments.development
 ```
 
 ### 4.2. Borrar JWT expirados en la base de datos
 Este comando elimina de la base de datos todos los JSON Web Tokens que hayan expirado. Es útil para mantener la base de datos limpia y optimizar su rendimiento.
 
 ```bash
-python3 api_inmobiliaria/manage.py configureusergroups --settings=settings.environments.development
+python3 api_inmobiliaria/manage.py flushexpiredjwt --settings=settings.environments.development
 ```
 
 ## 5. Tests
