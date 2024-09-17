@@ -42,17 +42,18 @@ class UserFactory:
         - active: If the user should be active.
         """
 
-        related_model = ContentType.objects.get(model=user_role).model_class()
-        role_user_instance = related_model.objects.create(**data["role_data"])
-
-        password = data["base_data"].pop("password")
-        base_user_instance = cls.model.objects.create(
-            content_object=role_user_instance,
-            is_active=active,
-            **data["base_data"],
+        base_user_instance = cls.model.objects.create_user(
+            user_role=user_role,
+            role_data=data["role_data"],
+            base_data=data["base_data"],
         )
-        base_user_instance.set_password(password)
+        base_user_instance.is_active = active
         base_user_instance.save()
+
+        related_model = ContentType.objects.get(model=user_role).model_class()
+        role_user_instance = related_model.objects.get(
+            uuid=base_user_instance.role_data_uuid
+        )
 
         return base_user_instance, role_user_instance
 
@@ -89,7 +90,6 @@ class UserFactory:
                 "name": "Nombre del ususario",
                 "last_name": "Apellido del usuario",
                 "cc": data.get("cc", None) or str(fake.random_number(digits=9)),
-                "address": data.get("address", None) or fake.address(),
                 "phone_number": data.get("phone_number", None)
                 or fake.phone_number(),
             }
@@ -167,7 +167,6 @@ class UserFactory:
                         "name": data["name"],
                         "last_name": data["last_name"],
                         "cc": data["cc"],
-                        "address": data["address"],
                         "phone_number": data["phone_number"],
                     },
                 },
@@ -193,7 +192,7 @@ class TokenFactory:
     _model = Token
 
     def __init__(self, base_user: BaseUser) -> None:
-        self.value = TokenGenerator().make_token(base_user=base_user)
+        self.value = TokenGenerator().make_token(user=base_user)
 
     def save(self) -> Token:
         """

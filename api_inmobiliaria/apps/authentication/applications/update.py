@@ -32,9 +32,7 @@ class JWTUpdate:
         """
 
         base_user = self._user_repository.get_base_data(
-            uuid=access_token.payload["user_uuid"],
-            is_active=True,
-            is_deleted=False,
+            uuid=access_token.payload["user_uuid"], is_active=True
         )
 
         if not base_user:

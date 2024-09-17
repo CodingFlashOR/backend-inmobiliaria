@@ -53,7 +53,7 @@ class SendTokenAPIView(GenericAPIView):
             token_class=TokenGenerator(),
             token_repository=TokenRepository,
         )
-        application.send_email(base_user=base_user, request=request)
+        application.send_email(user=base_user, request=request)
 
         return Response(
             data={

@@ -43,12 +43,12 @@ class ITokenGenerator(Protocol):
     ITokenGenerator is a protocol that defines the interface for a token generator.
     """
 
-    def make_token(self, base_user: BaseUser) -> str:
+    def make_token(self, user: BaseUser) -> str:
         """
         Generate a token for the given user.
 
         #### Parameters:
-        - base_user: A instance of the BaseUser model.
+        - user: A instance of the BaseUser model.
         """
 
         ...

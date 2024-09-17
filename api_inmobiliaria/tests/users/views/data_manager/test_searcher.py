@@ -86,7 +86,6 @@ class TestGetSearcherUserAPIView:
         assert role_data["name"] == user_role.name
         assert role_data["last_name"] == user_role.last_name
         assert role_data["cc"] == user_role.cc
-        assert role_data["address"] == user_role.address
         assert role_data["phone_number"] == user_role.phone_number
         assert role_data["is_phone_verified"] == user_role.is_phone_verified
 
@@ -323,7 +322,6 @@ class TestUpdateSearcherUserAPIView:
                 "name": fake.first_name(),
                 "last_name": fake.last_name(),
                 "cc": fake.random_number(digits=10),
-                "address": fake.address(),
                 "phone_number": "+57 3105002632",
             },
         ],
@@ -365,7 +363,6 @@ class TestUpdateSearcherUserAPIView:
         assert role_data["name"] == user_role.name
         assert role_data["last_name"] == user_role.last_name
         assert role_data["cc"] == user_role.cc
-        assert role_data["address"] == user_role.address
         assert role_data["phone_number"] == user_role.phone_number
         assert role_data["is_phone_verified"] == user_role.is_phone_verified
 
@@ -398,7 +395,6 @@ class TestUpdateSearcherUserAPIView:
                 {
                     "name": fake.bothify(text=f"{'?' * 41}"),
                     "last_name": fake.bothify(text=f"{'?' * 41}"),
-                    "address": fake.bothify(text=f"{'?' * 91}"),
                     "cc": fake.random_number(digits=11),
                 },
                 {
@@ -410,11 +406,6 @@ class TestUpdateSearcherUserAPIView:
                     "last_name": [
                         ERROR_MESSAGES["max_length"].format(
                             max_length=SearcherProperties.LAST_NAME_MAX_LENGTH.value,
-                        ),
-                    ],
-                    "address": [
-                        ERROR_MESSAGES["max_length"].format(
-                            max_length=SearcherProperties.ADDRESS_MAX_LENGTH.value,
                         ),
                     ],
                     "cc": [
@@ -490,15 +481,11 @@ class TestUpdateSearcherUserAPIView:
                 {"phone_number": [ERROR_MESSAGES["phone_in_use"]]},
             ),
             (
-                {"address": fake.address()},
-                {"address": [ERROR_MESSAGES["address_in_use"]]},
-            ),
-            (
                 {"cc": fake.random_number(digits=10)},
                 {"cc": [ERROR_MESSAGES["cc_in_use"]]},
             ),
         ],
-        ids=["phone_number_in_use", "address_in_use", "cc_in_use"],
+        ids=["phone_number_in_use", "cc_in_use"],
     )
     def test_data_used(
         self, data: Dict[str, Any], error_messages: Dict[str, Any]

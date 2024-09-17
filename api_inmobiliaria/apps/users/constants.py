@@ -7,16 +7,9 @@ class UserRoles(Enum):
     """
 
     SEARCHER = "searcher"
-
-
-USER_ROLE_PERMISSIONS = {
-    UserRoles.SEARCHER.value: {
-        "jwt_auth": "authentication.add_jwt",
-        "change_data": "users.change_baseuser",
-        "delete_data": "users.delete_baseuser",
-        "view_data": "users.view_baseuser",
-    },
-}
+    REAL_ESTATE_ENTITY = "realestateentity"
+    REAL_ESTATE = "realestate"
+    CONSTRUCTION_COMPANY = "constructioncompany"
 
 
 class BaseUserProperties(Enum):
@@ -38,5 +31,32 @@ class SearcherProperties(Enum):
     LAST_NAME_MAX_LENGTH = 40
     CC_MIN_LENGTH = 6
     CC_MAX_LENGTH = 10
-    ADDRESS_MAX_LENGTH = 90
     PHONE_NUMBER_MAX_LENGTH = 19
+
+
+class RealEstateAgentProperties(Enum):
+    """
+    Define the data properties of a real estate agent user.
+    """
+
+    TYPE_ENTITY_MAX_LENGTH = 40
+    NAME_MAX_LENGTH = 40
+    DESCRIPTION_MAX_LENGTH = 400
+    NIT_MAX_LENGTH = 10
+    PHONE_NUMBER_MAX_LENGTH = 19
+    DEPARTMENT_MAX_LENGTH = 25
+    MUNICIPALITY_MAX_LENGTH = 25
+    REGION_MAX_LENGTH = 80
+    COORDINATE_MAX_LENGTH = 30
+    DOCUMENT_LINK_MAX_LENGTH = 2083
+    LOGO_LINK_MAX_LENGTH = 2083
+
+
+USER_ROLE_PERMISSIONS = {
+    UserRoles.SEARCHER.value: {
+        "jwt_auth": "authentication.add_jwt",
+        "change_data": "users.change_baseuser",
+        "delete_data": "users.delete_baseuser",
+        "view_data": "users.view_baseuser",
+    },
+}

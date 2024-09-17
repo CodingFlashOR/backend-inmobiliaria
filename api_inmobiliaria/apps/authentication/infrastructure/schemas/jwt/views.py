@@ -196,7 +196,7 @@ UpdateTokenSchema = extend_schema(
             examples=[
                 OpenApiExample(
                     name="response_ok",
-                    summary="New tokens generated",
+                    summary="New access token generated",
                     description="The new access token have been generated successfully, you can use these new token to keep the user authenticated.",
                     value={
                         "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw",
@@ -220,12 +220,6 @@ UpdateTokenSchema = extend_schema(
                     value={
                         "code": "invalid_request_data",
                         "detail": {
-                            "refresh_token": [
-                                DEFAULT_ERROR_MESSAGES["required"],
-                                DEFAULT_ERROR_MESSAGES["blank"],
-                                DEFAULT_ERROR_MESSAGES["null"],
-                                DEFAULT_ERROR_MESSAGES["invalid"],
-                            ],
                             "access_token": [
                                 DEFAULT_ERROR_MESSAGES["required"],
                                 DEFAULT_ERROR_MESSAGES["blank"],

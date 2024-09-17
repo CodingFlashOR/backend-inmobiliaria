@@ -7,7 +7,12 @@ from django.contrib.auth.models import (
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from apps.users.constants import BaseUserProperties, SearcherProperties
+from apps.users.constants import (
+    RealEstateAgentProperties,
+    BaseUserProperties,
+    SearcherProperties,
+    UserRoles,
+)
 from typing import Dict, Any
 from uuid import uuid4
 
@@ -23,7 +28,7 @@ class UserManager(BaseUserManager):
         related_model_name: str = None,
         role_data: Dict[str, Any] = None,
         base_data: Dict[str, Any] = None,
-    ) -> AbstractBaseUser:
+    ) -> "BaseUser":
         """
         This is a private method that handles the creation of a user instance.
         Optionally it can associate to a model instance that encapsulates the user
@@ -50,30 +55,79 @@ class UserManager(BaseUserManager):
 
         return user
 
-    def create_user(
+    def _create_searcher(
         self,
-        is_active: bool = None,
-        related_model_name: str = None,
-        role_data: Dict[str, Any] = None,
-        base_data: Dict[str, Any] = None,
-    ) -> AbstractBaseUser:
+        role_data: Dict[str, Any],
+        base_data: Dict[str, Any],
+    ) -> "BaseUser":
         """
-        Creates and saves a user with the specified attributes.
+        Creates and saves a searcher user with the specified attributes.
 
         #### Parameters:
-        - is_active: Indicates if the user is active.
-        - related_model_name: The name of the related model that encapsulates the
-        role data.
         - role_data: The data to create the related model instance.
-        - base_data: The data to create the user instance.
+        - base_data: The data to create the base user instance.
         """
 
-        base_data.setdefault("is_active", is_active or False)
+        base_data.setdefault("is_staff", False)
+        base_data.setdefault("is_superuser", False)
+        base_data.setdefault("is_active", False)
+        base_data.setdefault("is_deleted", False)
+        role_data.setdefault("is_phone_verified", False)
 
         return self._create_user(
-            related_model_name=related_model_name,
+            related_model_name=UserRoles.SEARCHER.value,
             role_data=role_data,
             base_data=base_data,
+        )
+
+    def _create_real_estate_entity(
+        self,
+        role_data: Dict[str, Any],
+        base_data: Dict[str, Any],
+    ) -> "BaseUser":
+        """
+        Creates and saves a real estate entity with the specified attributes.
+
+        #### Parameters:
+        - role_data: The data to create the related model instance.
+        - base_data: The data to create the base user instance.
+        """
+
+        base_data.setdefault("is_staff", False)
+        base_data.setdefault("is_superuser", False)
+        base_data.setdefault("is_active", False)
+        base_data.setdefault("is_deleted", False)
+        role_data.setdefault("verified", False)
+
+        phone_numbers = role_data["phone_numbers"].split(",")
+        role_data["is_phones_verified"] = {}
+
+        for number in phone_numbers:
+            role_data["is_phones_verified"][number] = False
+
+        return self._create_user(
+            related_model_name=UserRoles.REAL_ESTATE_ENTITY.value,
+            role_data=role_data,
+            base_data=base_data,
+        )
+
+    def create_user(
+        self,
+        user_role: str,
+        role_data: Dict[str, Any],
+        base_data: Dict[str, Any],
+    ) -> "BaseUser":
+        """
+        Creates a user with the specified role and attributes.
+        """
+
+        map_creation_method = {
+            UserRoles.SEARCHER.value: self._create_searcher,
+            UserRoles.REAL_ESTATE_ENTITY.value: self._create_real_estate_entity,
+        }
+
+        return map_creation_method[user_role](
+            role_data=role_data, base_data=base_data
         )
 
     def create_superuser(
@@ -81,7 +135,7 @@ class UserManager(BaseUserManager):
         email: str,
         password: str,
         **base_data,
-    ) -> AbstractBaseUser:
+    ) -> "BaseUser":
         """
         Create and save a SuperUser with the given email and password.
         """
@@ -126,6 +180,7 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
         unique=True,
         null=False,
         blank=False,
+        db_index=True,
     )
     password = models.CharField(
         db_column="password", max_length=128, null=False, blank=False
@@ -144,10 +199,18 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
     content_object = GenericForeignKey(
         ct_field="content_type", fk_field="role_data_uuid"
     )
-    is_staff = models.BooleanField(db_column="is_staff", default=False)
-    is_superuser = models.BooleanField(db_column="is_superuser", default=False)
-    is_active = models.BooleanField(db_column="is_active", default=False)
-    is_deleted = models.BooleanField(db_column="is_deleted", default=False)
+    is_staff = models.BooleanField(
+        db_column="is_staff", null=False, blank=False
+    )
+    is_superuser = models.BooleanField(
+        db_column="is_superuser", null=False, blank=False
+    )
+    is_active = models.BooleanField(
+        db_column="is_active", null=False, blank=False
+    )
+    is_deleted = models.BooleanField(
+        db_column="is_deleted", null=False, blank=False
+    )
     deleted_at = models.DateTimeField(
         db_column="deleted_at", null=True, blank=True
     )
@@ -158,7 +221,7 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
         db_column="date_joined", auto_now_add=True
     )
 
-    objects = UserManager()
+    objects: UserManager = UserManager()
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -166,6 +229,9 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = "Base user"
         verbose_name_plural = "Base users"
+        indexes = [
+            models.Index(fields=["uuid", "is_active"]),
+        ]
 
     def __str__(self) -> str:
         """
@@ -199,13 +265,7 @@ class Searcher(models.Model):
         null=True,
         blank=True,
         unique=True,
-    )
-    address = models.CharField(
-        db_column="address",
-        max_length=SearcherProperties.ADDRESS_MAX_LENGTH.value,
-        null=True,
-        blank=True,
-        unique=True,
+        db_index=True,
     )
     phone_number = PhoneNumberField(
         db_column="phone_number",
@@ -213,14 +273,15 @@ class Searcher(models.Model):
         null=True,
         blank=True,
         unique=True,
+        db_index=True,
     )
     is_phone_verified = models.BooleanField(
-        db_column="is_phone_verified", default=False
+        db_column="is_phone_verified", null=False, blank=False
     )
 
     class Meta:
-        verbose_name = "searcher"
-        verbose_name_plural = "searchers"
+        verbose_name = "Searcher"
+        verbose_name_plural = "Searchers"
 
     def __str__(self) -> str:
         """
@@ -235,3 +296,109 @@ class Searcher(models.Model):
         """
 
         return f"{self.name.capitalize()} {self.last_name.capitalize()}"
+
+
+class RealEstateEntity(models.Model):
+    """
+    This object encapsulates the `role data` of a real estate entity user.
+    """
+
+    uuid = models.UUIDField(db_column="uuid", default=uuid4, primary_key=True)
+    type_entity = models.CharField(
+        db_column="type_entity",
+        max_length=RealEstateAgentProperties.TYPE_ENTITY_MAX_LENGTH.value,
+        choices=[
+            (UserRoles.REAL_ESTATE.value, UserRoles.REAL_ESTATE.value),
+            (
+                UserRoles.CONSTRUCTION_COMPANY.value,
+                UserRoles.CONSTRUCTION_COMPANY.value,
+            ),
+        ],
+        null=False,
+        blank=False,
+    )
+    name = models.CharField(
+        db_column="name",
+        max_length=RealEstateAgentProperties.NAME_MAX_LENGTH.value,
+        null=False,
+        blank=False,
+        unique=True,
+        db_index=True,
+    )
+    description = models.CharField(
+        db_column="description",
+        max_length=RealEstateAgentProperties.DESCRIPTION_MAX_LENGTH.value,
+        null=False,
+        blank=False,
+    )
+    nit = models.CharField(
+        db_column="nit",
+        max_length=RealEstateAgentProperties.NIT_MAX_LENGTH.value,
+        null=False,
+        blank=False,
+        unique=True,
+        db_index=True,
+    )
+    phone_numbers = models.CharField(
+        db_column="phone_numbers",
+        max_length=RealEstateAgentProperties.PHONE_NUMBER_MAX_LENGTH.value * 2
+        + 1,
+        null=False,
+        blank=False,
+        db_index=True,
+    )
+    department = models.CharField(
+        db_column="department",
+        max_length=RealEstateAgentProperties.DEPARTMENT_MAX_LENGTH.value,
+        null=False,
+        blank=False,
+    )
+    municipality = models.CharField(
+        db_column="municipality",
+        max_length=RealEstateAgentProperties.MUNICIPALITY_MAX_LENGTH.value,
+        null=False,
+        blank=False,
+    )
+    region = models.CharField(
+        db_column="region",
+        max_length=RealEstateAgentProperties.REGION_MAX_LENGTH.value,
+        null=False,
+        blank=False,
+    )
+    coordinate = models.CharField(
+        db_column="coordinate",
+        max_length=RealEstateAgentProperties.COORDINATE_MAX_LENGTH.value,
+        null=False,
+        blank=False,
+        unique=True,
+        db_index=True,
+    )
+    is_phones_verified = models.JSONField(
+        db_column="is_phones_verified",
+        null=False,
+        blank=False,
+    )
+    communication_channels = models.JSONField(
+        db_column="communication_channels",
+        null=True,
+        blank=True,
+    )
+    documents = models.JSONField(
+        db_column="documents",
+        null=True,
+        blank=True,
+    )
+    verified = models.BooleanField(
+        db_column="verified", null=False, blank=False
+    )
+
+    class Meta:
+        verbose_name = "Real Estate Entity"
+        verbose_name_plural = "Real Estate Entities"
+
+    def __str__(self) -> str:
+        """
+        Return the string representation of the model.
+        """
+
+        return self.uuid.__str__()

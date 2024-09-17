@@ -1,4 +1,4 @@
-from apps.users.models import BaseUser, UserManager
+from apps.users.models import BaseUser
 from apps.api_exceptions import DatabaseConnectionAPIError
 from django.contrib.contenttypes.models import ContentType
 from django.db import OperationalError
@@ -15,30 +15,24 @@ class UserRepository:
     model = BaseUser
 
     @classmethod
-    def create(
-        cls, data: Dict[str, Any], user_role: str, active: bool
-    ) -> BaseUser:
+    def create(cls, data: Dict[str, Any], user_role: str) -> BaseUser:
         """
         Inserts a new user into the database.
 
         #### Parameters:
         - data: Dictionary containing the user's data.
         - user_role: Role of the user.
-        - active: Boolean that indicates if the user is active or not.
 
         #### Raises:
         - DatabaseConnectionAPIError: If there is an operational error with the
         database.
         """
 
-        user_manager: UserManager = cls.model.objects
-
         try:
-            base_user = user_manager.create_user(
+            base_user = cls.model.objects.create_user(
+                user_role=user_role,
                 base_data=data["base_data"],
                 role_data=data["role_data"],
-                related_model_name=user_role,
-                is_active=active,
             )
         except OperationalError:
             # In the future, a retry system will be implemented when the database is

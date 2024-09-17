@@ -316,7 +316,7 @@ paths:
                 ResponseOk:
                   value:
                     access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1NjQ4MTAyLCJpYXQiOjE3MTU2NDA5MDIsImp0aSI6ImQ0YzEwYzEzMTgwODQ3YmNiNGU5NDMwMjFhYmQ3OGMyIiwidXNlcl91dWlkIjoiZDdiYTM0NzEtZWQzOS00NTQxLWFmOTktZWVmYzFjMWRlYmJkIiwicm9sZSI6IlNlYXJjaGVyVXNlciJ9.C5W1Q4XLBRXUbSUtKcESvudwo6-Ylg8u1fZZ4i79GWw
-                  summary: New tokens generated
+                  summary: New access token generated
                   description: The new access token have been generated successfully,
                     you can use these new token to keep the user authenticated.
           description: '**(OK)** New access token is generated.'
@@ -334,11 +334,6 @@ paths:
                   value:
                     code: invalid_request_data
                     detail:
-                      refresh_token:
-                      - This field is required.
-                      - This field may not be blank.
-                      - This field may not be null.
-                      - Not a valid string.
                       access_token:
                       - This field is required.
                       - This field may not be blank.
@@ -458,7 +453,6 @@ paths:
                       last_name: Apellido del usuario
                       cc: '1234567890'
                       phone_number: '+573111111111'
-                      address: Calle 123
                       is_phone_verified: false
                   summary: Get user data
                   description: User information is displayed without showing sensitive
@@ -695,7 +689,6 @@ paths:
                     name: Nuevo nombre
                     last_name: Nuevo apellido
                     cc: '1234567890'
-                    address: Nueva dirección
                     phone_number: +57 3111111111
                 summary: The role data of a user with role searcher.
                 description: |-
@@ -703,7 +696,6 @@ paths:
                   - **Name and last_name:** Must not exceed 40 characters and must contain only letters and spaces.
                   - **Email:** Must not exceed 40 characters, must follow standard email format and must not be in use.
                   - **Identification number (cc):** Must not exceed 10 characters, must be at least 6 characters, must contain only numbers between 0-9 and must not be in use.
-                  - **Address** Must not exceed 90 characters and must not be in use.
                   - **Phone number** Must not exceed 19 characters and must not be in use.
           application/x-www-form-urlencoded:
             schema:
@@ -733,7 +725,6 @@ paths:
                       last_name: Apellido del usuario
                       cc: '1234567890'
                       phone_number: '+573111111111'
-                      address: Calle 123
                       is_phone_verified: false
                   summary: New user data
                   description: User information is displayed without showing sensitive
@@ -763,12 +754,6 @@ paths:
                       - Este campo no puede ser nulo.
                       - El valor ingresado es inválido.
                       - El valor ingresado no puede tener más de 40 caracteres.
-                      address:
-                      - Este campo no puede estar en blanco.
-                      - Este campo no puede ser nulo.
-                      - El valor ingresado es inválido.
-                      - El valor ingresado no puede tener más de 90 caracteres.
-                      - Esta dirección ya está en uso.
                       cc:
                       - Este campo no puede estar en blanco.
                       - Este campo no puede ser nulo.
@@ -912,10 +897,6 @@ components:
           minLength: 6
           pattern: ^\d+$
           maxLength: 10
-        address:
-          type: string
-          minLength: 1
-          maxLength: 90
         phone_number:
           type: string
           minLength: 1

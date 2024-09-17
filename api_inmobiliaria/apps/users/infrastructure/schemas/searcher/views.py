@@ -143,7 +143,6 @@ GETSearcherSchema = extend_schema(
                             "last_name": "Apellido del usuario",
                             "cc": "1234567890",
                             "phone_number": "+573111111111",
-                            "address": "Calle 123",
                             "is_phone_verified": False,
                         },
                     },
@@ -283,7 +282,6 @@ PATCHearcherSchema = extend_schema(
                             "last_name": "Apellido del usuario",
                             "cc": "1234567890",
                             "phone_number": "+573111111111",
-                            "address": "Calle 123",
                             "is_phone_verified": False,
                         },
                     },
@@ -334,15 +332,6 @@ PATCHearcherSchema = extend_schema(
                                 ERROR_MESSAGES["max_length"].format(
                                     max_length=SearcherProperties.LAST_NAME_MAX_LENGTH.value,
                                 ),
-                            ],
-                            "address": [
-                                ERROR_MESSAGES["blank"],
-                                ERROR_MESSAGES["null"],
-                                ERROR_MESSAGES["invalid"],
-                                ERROR_MESSAGES["max_length"].format(
-                                    max_length=SearcherProperties.ADDRESS_MAX_LENGTH.value,
-                                ),
-                                ERROR_MESSAGES["address_in_use"],
                             ],
                             "cc": [
                                 ERROR_MESSAGES["blank"],

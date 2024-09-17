@@ -9,7 +9,7 @@ from django.dispatch import receiver
 
 @receiver(account_activation_mail)
 def handle_send_activation_mail(
-    sender, base_user: BaseUser, request: HttpRequest, **kwargs
+    sender, user: BaseUser, request: HttpRequest, **kwargs
 ) -> None:
     """
     This function is activated when a user-registered signal is sent. Generate an
@@ -17,7 +17,7 @@ def handle_send_activation_mail(
 
     #### Parameters:
     - sender: The sender of the signal.
-    - base_user: The user to whom the activation email will be sent.
+    - user: The user to whom the activation email will be sent.
     - request: The request object that triggered the signal.
     """
 
@@ -25,4 +25,4 @@ def handle_send_activation_mail(
         token_repository=TokenRepository,
         token_class=TokenGenerator(),
     )
-    account_activation.send_email(base_user=base_user, request=request)
+    account_activation.send_email(user=user, request=request)
