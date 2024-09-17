@@ -9,16 +9,13 @@ class IUserRepository(Protocol):
     """
 
     @classmethod
-    def create(
-        cls, data: Dict[str, Any], user_role: str, active: bool
-    ) -> BaseUser:
+    def create(cls, data: Dict[str, Any], user_role: str) -> BaseUser:
         """
         Inserts a new user into the database.
 
         #### Parameters:
         - data: Dictionary containing the user's data.
         - user_role: Role of the user.
-        - active: Boolean that indicates if the user is active or not.
 
         #### Raises:
         - DatabaseConnectionAPIError: If there is an operational error with the

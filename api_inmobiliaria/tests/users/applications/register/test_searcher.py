@@ -54,7 +54,6 @@ class TestRegisterSearcherApplication:
         assert role.name == data["name"]
         assert role.last_name == data["last_name"]
         assert role.cc == None
-        assert role.address == None
         assert role.phone_number == None
         assert role.is_phone_verified == False
 

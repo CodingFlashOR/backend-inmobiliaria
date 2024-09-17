@@ -23,18 +23,18 @@ class TokenGenerator(PasswordResetTokenGenerator):
     ensuring that the user is indeed the one who initiated the process.
     """
 
-    def _make_hash_value(self, base_user: BaseUser, timestamp: int) -> str:
+    def _make_hash_value(self, user: BaseUser, timestamp: int) -> str:
         """
         Create a hash value using the user's id, timestamp, and active status.
         """
 
         return (
-            six.text_type(base_user.uuid)
+            six.text_type(user.uuid)
             + six.text_type(timestamp)
-            + six.text_type(base_user.is_active)
+            + six.text_type(user.is_active)
         )
 
-    def make_token(self, base_user: BaseUser) -> str:
+    def make_token(self, user: BaseUser) -> str:
         """
         Generate a token for the given user.
 
@@ -43,7 +43,7 @@ class TokenGenerator(PasswordResetTokenGenerator):
         """
 
         token = self._make_token_with_timestamp(
-            base_user,
+            user,
             self._num_seconds(self._now()),
             self.secret,
         )

@@ -203,7 +203,7 @@ class JWTAuthentication(BaseJWTuthentication):
             )
 
         base_user = self._user_repository.get_base_data(
-            uuid=user_uuid, is_active=True, is_deleted=False
+            uuid=user_uuid, is_active=True
         )
 
         if not base_user:

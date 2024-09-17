@@ -46,7 +46,7 @@ class TestApplicationSendMail:
         app = self.application_class(
             token_class=TokenGenerator(), token_repository=TokenRepository
         )
-        app.send_email(base_user=base_user, request=RequestFactory().post("/"))
+        app.send_email(user=base_user, request=RequestFactory().post("/"))
 
         # Asserting that the message is sent and the token is created
         assert len(mail.outbox) == 1
@@ -62,7 +62,7 @@ class TestApplicationSendMail:
         with pytest.raises(ResourceNotFoundAPIError):
             self.application_class(
                 token_class=TokenGenerator(), token_repository=TokenRepository
-            ).send_email(base_user=None, request=RequestFactory().post("/"))
+            ).send_email(user=None, request=RequestFactory().post("/"))
 
         # Asserting that the message is not sent and the token is not created
         assert len(mail.outbox) == 0
@@ -79,7 +79,7 @@ class TestApplicationSendMail:
             self.application_class(
                 token_class=TokenGenerator(), token_repository=TokenRepository
             ).send_email(
-                base_user=BaseUser(
+                user=BaseUser(
                     uuid=uuid4(),
                     email="user1@email.com",
                     is_active=True,
@@ -106,7 +106,7 @@ class TestApplicationSendMail:
             self.application_class(
                 token_class=TokenGenerator(), token_repository=token_repository
             ).send_email(
-                base_user=BaseUser(
+                user=BaseUser(
                     uuid=uuid4(),
                     email="user1@email.com",
                     is_active=False,
@@ -139,7 +139,7 @@ class TestApplicationCheckToken:
         base_user, _, _ = self.user_factory.searcher_user(
             active=False, save=True, add_perm=False
         )
-        token = TokenGenerator().make_token(base_user=base_user)
+        token = TokenGenerator().make_token(user=base_user)
         Token.objects.create(token=token)
 
         # Instantiating the application and calling the method
@@ -196,7 +196,7 @@ class TestApplicationCheckToken:
         base_user, _, _ = self.user_factory.searcher_user(
             active=False, save=True, add_perm=False
         )
-        token = TokenGenerator().make_token(base_user=base_user)
+        token = TokenGenerator().make_token(user=base_user)
         token_obj = Token.objects.create(token=token)
 
         # Changing the token expiration date
@@ -234,7 +234,7 @@ class TestApplicationCheckToken:
         other_user, _, _ = self.user_factory.searcher_user(
             active=False, save=True, add_perm=False
         )
-        token = TokenGenerator().make_token(base_user=other_user)
+        token = TokenGenerator().make_token(user=other_user)
         Token.objects.create(token=token)
 
         # Instantiating the application and calling the method

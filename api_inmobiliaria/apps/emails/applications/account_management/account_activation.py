@@ -23,25 +23,25 @@ class AccountActivation(ActionLinkManager):
     email_body = TEMPLATES["account_management"]["activation"]["email_body"]
     action = "activar tu cuenta"
 
-    def send_email(self, base_user: BaseUser | None, request: Request) -> None:
+    def send_email(self, user: BaseUser | None, request: Request) -> None:
 
-        if not base_user:
+        if not user:
             raise ResourceNotFoundAPIError(
                 code="user_not_found",
                 detail=ActivationErrors.USER_NOT_FOUND.value,
             )
-        elif base_user.is_active:
+        elif user.is_active:
             raise AccountActivationAPIError(
                 detail=ActivationErrors.ACTIVE_ACCOUNT.value
             )
 
-        super().send_email(base_user=base_user, request=request)
+        super().send_email(user=user, request=request)
 
     def check_token(
         self, token: Token, user_uuid: UserUUID, request: HttpRequest
     ) -> None:
 
+        self.user = self._user_repository.get_base_data(uuid=user_uuid)
         super().check_token(token=token, user_uuid=user_uuid, request=request)
-
-        self.base_user.is_active = True
-        self.base_user.save()
+        self.user.is_active = True
+        self.user.save()

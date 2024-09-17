@@ -17,12 +17,12 @@ class RegisterUser:
     def __init__(self, user_repository: IUserRepository) -> None:
         self._user_repository = user_repository
 
-    def _assign_permissions(self, base_user: BaseUser, user_role: str) -> None:
+    def _assign_permissions(self, user: BaseUser, user_role: str) -> None:
         """
         This method assigns the permissions of the provided role to the user.
 
         #### Parameters:
-        - base_user: An instance of the BaseUser model.
+        - user: An instance of the BaseUser model.
         - user_role: The role of the user.
 
         #### Raises:
@@ -34,8 +34,8 @@ class RegisterUser:
         except OperationalError:
             raise DatabaseConnectionAPIError()
 
-        base_user.groups.add(group)
-        base_user.save()
+        user.groups.add(group)
+        user.save()
 
     def searcher(self, data: Dict[str, Any], request: Request) -> None:
         """
@@ -59,12 +59,11 @@ class RegisterUser:
                     "last_name": data["last_name"],
                 },
             },
-            active=False,
         )
 
         self._assign_permissions(
-            base_user=base_user, user_role=UserRoles.SEARCHER.value
+            user=base_user, user_role=UserRoles.SEARCHER.value
         )
         account_activation_mail.send(
-            sender=__name__, base_user=base_user, request=request
+            sender=__name__, user=base_user, request=request
         )

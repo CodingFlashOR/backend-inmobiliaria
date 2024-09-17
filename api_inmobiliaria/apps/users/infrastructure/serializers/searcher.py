@@ -75,15 +75,6 @@ class SearcherRoleDataSerializer(ErrorMessagesSerializer):
             ),
         ],
     )
-    address = serializers.CharField(
-        required=False,
-        max_length=SearcherProperties.ADDRESS_MAX_LENGTH.value,
-        error_messages={
-            "max_length": ERROR_MESSAGES["max_length"].format(
-                max_length="{max_length}"
-            ),
-        },
-    )
     phone_number = PhoneNumberField(
         required=False,
         max_length=SearcherProperties.PHONE_NUMBER_MAX_LENGTH.value,
@@ -108,24 +99,6 @@ class SearcherRoleDataSerializer(ErrorMessagesSerializer):
             raise serializers.ValidationError(
                 code="invalid_data",
                 detail=ERROR_MESSAGES["cc_in_use"],
-            )
-
-        return value
-
-    def validate_address(self, value: str) -> str:
-        """
-        Validate that the address is not in use.
-        """
-
-        exists = self._user_repository.role_data_exists(
-            user_role=UserRoles.SEARCHER.value,
-            address=value,
-        )
-
-        if exists:
-            raise serializers.ValidationError(
-                code="invalid_data",
-                detail=ERROR_MESSAGES["address_in_use"],
             )
 
         return value
@@ -250,7 +223,6 @@ class SearcherUserReadOnlySerializer(serializers.Serializer):
                 "name": self.role_instance.name,
                 "last_name": self.role_instance.last_name,
                 "cc": self.role_instance.cc,
-                "address": self.role_instance.address,
                 "phone_number": phone_number,
                 "is_phone_verified": self.role_instance.is_phone_verified,
             },

@@ -39,7 +39,6 @@ class SearcherAdminPanel(admin.ModelAdmin):
         "name",
         "last_name",
         "cc",
-        "address",
         "phone_number",
         "is_phone_verified",
     ]
