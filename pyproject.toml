@@ -19,6 +19,7 @@ mysqlclient = "^2.2.4"
 phonenumbers = "^8.13.37"
 python-decouple = "^3.8"
 whitenoise = "^6.6.0"
+django-guardian = "^2.4.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"

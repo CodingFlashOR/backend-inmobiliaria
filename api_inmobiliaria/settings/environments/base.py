@@ -27,11 +27,12 @@ BASE_APPS = [
 LOCAL_APPS = ["apps.users", "apps.emails", "apps.authentication"]
 
 THIRD_APPS = [
-    "rest_framework",
     "rest_framework_simplejwt",
-    "corsheaders",
-    "drf_spectacular",
     "django_extensions",
+    "drf_spectacular",
+    "rest_framework",
+    "corsheaders",
+    "guardian",
 ]
 
 INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
@@ -116,6 +117,7 @@ AUTH_USER_MODEL = "users.BaseUser"
 AUTHENTICATION_BACKENDS = [
     "apps.backends.EmailPasswordBackend",
     "django.contrib.auth.backends.ModelBackend",
+    "guardian.backends.ObjectPermissionBackend",
 ]
 
 

@@ -19,7 +19,7 @@ def setup_database(db) -> None:
         group = Group.objects.create(name=role)
         perm_list = [
             value.split(".")[-1]
-            for value in USER_ROLE_PERMISSIONS[role].values()
+            for value in USER_ROLE_PERMISSIONS[role]["model_level"].values()
         ]
 
         for perm_codename in perm_list:
