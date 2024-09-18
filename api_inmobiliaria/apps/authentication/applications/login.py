@@ -46,7 +46,7 @@ class JWTLogin:
         user_role = base_user.content_type.model
 
         if not base_user.has_perm(
-            perm=USER_ROLE_PERMISSIONS[user_role]["jwt_auth"]
+            perm=USER_ROLE_PERMISSIONS[user_role]["model_level"]["jwt_auth"]
         ):
             raise PermissionDeniedAPIError()
 

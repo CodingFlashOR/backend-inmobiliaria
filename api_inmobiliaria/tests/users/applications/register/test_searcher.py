@@ -8,6 +8,7 @@ from tests.factory import UserFactory
 from django.test import RequestFactory
 from django.core import mail
 from unittest.mock import Mock
+from copy import deepcopy
 import pytest
 
 
@@ -38,7 +39,7 @@ class TestRegisterSearcherApplication:
 
         # Instantiating the application and calling the method
         self.application_class(user_repository=UserRepository).searcher(
-            data=data, request=RequestFactory().post("/")
+            data=deepcopy(data), request=RequestFactory().post("/")
         )
 
         # Asserting that the user was created successfully
@@ -53,8 +54,8 @@ class TestRegisterSearcherApplication:
         assert user.is_deleted == False
         assert role.name == data["name"]
         assert role.last_name == data["last_name"]
-        assert role.cc == None
-        assert role.phone_number == None
+        assert role.cc == data["cc"]
+        assert role.phone_number == data["phone_number"]
         assert role.is_phone_verified == False
 
         # The value of this field is changed to true since a user's permissions can
@@ -63,9 +64,9 @@ class TestRegisterSearcherApplication:
         user.save()
 
         # Asserting that the user has the correct permissions
-        for permission in list(
-            USER_ROLE_PERMISSIONS[UserRoles.SEARCHER.value].values()
-        ):
+        user_role = UserRoles.SEARCHER.value
+        perm_model_level = USER_ROLE_PERMISSIONS[user_role]["model_level"]
+        for permission in perm_model_level.values():
             assert user.has_perm(perm=permission)
 
         # Asserting that the email was sent

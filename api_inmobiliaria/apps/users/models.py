@@ -200,16 +200,16 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
         ct_field="content_type", fk_field="role_data_uuid"
     )
     is_staff = models.BooleanField(
-        db_column="is_staff", null=False, blank=False
+        db_column="is_staff", null=False, blank=False, default=False
     )
     is_superuser = models.BooleanField(
-        db_column="is_superuser", null=False, blank=False
+        db_column="is_superuser", null=False, blank=False, default=False
     )
     is_active = models.BooleanField(
-        db_column="is_active", null=False, blank=False
+        db_column="is_active", null=False, blank=False, default=False
     )
     is_deleted = models.BooleanField(
-        db_column="is_deleted", null=False, blank=False
+        db_column="is_deleted", null=False, blank=False, default=False
     )
     deleted_at = models.DateTimeField(
         db_column="deleted_at", null=True, blank=True

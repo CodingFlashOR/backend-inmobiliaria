@@ -117,6 +117,7 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
         register: RegisterUser = self.get_application_class(
             user_repository=UserRepository
         )
+        del serializer.validated_data["confirm_password"]
         register.searcher(data=serializer.validated_data, request=request)
 
         return Response(status=status.HTTP_201_CREATED)

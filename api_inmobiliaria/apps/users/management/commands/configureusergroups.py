@@ -29,7 +29,9 @@ class Command(BaseCommand):
 
         return group
 
-    def _assign_permissions(self, permissions: List[str], group: Group) -> None:
+    def _assign_model_level_permissions(
+        self, permissions: List[str], group: Group
+    ) -> None:
         """
         Assign permissions to the given group.
         """
@@ -61,7 +63,10 @@ class Command(BaseCommand):
         Handle the command, create groups and assign permissions.
         """
 
-        user_roles = [UserRoles.SEARCHER.value]
+        user_roles = [
+            UserRoles.SEARCHER.value,
+            UserRoles.REAL_ESTATE_ENTITY.value,
+        ]
 
         self.stdout.write(
             msg=self.style.MIGRATE_HEADING(
@@ -73,12 +78,13 @@ class Command(BaseCommand):
         )
 
         for role in user_roles:
+            permissions = [
+                value.split(".")[-1]
+                for value in USER_ROLE_PERMISSIONS[role]["model_level"].values()
+            ]
             group = self._define_group(name=role)
-            self._assign_permissions(
-                permissions=[
-                    value.split(".")[-1]
-                    for value in USER_ROLE_PERMISSIONS[role].values()
-                ],
+            self._assign_model_level_permissions(
+                permissions=permissions,
                 group=group,
             )
 

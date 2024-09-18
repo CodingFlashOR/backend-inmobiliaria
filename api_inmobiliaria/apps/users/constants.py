@@ -1,3 +1,4 @@
+from typing import Dict, List
 from enum import Enum
 
 
@@ -52,11 +53,29 @@ class RealEstateAgentProperties(Enum):
     LOGO_LINK_MAX_LENGTH = 2083
 
 
-USER_ROLE_PERMISSIONS = {
+USER_ROLE_PERMISSIONS: Dict[str, Dict[str, Dict[str, str | List]]] = {
     UserRoles.SEARCHER.value: {
-        "jwt_auth": "authentication.add_jwt",
-        "change_data": "users.change_baseuser",
-        "delete_data": "users.delete_baseuser",
-        "view_data": "users.view_baseuser",
+        "model_level": {
+            "jwt_auth": "authentication.add_jwt",
+            "view_base_data": "users.view_baseuser",
+            "change_base_data": "users.change_baseuser",
+            "delete_base_data": "users.delete_baseuser",
+            "view_role_data": "users.view_searcher",
+            "change_role_data": "users.change_searcher",
+            "delete_role_data": "users.delete_searcher",
+        },
+        "object_level": {},
+    },
+    UserRoles.REAL_ESTATE_ENTITY.value: {
+        "model_level": {
+            "jwt_auth": "authentication.add_jwt",
+            "view_base_data": "users.view_baseuser",
+            "change_base_data": "users.change_baseuser",
+            "delete_base_data": "users.delete_baseuser",
+            "view_role_data": "users.view_realestateentity",
+            "change_role_data": "users.change_realestateentity",
+            "delete_role_data": "users.delete_realestateentity",
+        },
+        "object_level": {},
     },
 }

@@ -17,6 +17,22 @@ class UserDataManager:
     def __init__(self, user_repository: IUserRepository) -> None:
         self._user_repository = user_repository
 
+    @staticmethod
+    def _has_permission_model_level(user: BaseUser, permission: str) -> None:
+        """
+        This method assigns the permissions of the provided role to the user.
+
+        #### Parameters:
+        - user: An instance of the BaseUser model.
+        - permission: The permission to check if the user has.
+
+        #### Raises:
+        - PermissionDeniedAPIError: If the user does not have the required permissions.
+        """
+
+        if not user.has_perm(perm=permission):
+            raise PermissionDeniedAPIError()
+
     def get(self, base_user: BaseUser) -> Model:
         """
         Get the role data of a user.
@@ -29,11 +45,9 @@ class UserDataManager:
         """
 
         user_role = base_user.content_type.model
-
-        if not base_user.has_perm(
-            perm=USER_ROLE_PERMISSIONS[user_role]["view_data"]
-        ):
-            raise PermissionDeniedAPIError()
+        model_level_perm = USER_ROLE_PERMISSIONS[user_role]["model_level"]
+        perm = model_level_perm["view_base_data"]
+        self._has_permission_model_level(user=base_user, permission=perm)
 
         return self._user_repository.get_role_data(base_user=base_user)
 
@@ -50,11 +64,9 @@ class UserDataManager:
         """
 
         user_role = base_user.content_type.model
-
-        if not base_user.has_perm(
-            perm=USER_ROLE_PERMISSIONS[user_role]["change_data"]
-        ):
-            raise PermissionDeniedAPIError()
+        model_level_perm = USER_ROLE_PERMISSIONS[user_role]["model_level"]
+        perm = model_level_perm["change_role_data"]
+        self._has_permission_model_level(user=base_user, permission=perm)
 
         return self._user_repository.update_role_data(
             base_user=base_user, data=data
