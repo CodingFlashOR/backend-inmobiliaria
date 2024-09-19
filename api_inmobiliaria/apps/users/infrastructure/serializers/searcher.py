@@ -1,5 +1,5 @@
 from apps.users.infrastructure.repositories import UserRepository
-from apps.users.infrastructure.serializers.base import BaseUserDataSerializer
+from apps.users.infrastructure.serializers import BaseUserSerializer
 from apps.users.infrastructure.schemas.searcher import (
     SearcherRegisterSerializerSchema,
     RoleDataSerializerSchema,
@@ -14,7 +14,7 @@ from typing import Dict, Any
 
 
 @RoleDataSerializerSchema
-class SearcherRoleDataSerializer(ErrorMessagesSerializer):
+class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
     """
     Defines the fields that are required for the searcher user profile.
     """
@@ -137,7 +137,7 @@ class SearcherRoleDataSerializer(ErrorMessagesSerializer):
 
 
 @SearcherRegisterSerializerSchema
-class SearcherRegisterUserSerializer(BaseUserDataSerializer):
+class RegisterSearcherSerializer(BaseUserSerializer):
     """
     Defines the fields that are required for the searcher user registration.
     """
@@ -199,7 +199,7 @@ class SearcherRegisterUserSerializer(BaseUserDataSerializer):
         return data
 
 
-class SearcherUserReadOnlySerializer(serializers.Serializer):
+class SearcherReadOnlySerializer(serializers.Serializer):
     """
     Defines the fields of the searcher user information for reading.
     """

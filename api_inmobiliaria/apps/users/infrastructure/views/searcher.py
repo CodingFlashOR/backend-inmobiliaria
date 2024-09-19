@@ -1,8 +1,8 @@
 from apps.users.infrastructure.repositories import UserRepository
 from apps.users.infrastructure.serializers import (
-    SearcherRegisterUserSerializer,
-    SearcherUserReadOnlySerializer,
-    SearcherRoleDataSerializer,
+    RegisterSearcherSerializer,
+    SearcherReadOnlySerializer,
+    SearcherSerializer,
 )
 from apps.users.infrastructure.schemas.searcher import (
     POSTSearcherSchema,
@@ -46,9 +46,9 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
         "PATCH": UserDataManager,
     }
     serializer_mapping = {
-        "POST": SearcherRegisterUserSerializer,
-        "GET": SearcherUserReadOnlySerializer,
-        "PATCH": SearcherRoleDataSerializer,
+        "POST": RegisterSearcherSerializer,
+        "GET": SearcherReadOnlySerializer,
+        "PATCH": SearcherSerializer,
     }
 
     @staticmethod
@@ -155,7 +155,7 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
         searcher = data_manager.update(
             data=serializer.validated_data, base_user=request.user
         )
-        data = SearcherUserReadOnlySerializer(
+        data = SearcherReadOnlySerializer(
             instance=request.user, role_instance=searcher
         ).data
 

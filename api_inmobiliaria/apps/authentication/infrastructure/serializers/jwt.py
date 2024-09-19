@@ -17,7 +17,7 @@ from jwt import decode, DecodeError, ExpiredSignatureError
 
 
 @LoginSerializerSchema
-class LoginSerializer(ErrorMessagesSerializer):
+class LoginSerializer(ErrorMessagesSerializer, serializers.Serializer):
     """
     Handles the data for user authentication. Checks that the provided email and
     password meet the necessary requirements.

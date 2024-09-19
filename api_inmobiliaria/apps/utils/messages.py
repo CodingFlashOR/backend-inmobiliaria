@@ -1,5 +1,4 @@
 from apps.emails.constants import LOGIN_URL, REGISTER_URL, HOME_URL
-from rest_framework.serializers import Serializer
 from enum import Enum
 
 
@@ -7,6 +6,8 @@ ERROR_MESSAGES = {
     # Length errors
     "max_length": "El valor ingresado no puede tener más de {max_length} caracteres.",
     "min_length": "El valor ingresado debe tener al menos {min_length} caracteres.",
+    "max_length_list": "Asegúrese de que este campo no tenga más de {max_length} elemento.",
+    "min_length_list": "Asegúrese de que este campo tenga al menos {min_length} elemento.",
     # Password errors
     "password_mismatch": "Las contraseñas no coinciden.",
     "password_common": "Esta contraseña es demasiado común.",
@@ -21,8 +22,11 @@ ERROR_MESSAGES = {
     # Data in use
     "email_in_use": "Este correo electrónico ya está en uso.",
     "phone_in_use": "Este número de teléfono ya está en uso.",
-    "address_in_use": "Esta dirección ya está en uso.",
+    "name_in_use": "Esta nombre ya está en uso.",
     "cc_in_use": "Este número de identificación ya está en uso.",
+    "nit_in_use": "Este número de identificación tributaria ya está en uso.",
+    "phone_numbers_in_use": "El número de teléfono {phone_number} ya está en uso.",
+    "coordinate_in_use": "Ubicación en uso.",
 }
 
 
@@ -110,7 +114,7 @@ class ActivationErrors(Enum):
     }
 
 
-class ErrorMessagesSerializer(Serializer):
+class ErrorMessagesSerializer:
     """
     A serializer class that provides custom error messages in Spanish for the fields.
     """

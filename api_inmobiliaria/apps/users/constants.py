@@ -35,7 +35,7 @@ class SearcherProperties(Enum):
     PHONE_NUMBER_MAX_LENGTH = 19
 
 
-class RealEstateAgentProperties(Enum):
+class RealEstateEntityProperties(Enum):
     """
     Define the data properties of a real estate agent user.
     """
@@ -51,6 +51,19 @@ class RealEstateAgentProperties(Enum):
     COORDINATE_MAX_LENGTH = 30
     DOCUMENT_LINK_MAX_LENGTH = 2083
     LOGO_LINK_MAX_LENGTH = 2083
+
+
+DOCUMENTS_REQUESTED_REAL_ESTATE_ENTITY = {
+    UserRoles.REAL_ESTATE.value: [
+        "Certificado del Registro Único Tributario (RUT)",
+        "Cámara de Comercio",
+    ],
+    UserRoles.CONSTRUCTION_COMPANY.value: [
+        "Certificado del Registro Único Tributario (RUT)",
+        "Cámara de Comercio",
+        "Licencias de construcción",
+    ],
+}
 
 
 USER_ROLE_PERMISSIONS: Dict[str, Dict[str, Dict[str, str | List]]] = {
