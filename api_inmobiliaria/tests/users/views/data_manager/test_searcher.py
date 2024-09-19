@@ -25,7 +25,7 @@ class TestGetSearcherUserAPIView:
     searcher user data.
     """
 
-    path = reverse(viewname="searcher_user")
+    path = reverse(viewname="searcher")
     user_factory = UserFactory
     jwt_factory = JWTFactory
     client = Client()
@@ -275,7 +275,7 @@ class TestUpdateSearcherUserAPIView:
     searcher user data.
     """
 
-    path = reverse(viewname="searcher_user")
+    path = reverse(viewname="searcher")
     user_factory = UserFactory
     jwt_factory = JWTFactory
     client = Client()
@@ -395,7 +395,7 @@ class TestUpdateSearcherUserAPIView:
                 {
                     "name": fake.bothify(text=f"{'?' * 41}"),
                     "last_name": fake.bothify(text=f"{'?' * 41}"),
-                    "cc": fake.random_number(digits=11),
+                    "cc": fake.random_number(digits=13),
                 },
                 {
                     "name": [
