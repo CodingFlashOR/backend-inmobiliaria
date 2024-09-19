@@ -8,7 +8,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from apps.users.constants import (
-    RealEstateAgentProperties,
+    RealEstateEntityProperties,
     BaseUserProperties,
     SearcherProperties,
     UserRoles,
@@ -306,7 +306,7 @@ class RealEstateEntity(models.Model):
     uuid = models.UUIDField(db_column="uuid", default=uuid4, primary_key=True)
     type_entity = models.CharField(
         db_column="type_entity",
-        max_length=RealEstateAgentProperties.TYPE_ENTITY_MAX_LENGTH.value,
+        max_length=RealEstateEntityProperties.TYPE_ENTITY_MAX_LENGTH.value,
         choices=[
             (UserRoles.REAL_ESTATE.value, UserRoles.REAL_ESTATE.value),
             (
@@ -317,9 +317,15 @@ class RealEstateEntity(models.Model):
         null=False,
         blank=False,
     )
+    logo = models.CharField(
+        db_column="logo",
+        max_length=RealEstateEntityProperties.LOGO_LINK_MAX_LENGTH.value,
+        null=False,
+        blank=False,
+    )
     name = models.CharField(
         db_column="name",
-        max_length=RealEstateAgentProperties.NAME_MAX_LENGTH.value,
+        max_length=RealEstateEntityProperties.NAME_MAX_LENGTH.value,
         null=False,
         blank=False,
         unique=True,
@@ -327,13 +333,13 @@ class RealEstateEntity(models.Model):
     )
     description = models.CharField(
         db_column="description",
-        max_length=RealEstateAgentProperties.DESCRIPTION_MAX_LENGTH.value,
+        max_length=RealEstateEntityProperties.DESCRIPTION_MAX_LENGTH.value,
         null=False,
         blank=False,
     )
     nit = models.CharField(
         db_column="nit",
-        max_length=RealEstateAgentProperties.NIT_MAX_LENGTH.value,
+        max_length=RealEstateEntityProperties.NIT_MAX_LENGTH.value,
         null=False,
         blank=False,
         unique=True,
@@ -341,7 +347,7 @@ class RealEstateEntity(models.Model):
     )
     phone_numbers = models.CharField(
         db_column="phone_numbers",
-        max_length=RealEstateAgentProperties.PHONE_NUMBER_MAX_LENGTH.value * 2
+        max_length=RealEstateEntityProperties.PHONE_NUMBER_MAX_LENGTH.value * 2
         + 1,
         null=False,
         blank=False,
@@ -349,25 +355,28 @@ class RealEstateEntity(models.Model):
     )
     department = models.CharField(
         db_column="department",
-        max_length=RealEstateAgentProperties.DEPARTMENT_MAX_LENGTH.value,
+        max_length=RealEstateEntityProperties.DEPARTMENT_MAX_LENGTH.value,
         null=False,
         blank=False,
+        db_index=True,
     )
     municipality = models.CharField(
         db_column="municipality",
-        max_length=RealEstateAgentProperties.MUNICIPALITY_MAX_LENGTH.value,
+        max_length=RealEstateEntityProperties.MUNICIPALITY_MAX_LENGTH.value,
         null=False,
         blank=False,
+        db_index=True,
     )
     region = models.CharField(
         db_column="region",
-        max_length=RealEstateAgentProperties.REGION_MAX_LENGTH.value,
+        max_length=RealEstateEntityProperties.REGION_MAX_LENGTH.value,
         null=False,
         blank=False,
+        db_index=True,
     )
     coordinate = models.CharField(
         db_column="coordinate",
-        max_length=RealEstateAgentProperties.COORDINATE_MAX_LENGTH.value,
+        max_length=RealEstateEntityProperties.COORDINATE_MAX_LENGTH.value,
         null=False,
         blank=False,
         unique=True,
