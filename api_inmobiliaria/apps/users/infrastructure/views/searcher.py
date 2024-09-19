@@ -10,10 +10,9 @@ from apps.users.infrastructure.schemas.searcher import (
     PATCHearcherSchema,
 )
 from apps.users.applications import RegisterUser, UserDataManager
-from apps.users.constants import UserRoles
+from apps.users.permissions import IsSearcher
 from apps.authentication.jwt import JWTAuthentication
 from apps.utils.views import MethodHTTPMapped, PermissionMixin
-from apps.api_exceptions import PermissionDeniedAPIError
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.serializers import Serializer
 from rest_framework.response import Response
@@ -37,8 +36,8 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
     }
     permission_mapping = {
         "POST": [AllowAny],
-        "GET": [IsAuthenticated],
-        "PATCH": [IsAuthenticated],
+        "GET": [IsAuthenticated, IsSearcher],
+        "PATCH": [IsAuthenticated, IsSearcher],
     }
     application_mapping = {
         "POST": RegisterUser,
@@ -51,17 +50,6 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
         "PATCH": SearcherSerializer,
     }
 
-    @staticmethod
-    def _check_user_role(request: Request) -> None:
-        """
-        Check if the user has the correct role to access the view.
-        """
-
-        user_role = request.auth.payload["user_role"]
-
-        if user_role != UserRoles.SEARCHER.value:
-            raise PermissionDeniedAPIError()
-
     @GETSearcherSchema
     def get(self, request: Request, *args, **kwargs) -> Response:
         """
@@ -72,7 +60,6 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
         permission to read their own information.
         """
 
-        self._check_user_role(request=request)
         data_manager: UserDataManager = self.get_application_class(
             user_repository=UserRepository
         )
@@ -94,11 +81,11 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
         """
         Handle POST requests for searcher user registration.
 
-        This method allows the registration of a new seacher user, waiting for a
-        POST request with the registration data. A successful registration will
-        consist of saving the user's information in the database and sending a
-        message to the user's email with a link that will allow them to activate
-        their account.
+        This method allows you to register a new search user, waiting for a POST
+        request with the registration data. A successful registration will consist of
+        saving the user's information in the database, configuring the permissions for
+        their role, and sending a message to the user's email with a link that will
+        allow them to activate their account.
         """
 
         serializer_class = self.get_serializer_class()
@@ -133,7 +120,6 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
         information, provided the user has permission to update their own information.
         """
 
-        self._check_user_role(request=request)
         serializer_class = self.get_serializer_class()
         serializer: Serializer = serializer_class(
             data=request.data, partial=True

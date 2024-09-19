@@ -420,6 +420,40 @@ paths:
                   summary: Database connection error
                   description: The connection to the database could not be established.
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
+  /api/v1/user/real_estate_entity/:
+    post:
+      operationId: api_v1_user_real_estate_entity_create
+      description: |-
+        Handle POST requests for real estate entity registration.
+
+        This method allows you to register a new construction or real estate company
+        while waiting for a POST request with the registration data. A successful
+        registration will consist of saving the user's information in the database,
+        configuring the permissions for their role and sending a message to the user's
+        email with a link that will allow them to activate their account.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RealEstateEntityRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RealEstateEntityRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RealEstateEntityRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RealEstateEntity'
+          description: ''
   /api/v1/user/searcher/:
     get:
       operationId: get_searcher_user
@@ -551,18 +585,18 @@ paths:
       description: |-
         Handle POST requests for searcher user registration.
 
-        This method allows the registration of a new seacher user, waiting for a
-        POST request with the registration data. A successful registration will
-        consist of saving the user's information in the database and sending a
-        message to the user's email with a link that will allow them to activate
-        their account.
+        This method allows you to register a new search user, waiting for a POST
+        request with the registration data. A successful registration will consist of
+        saving the user's information in the database, configuring the permissions for
+        their role, and sending a message to the user's email with a link that will
+        allow them to activate their account.
       tags:
       - Users
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SearcherRegisterUserRequest'
+              $ref: '#/components/schemas/RegisterSearcherRequest'
             examples:
               DataValid:
                 value:
@@ -585,10 +619,10 @@ paths:
                   \ intended for use on the frontend by the client."
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SearcherRegisterUserRequest'
+              $ref: '#/components/schemas/RegisterSearcherRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SearcherRegisterUserRequest'
+              $ref: '#/components/schemas/RegisterSearcherRequest'
         required: true
       security:
       - {}
@@ -679,7 +713,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedSearcherRoleDataRequest'
+              $ref: '#/components/schemas/PatchedSearcherRequest'
             examples:
               DataValid:
                 value:
@@ -699,10 +733,10 @@ paths:
                   - **Phone number** Must not exceed 19 characters and must not be in use.
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedSearcherRoleDataRequest'
+              $ref: '#/components/schemas/PatchedSearcherRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedSearcherRoleDataRequest'
+              $ref: '#/components/schemas/PatchedSearcherRequest'
       security:
       - JWTAuth: []
       responses:
@@ -878,7 +912,7 @@ components:
       required:
       - email
       - password
-    PatchedSearcherRoleDataRequest:
+    PatchedSearcherRequest:
       type: object
       description: Defines the fields that are required for the searcher user profile.
       properties:
@@ -901,7 +935,151 @@ components:
           type: string
           minLength: 1
           maxLength: 19
-    SearcherRegisterUserRequest:
+    RealEstateEntity:
+      type: object
+      description: Defines the fields that are required for the real estate entity
+        user profile.
+      properties:
+        email:
+          type: string
+          pattern: ^([A-Za-z0-9]+[-_.])*[A-Za-z0-9]+@[A-Za-z]+(\.[A-Z|a-z]{2,4}){1,2}$
+          maxLength: 40
+        type_entity:
+          $ref: '#/components/schemas/TypeEntityEnum'
+        logo:
+          type: string
+          format: uri
+          maxLength: 2083
+        name:
+          type: string
+          pattern: ^[A-Za-z\u00f1\u00d1\u00e1\u00e9\u00ed\u00f3\u00fa\u00c1\u00c9\u00cd\u00d3\u00da\s]+$
+          maxLength: 40
+        description:
+          type: string
+          maxLength: 400
+        nit:
+          type: string
+          maxLength: 10
+          minLength: 10
+        phone_numbers:
+          type: array
+          items:
+            type: string
+            maxLength: 19
+          maxItems: 5
+          minItems: 1
+        department:
+          type: string
+          maxLength: 25
+        municipality:
+          type: string
+          maxLength: 25
+        region:
+          type: string
+          maxLength: 80
+        coordinate:
+          type: string
+          maxLength: 30
+        documents:
+          type: object
+          additionalProperties:
+            type: string
+            format: uri
+            maxLength: 2083
+      required:
+      - coordinate
+      - department
+      - description
+      - documents
+      - email
+      - logo
+      - municipality
+      - name
+      - nit
+      - phone_numbers
+      - region
+      - type_entity
+    RealEstateEntityRequest:
+      type: object
+      description: Defines the fields that are required for the real estate entity
+        user profile.
+      properties:
+        email:
+          type: string
+          minLength: 1
+          pattern: ^([A-Za-z0-9]+[-_.])*[A-Za-z0-9]+@[A-Za-z]+(\.[A-Z|a-z]{2,4}){1,2}$
+          maxLength: 40
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+          maxLength: 40
+        type_entity:
+          $ref: '#/components/schemas/TypeEntityEnum'
+        logo:
+          type: string
+          format: uri
+          minLength: 1
+          maxLength: 2083
+        name:
+          type: string
+          minLength: 1
+          pattern: ^[A-Za-z\u00f1\u00d1\u00e1\u00e9\u00ed\u00f3\u00fa\u00c1\u00c9\u00cd\u00d3\u00da\s]+$
+          maxLength: 40
+        description:
+          type: string
+          minLength: 1
+          maxLength: 400
+        nit:
+          type: string
+          minLength: 10
+          maxLength: 10
+        phone_numbers:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 19
+          maxItems: 5
+          minItems: 1
+        department:
+          type: string
+          minLength: 1
+          maxLength: 25
+        municipality:
+          type: string
+          minLength: 1
+          maxLength: 25
+        region:
+          type: string
+          minLength: 1
+          maxLength: 80
+        coordinate:
+          type: string
+          minLength: 1
+          maxLength: 30
+        documents:
+          type: object
+          additionalProperties:
+            type: string
+            format: uri
+            minLength: 1
+            maxLength: 2083
+      required:
+      - coordinate
+      - department
+      - description
+      - documents
+      - email
+      - logo
+      - municipality
+      - name
+      - nit
+      - password
+      - phone_numbers
+      - region
+      - type_entity
+    RegisterSearcherRequest:
       type: object
       description: Defines the fields that are required for the searcher user registration.
       properties:
@@ -935,6 +1113,14 @@ components:
       - last_name
       - name
       - password
+    TypeEntityEnum:
+      enum:
+      - realestate
+      - constructioncompany
+      type: string
+      description: |-
+        * `realestate` - realestate
+        * `constructioncompany` - constructioncompany
     UpdateTokenRequest:
       type: object
       description: Handles data to update access token of a user.
