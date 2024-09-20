@@ -1,4 +1,5 @@
 from apps.users.infrastructure.repositories import UserRepository
+from apps.users.infrastructure.schemas import RealEstateEntitySchema
 from apps.users.infrastructure.serializers import BaseUserSerializer
 from apps.users.constants import (
     DOCUMENTS_REQUESTED_REAL_ESTATE_ENTITY,
@@ -12,6 +13,7 @@ from phonenumber_field.serializerfields import PhoneNumberField
 from typing import List, Dict
 
 
+@RealEstateEntitySchema
 class RealEstateEntitySerializer(BaseUserSerializer):
     """
     Defines the fields that are required for the real estate entity user profile.
@@ -40,7 +42,7 @@ class RealEstateEntitySerializer(BaseUserSerializer):
         required=True,
         max_length=RealEstateEntityProperties.LOGO_LINK_MAX_LENGTH.value,
         error_messages={
-            "invalid": "Introduzca una URL válida.",
+            "invalid": ERROR_MESSAGES["invalid_url"],
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
             ),
@@ -87,24 +89,29 @@ class RealEstateEntitySerializer(BaseUserSerializer):
     phone_numbers = serializers.ListField(
         required=True,
         allow_empty=False,
-        max_length=5,
-        min_length=1,
+        max_length=RealEstateEntityProperties.MAXIMUM_PHONE_NUMBERS.value,
+        min_length=RealEstateEntityProperties.MINIMUM_PHONE_NUMBERS.value,
         child=PhoneNumberField(
             max_length=RealEstateEntityProperties.PHONE_NUMBER_MAX_LENGTH.value,
             error_messages={
                 "invalid": ERROR_MESSAGES["invalid"],
+                "null": ERROR_MESSAGES["null"],
+                "blank": ERROR_MESSAGES["blank"],
                 "max_length": ERROR_MESSAGES["max_length"].format(
                     max_length="{max_length}"
                 ),
             },
         ),
         error_messages={
-            "empty": "Esta lista no puede estar vacía.",
+            "empty": ERROR_MESSAGES["empty"],
             "max_length": ERROR_MESSAGES["max_length_list"].format(
                 max_length="{max_length}"
             ),
             "min_length": ERROR_MESSAGES["min_length_list"].format(
                 min_length="{min_length}"
+            ),
+            "not_a_list": ERROR_MESSAGES["not_a_list"].format(
+                input_type="{input_type}"
             ),
         },
     )
@@ -146,16 +153,24 @@ class RealEstateEntitySerializer(BaseUserSerializer):
     )
     documents = serializers.DictField(
         required=True,
-        allow_empty=True,
+        allow_empty=False,
         child=serializers.URLField(
             max_length=RealEstateEntityProperties.DOCUMENT_LINK_MAX_LENGTH.value,
             error_messages={
-                "invalid": "Introduzca una URL válida.",
+                "null": ERROR_MESSAGES["null"],
+                "blank": ERROR_MESSAGES["blank"],
+                "invalid": ERROR_MESSAGES["invalid_url"],
                 "max_length": ERROR_MESSAGES["max_length"].format(
                     max_length="{max_length}"
                 ),
             },
         ),
+        error_messages={
+            "empty": ERROR_MESSAGES["empty"],
+            "not_a_dict": ERROR_MESSAGES["not_a_dict"].format(
+                input_type="{input_type}"
+            ),
+        },
     )
 
     def validate_name(self, value: str) -> str:
@@ -264,11 +279,20 @@ class RealEstateEntitySerializer(BaseUserSerializer):
 
         error_messages = []
         type_entity = self.initial_data.get("type_entity")
+
+        if not type_entity:
+            raise serializers.ValidationError(
+                code="invalid_data",
+                detail="No se ha definido el tipo de entidad.",
+            )
+
         docs_requested = DOCUMENTS_REQUESTED_REAL_ESTATE_ENTITY[type_entity]
 
         for doc_name in value.keys():
             if doc_name not in docs_requested:
-                error_messages.append(f"El documento {doc_name} no es válido.")
+                error_messages.append(
+                    ERROR_MESSAGES["document_invalid"].format(doc_name=doc_name)
+                )
 
         if error_messages:
             raise serializers.ValidationError(
