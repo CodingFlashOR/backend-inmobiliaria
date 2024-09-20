@@ -4,7 +4,7 @@ from apps.users.infrastructure.serializers import (
     SearcherReadOnlySerializer,
     SearcherSerializer,
 )
-from apps.users.infrastructure.schemas.searcher import (
+from apps.users.infrastructure.schemas import (
     POSTSearcherSchema,
     GETSearcherSchema,
     PATCHearcherSchema,

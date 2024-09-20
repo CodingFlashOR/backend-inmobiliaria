@@ -1,8 +1,8 @@
 from apps.users.infrastructure.repositories import UserRepository
 from apps.users.infrastructure.serializers import BaseUserSerializer
-from apps.users.infrastructure.schemas.searcher import (
-    SearcherRegisterSerializerSchema,
-    RoleDataSerializerSchema,
+from apps.users.infrastructure.schemas import (
+    RegisterSearcherSchema,
+    SearcherSchema,
 )
 from apps.users.constants import UserRoles, SearcherProperties
 from apps.users.models import BaseUser, Searcher
@@ -13,7 +13,7 @@ from phonenumber_field.serializerfields import PhoneNumberField
 from typing import Dict, Any
 
 
-@RoleDataSerializerSchema
+@SearcherSchema
 class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
     """
     Defines the fields that are required for the searcher user profile.
@@ -136,7 +136,7 @@ class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
         return attrs
 
 
-@SearcherRegisterSerializerSchema
+@RegisterSearcherSchema
 class RegisterSearcherSerializer(BaseUserSerializer):
     """
     Defines the fields that are required for the searcher user registration.

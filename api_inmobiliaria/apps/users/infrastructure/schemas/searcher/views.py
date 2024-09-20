@@ -14,11 +14,11 @@ from drf_spectacular.utils import (
 
 
 POSTSearcherSchema = extend_schema(
-    operation_id="create_searcher_user",
+    operation_id="create_searcher",
     tags=["Users"],
     responses={
         201: OpenApiResponse(
-            description="**(CREATED)** User created correctly."
+            description="**(CREATED)** User created successfully and message was sent."
         ),
         400: OpenApiResponse(
             description="**(BAD_REQUEST)** The request data is invalid, error messages are returned for each field that did not pass validations.",
@@ -118,7 +118,7 @@ POSTSearcherSchema = extend_schema(
 
 
 GETSearcherSchema = extend_schema(
-    operation_id="get_searcher_user",
+    operation_id="get_searcher",
     tags=["Users"],
     responses={
         200: OpenApiResponse(
@@ -257,7 +257,7 @@ GETSearcherSchema = extend_schema(
 
 
 PATCHearcherSchema = extend_schema(
-    operation_id="update_searcher_user",
+    operation_id="update_searcher",
     tags=["Users"],
     responses={
         200: OpenApiResponse(

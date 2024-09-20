@@ -1,5 +1,6 @@
 from apps.users.infrastructure.repositories import UserRepository
 from apps.users.infrastructure.serializers import RealEstateEntitySerializer
+from apps.users.infrastructure.schemas import POSTRealEstateEntitySchema
 from apps.users.applications import RegisterUser
 from apps.utils.views import MethodHTTPMapped, PermissionMixin
 from rest_framework.permissions import AllowAny
@@ -25,6 +26,7 @@ class RealEstateEntityAPIView(
     application_mapping = {"POST": RegisterUser}
     serializer_mapping = {"POST": RealEstateEntitySerializer}
 
+    @POSTRealEstateEntitySchema
     def post(self, request: Request, *args, **kwargs) -> Response:
         """
         Handle POST requests for real estate entity registration.

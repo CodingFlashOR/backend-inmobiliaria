@@ -422,7 +422,7 @@ paths:
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
   /api/v1/user/real_estate_entity/:
     post:
-      operationId: api_v1_user_real_estate_entity_create
+      operationId: create_real_estate_entity
       description: |-
         Handle POST requests for real estate entity registration.
 
@@ -432,12 +432,52 @@ paths:
         configuring the permissions for their role and sending a message to the user's
         email with a link that will allow them to activate their account.
       tags:
-      - api
+      - Users
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/RealEstateEntityRequest'
+            examples:
+              DataValid:
+                value:
+                  type_entity: constructioncompany
+                  name: Nombres de la entidad
+                  logo: https://www.logo.com/
+                  email: user1@email.com
+                  password: contraseña1234
+                  confirm_password: contraseña1234
+                  description: Descripción de la entidad.
+                  nit: '1234567890'
+                  phone_numbers:
+                  - +57 3111111111
+                  - +57 3222222222
+                  department: Antioquia
+                  municipality: Medellín
+                  region: Región Eje Cafetero - Antioquia
+                  coordinate: 6.244203,-75.581211
+                  documents:
+                    Cámara de Comercio: https://www.camaracomercio.com/
+                    Certificado del Registro Único Tributario (RUT): https://www.rut.com/
+                    Licencias de construcción: https://www.licencias.com/
+                summary: Register a new user with role searcher.
+                description: |-
+                  A valid user registration data. The following validations will be applied:
+                  - **Name:** This field is required, must not exceed 40 characters and must contain only letters and spaces.
+                  - **Email:** This field is required and must not exceed 40 characters, must follow standard email format, and must not be in use.
+                  - **Password:** This field is required and should be between 8 and 40 characters. It should not be a common password or contain only numbers.
+                  - **Confirm password:** This field is required and should match the password field.
+                  - **Logo:** This field is required, it must have the structure of a valid link and cannot have more than 2083 character.
+                  - **Description:** This field is required, it must be a text string in Markdown (MD) format and cannot have more than 25 character.
+                  - **NIT:** This field is required and must be a numeric text string of exactly 10 characters.
+                  - **Phone numbers:** This field is required and must be an array where each element is a text string with the structure of a valid phone number. Each number must have a maximum of 19 characters. The array cannot be empty, and must contain at least 1 element and at most 5 elements.
+                  - **Department:** This field is required and must be a valid Colombian department.
+                  - **Municipality:** This field is required and must be a valid Colombian municipality.
+                  - **Region:** This field is required and must be a valid Colombian region.
+                  - **Coordinate:** This field is required and must follow a valid coordinate structure.
+                  - **Documents:** This field is required and must be a dictionary or JSON in which each element is a key-value pair. The allowed keys when the entity is a real estate company are: Tax Registry Certificate (RUT) and Chamber of Commerce; and when the entity is a construction company, the allowed keys are: Tax Registry Certificate (RUT), Chamber of Commerce and Construction Licenses. Values ​​must be valid URLs with a maximum of 2083 characters.ucture.
+
+                  Request responses that include messages in Spanish indicate that these are messages intended for use on the frontend by the client.
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/RealEstateEntityRequest'
@@ -448,15 +488,185 @@ paths:
       security:
       - {}
       responses:
-        '200':
+        '201':
+          description: '**(CREATED)** User created successfully and message was sent.'
+        '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RealEstateEntity'
-          description: ''
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: object
+              examples:
+                InvalidData1:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      type_entity:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - Broker no es una elección válida.
+                      logo:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - Introduzca una URL válida.
+                      - El valor ingresado no puede tener más de 2083 caracteres.
+                      name:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - Esta nombre ya está en uso.
+                      - El valor ingresado no puede tener más de 40 caracteres.
+                      description:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 400 caracteres.
+                      nit:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - Este número de identificación tributaria ya está en uso.
+                      - El valor ingresado no puede tener más de 10 caracteres.
+                      - El valor ingresado debe tener al menos 10 caracteres.
+                      department:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 25 caracteres.
+                      municipality:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 25 caracteres.
+                      region:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 80 caracteres.
+                      coordinate:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 30 caracteres.
+                      email:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - Este correo electrónico ya está en uso.
+                      - El valor ingresado no puede tener más de 40 caracteres.
+                      password:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - El valor ingresado no puede tener más de 40 caracteres.
+                      - El valor ingresado debe tener al menos 8 caracteres.
+                      confirm_password:
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - La contraseña debe contener al menos una mayuscula o una minuscula.
+                      - Esta contraseña es demasiado común.
+                      - Las contraseñas no coinciden.
+                  summary: Invalid data
+                  description: These are the possible error messages for each field.
+                InvalidData2:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      phone_numbers (example 1):
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - Debes agregar o seleccionar al menos un elemento.
+                      - Se esperaba una lista de elementos pero se obtuvo un dato
+                        de tipo (int).
+                      - No puedes agregar o seleccionar más de 5 elementos.
+                      - Debes agregar o seleccionar al menos 1 elementos.
+                      phone_numbers (example 2):
+                        '0':
+                        - Este campo no puede estar en blanco.
+                        - Este campo no puede ser nulo.
+                        - El valor ingresado es inválido.
+                        - El valor ingresado no puede tener más de 19 caracteres.
+                  summary: Invalid phone numbers
+                  description: When a data type other than an array of elements is
+                    received, the possible error responses are shown in example 1.
+                    If an array is received but the validations for each element fail,
+                    the error responses for that case are shown in example 2.
+                InvalidData3:
+                  value:
+                    code: invalid_request_data
+                    detail:
+                      documents (example 1):
+                      - Este campo es requerido.
+                      - Este campo no puede estar en blanco.
+                      - Este campo no puede ser nulo.
+                      - El valor ingresado es inválido.
+                      - Debes agregar o seleccionar al menos un elemento.
+                      - Se esperaba un diccionario o JSON de elementos pero se obtuvo
+                        un dato de tipo (int).
+                      - El documento con el nombre (Otro documento) no es válido.
+                      - No se ha definido el tipo de entidad.
+                      documents (example 2):
+                        Cámara de Comercio:
+                        - Este campo no puede estar en blanco.
+                        - Este campo no puede ser nulo.
+                        - Introduzca una URL válida.
+                        - El valor ingresado no puede tener más de 2083 caracteres.
+                        Certificado del Registro Único Tributario (RUT):
+                        - Este campo no puede estar en blanco.
+                        - Este campo no puede ser nulo.
+                        - Introduzca una URL válida.
+                        - El valor ingresado no puede tener más de 2083 caracteres.
+                        Licencias de construcción:
+                        - Este campo no puede estar en blanco.
+                        - Este campo no puede ser nulo.
+                        - Introduzca una URL válida.
+                        - El valor ingresado no puede tener más de 2083 caracteres.
+                  summary: Invalid documents
+                  description: When a data type other than a dictionary or JSON is
+                    received, the possible error responses are shown in example 1.
+                    If a dictionary or JSON is received but validations for each element
+                    fail, the error responses for that case are shown in example 2.
+          description: '**(BAD_REQUEST)** The request data is invalid, error messages
+            are returned for each field that did not pass validations.'
+        '500':
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                  code:
+                    type: string
+              examples:
+                DatabaseConnectionError:
+                  value:
+                    code: database_connection_error
+                    detail: Unable to establish a connection with the database. Please
+                      try again later.
+                  summary: Database connection error
+                  description: The connection to the database could not be established.
+          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
   /api/v1/user/searcher/:
     get:
-      operationId: get_searcher_user
+      operationId: get_searcher
       description: |-
         Handle GET requests to obtain user information.
 
@@ -581,7 +791,7 @@ paths:
                   description: The connection to the database could not be established.
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
     post:
-      operationId: create_searcher_user
+      operationId: create_searcher
       description: |-
         Handle POST requests for searcher user registration.
 
@@ -628,7 +838,7 @@ paths:
       - {}
       responses:
         '201':
-          description: '**(CREATED)** User created correctly.'
+          description: '**(CREATED)** User created successfully and message was sent.'
         '400':
           content:
             application/json:
@@ -699,7 +909,7 @@ paths:
                   description: The connection to the database could not be established.
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
     patch:
-      operationId: update_searcher_user
+      operationId: update_searcher
       description: |-
         Handle PATCH requests to update searcher user information.
 
@@ -935,70 +1145,6 @@ components:
           type: string
           minLength: 1
           maxLength: 19
-    RealEstateEntity:
-      type: object
-      description: Defines the fields that are required for the real estate entity
-        user profile.
-      properties:
-        email:
-          type: string
-          pattern: ^([A-Za-z0-9]+[-_.])*[A-Za-z0-9]+@[A-Za-z]+(\.[A-Z|a-z]{2,4}){1,2}$
-          maxLength: 40
-        type_entity:
-          $ref: '#/components/schemas/TypeEntityEnum'
-        logo:
-          type: string
-          format: uri
-          maxLength: 2083
-        name:
-          type: string
-          pattern: ^[A-Za-z\u00f1\u00d1\u00e1\u00e9\u00ed\u00f3\u00fa\u00c1\u00c9\u00cd\u00d3\u00da\s]+$
-          maxLength: 40
-        description:
-          type: string
-          maxLength: 400
-        nit:
-          type: string
-          maxLength: 10
-          minLength: 10
-        phone_numbers:
-          type: array
-          items:
-            type: string
-            maxLength: 19
-          maxItems: 5
-          minItems: 1
-        department:
-          type: string
-          maxLength: 25
-        municipality:
-          type: string
-          maxLength: 25
-        region:
-          type: string
-          maxLength: 80
-        coordinate:
-          type: string
-          maxLength: 30
-        documents:
-          type: object
-          additionalProperties:
-            type: string
-            format: uri
-            maxLength: 2083
-      required:
-      - coordinate
-      - department
-      - description
-      - documents
-      - email
-      - logo
-      - municipality
-      - name
-      - nit
-      - phone_numbers
-      - region
-      - type_entity
     RealEstateEntityRequest:
       type: object
       description: Defines the fields that are required for the real estate entity

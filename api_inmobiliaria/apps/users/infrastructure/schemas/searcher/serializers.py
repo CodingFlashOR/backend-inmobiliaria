@@ -5,7 +5,7 @@ from drf_spectacular.utils import (
 )
 
 
-SearcherRegisterSerializerSchema = extend_schema_serializer(
+RegisterSearcherSchema = extend_schema_serializer(
     examples=[
         OpenApiExample(
             name="data_valid",
@@ -23,7 +23,8 @@ SearcherRegisterSerializerSchema = extend_schema_serializer(
     ],
 )
 
-RoleDataSerializerSchema = extend_schema_serializer(
+
+SearcherSchema = extend_schema_serializer(
     examples=[
         OpenApiExample(
             name="data_valid",

@@ -6,8 +6,9 @@ ERROR_MESSAGES = {
     # Length errors
     "max_length": "El valor ingresado no puede tener más de {max_length} caracteres.",
     "min_length": "El valor ingresado debe tener al menos {min_length} caracteres.",
-    "max_length_list": "Asegúrese de que este campo no tenga más de {max_length} elemento.",
-    "min_length_list": "Asegúrese de que este campo tenga al menos {min_length} elemento.",
+    "max_length_list": "No puedes agregar o seleccionar más de {max_length} elementos.",
+    "min_length_list": "Debes agregar o seleccionar al menos {min_length} elementos.",
+    "empty": "Debes agregar o seleccionar al menos un elemento.",
     # Password errors
     "password_mismatch": "Las contraseñas no coinciden.",
     "password_common": "Esta contraseña es demasiado común.",
@@ -15,6 +16,10 @@ ERROR_MESSAGES = {
     # Invalid data
     "invalid": "El valor ingresado es inválido.",
     "invalid_choice": "{input} no es una elección válida.",
+    "invalid_url": "Introduzca una URL válida.",
+    "document_invalid": "El documento con el nombre ({doc_name}) no es válido.",
+    "not_a_list": "Se esperaba una lista de elementos pero se obtuvo un dato de tipo ({input_type}).",
+    "not_a_dict": "Se esperaba un diccionario o JSON de elementos pero se obtuvo un dato de tipo ({input_type}).",
     # Required fields
     "required": "Este campo es requerido.",
     "blank": "Este campo no puede estar en blanco.",
