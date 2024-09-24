@@ -7,7 +7,7 @@ from apps.api_exceptions import (
     PermissionDeniedAPIError,
     JWTAPIError,
 )
-from apps.utils.messages import JWTErrorMessages, ERROR_MESSAGES
+from utils.messages import JWTErrorMessages, ERROR_MESSAGES
 from tests.factory import UserFactory, JWTFactory
 from tests.utils import fake
 from rest_framework import status

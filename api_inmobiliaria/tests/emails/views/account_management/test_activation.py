@@ -1,8 +1,8 @@
 from apps.emails.constants import LOGIN_URL, TOKEN_EXPIRATION
 from apps.emails.paths import TEMPLATES
 from apps.api_exceptions import DatabaseConnectionAPIError
-from apps.utils.messages import ActionLinkManagerErrors
 from apps.view_exceptions import ResourceNotFoundViewError, TokenViewError
+from utils.messages import ActionLinkManagerErrors
 from tests.factory import UserFactory, TokenFactory
 from rest_framework import status
 from django.utils.http import urlsafe_base64_encode

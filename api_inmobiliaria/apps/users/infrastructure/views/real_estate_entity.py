@@ -2,7 +2,7 @@ from apps.users.infrastructure.repositories import UserRepository
 from apps.users.infrastructure.serializers import RealEstateEntitySerializer
 from apps.users.infrastructure.schemas import POSTRealEstateEntitySchema
 from apps.users.applications import RegisterUser
-from apps.utils.views import MethodHTTPMapped, PermissionMixin
+from utils.views import MethodHTTPMapped, PermissionMixin
 from rest_framework.permissions import AllowAny
 from rest_framework.serializers import Serializer
 from rest_framework.response import Response

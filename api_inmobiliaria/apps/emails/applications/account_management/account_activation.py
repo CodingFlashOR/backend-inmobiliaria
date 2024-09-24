@@ -4,11 +4,11 @@ from apps.emails.typing import Token
 from apps.emails.paths import TEMPLATES
 from apps.users.typing import UserUUID
 from apps.users.models import BaseUser
-from apps.utils.messages import ActivationErrors
 from apps.api_exceptions import (
     AccountActivationAPIError,
     ResourceNotFoundAPIError,
 )
+from utils.messages import ActivationErrors
 from rest_framework.request import Request
 from django.http.request import HttpRequest
 

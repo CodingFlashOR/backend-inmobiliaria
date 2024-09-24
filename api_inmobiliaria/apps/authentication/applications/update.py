@@ -3,7 +3,7 @@ from apps.authentication.jwt import AccessToken
 from apps.authentication.interfaces import IJWTRepository
 from apps.users.interfaces import IUserRepository
 from apps.api_exceptions import ResourceNotFoundAPIError
-from apps.utils.messages import JWTErrorMessages
+from utils.messages import JWTErrorMessages
 
 
 class JWTUpdate:

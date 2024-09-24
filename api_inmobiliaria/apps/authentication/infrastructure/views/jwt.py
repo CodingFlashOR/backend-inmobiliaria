@@ -11,7 +11,7 @@ from apps.authentication.infrastructure.schemas.jwt import (
 from apps.authentication.applications import JWTLogout, JWTLogin, JWTUpdate
 from apps.authentication.jwt import JWTAuthentication
 from apps.users.infrastructure.repositories import UserRepository
-from apps.utils.views import PermissionMixin
+from utils.views import PermissionMixin
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.generics import GenericAPIView

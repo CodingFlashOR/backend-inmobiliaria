@@ -1,6 +1,6 @@
 from apps.users.constants import RealEstateEntityProperties
 from apps.api_exceptions import DatabaseConnectionAPIError
-from apps.utils.messages import ERROR_MESSAGES
+from utils.messages import ERROR_MESSAGES
 from tests.factory import UserFactory
 from tests.utils import fake
 from rest_framework import status
@@ -248,8 +248,7 @@ class TestRegisterRealEstateEntityAPIView:
             field: [str(error) for error in errors]
             for field, errors in response.data["detail"].items()
         }
-        print(response.data["detail"])
-        print(errors_formatted)
+
         for field, message in messages_expected.items():
             assert errors_formatted[field] == message
 

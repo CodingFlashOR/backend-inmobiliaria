@@ -3,12 +3,12 @@ from apps.users.models import BaseUser
 from apps.authentication.infrastructure.repositories import JWTRepository
 from apps.authentication.constants import ACCESS_TOKEN_LIFETIME
 from apps.authentication.typing import JWTPayload
-from apps.utils.messages import JWTErrorMessages
 from apps.api_exceptions import (
     AuthenticationFailedAPIError,
     ResourceNotFoundAPIError,
     JWTAPIError,
 )
+from utils.messages import JWTErrorMessages
 from rest_framework_simplejwt.tokens import Token as BaseToken
 from rest_framework_simplejwt.authentication import (
     JWTAuthentication as BaseJWTuthentication,

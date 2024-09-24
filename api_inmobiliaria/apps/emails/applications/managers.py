@@ -4,11 +4,11 @@ from apps.emails.paths import TEMPLATES
 from apps.users.typing import UserUUID
 from apps.users.interfaces import IUserRepository
 from apps.users.models import BaseUser
-from apps.utils.messages import ActionLinkManagerErrors
 from apps.view_exceptions import (
     ResourceNotFoundViewError,
     TokenViewError,
 )
+from utils.messages import ActionLinkManagerErrors
 from rest_framework.request import Request
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string

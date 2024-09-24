@@ -4,13 +4,13 @@ from apps.emails.constants import TOKEN_EXPIRATION
 from apps.emails.models import Token
 from apps.users.infrastructure.repositories import UserRepository
 from apps.users.models import BaseUser
-from apps.utils.generators import TokenGenerator
 from apps.api_exceptions import (
     AccountActivationAPIError,
     ResourceNotFoundAPIError,
     DatabaseConnectionAPIError,
 )
 from apps.view_exceptions import ResourceNotFoundViewError, TokenViewError
+from utils.generators import TokenGenerator
 from tests.factory import UserFactory
 from tests.utils import empty_queryset
 from django.test import RequestFactory

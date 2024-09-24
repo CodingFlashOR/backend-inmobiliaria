@@ -2,11 +2,11 @@ from apps.authentication.typing import JSONWebToken
 from apps.authentication.jwt import AccessToken
 from apps.users.constants import USER_ROLE_PERMISSIONS
 from apps.users.models import BaseUser
-from apps.utils.messages import JWTErrorMessages
 from apps.api_exceptions import (
     PermissionDeniedAPIError,
     AuthenticationFailedAPIError,
 )
+from utils.messages import JWTErrorMessages
 from django.contrib.auth import authenticate
 from typing import Dict
 

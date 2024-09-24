@@ -12,7 +12,7 @@ from apps.users.infrastructure.schemas import (
 from apps.users.applications import RegisterUser, UserDataManager
 from apps.users.permissions import IsSearcher
 from apps.authentication.jwt import JWTAuthentication
-from apps.utils.views import MethodHTTPMapped, PermissionMixin
+from utils.views import MethodHTTPMapped, PermissionMixin
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.serializers import Serializer
 from rest_framework.response import Response
