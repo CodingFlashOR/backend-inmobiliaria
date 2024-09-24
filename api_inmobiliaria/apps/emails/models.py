@@ -19,9 +19,7 @@ class Token(models.Model):
         null=False,
         blank=False,
     )
-    date_joined = models.DateTimeField(
-        db_column="date_joined", auto_now_add=True
-    )
+    date_joined = models.DateTimeField(db_column="date_joined", auto_now_add=True)
 
     class Meta:
         verbose_name = "Token"

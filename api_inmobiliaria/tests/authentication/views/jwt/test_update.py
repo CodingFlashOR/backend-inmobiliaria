@@ -118,9 +118,9 @@ class TestUpdateTokensAPIView:
             ),
             (
                 {
-                    "access_token": JWTFactory.access(
-                        exp=False, save=False
-                    ).get("token"),
+                    "access_token": JWTFactory.access(exp=False, save=False).get(
+                        "token"
+                    ),
                 },
                 JWTErrorMessages.ACCESS_NOT_EXPIRED.value,
             ),

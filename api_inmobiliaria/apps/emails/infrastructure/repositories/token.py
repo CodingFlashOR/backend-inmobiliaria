@@ -43,9 +43,7 @@ class TokenRepository:
 
         try:
             token = (
-                cls._model.objects.defer("date_joined")
-                .filter(**filters)
-                .first()
+                cls._model.objects.defer("date_joined").filter(**filters).first()
             )
         except OperationalError:
             raise DatabaseConnectionAPIError()

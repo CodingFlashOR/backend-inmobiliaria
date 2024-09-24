@@ -28,9 +28,7 @@ class JWTAuth(OpenApiAuthenticationExtension):
     name = "JWTAuth"
     match_subclasses = True
 
-    def get_security_definition(
-        self, auto_schema: AutoSchema
-    ) -> Dict[str, str]:
+    def get_security_definition(self, auto_schema: AutoSchema) -> Dict[str, str]:
         """
         This method is used to return the JWT authentication schema.
         """

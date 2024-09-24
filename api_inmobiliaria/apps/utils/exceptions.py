@@ -45,9 +45,7 @@ def view_exception_handler(view_func) -> HttpResponse:
     Decorator to handle exceptions raised in views.
     """
 
-    def _wrapped_view_func(
-        request: HttpRequest, *args, **kwargs
-    ) -> HttpResponse:
+    def _wrapped_view_func(request: HttpRequest, *args, **kwargs) -> HttpResponse:
         """
         Wrapper function to handle exceptions raised in views.
         """

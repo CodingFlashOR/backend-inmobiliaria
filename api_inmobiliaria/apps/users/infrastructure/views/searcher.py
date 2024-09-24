@@ -121,9 +121,7 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
         """
 
         serializer_class = self.get_serializer_class()
-        serializer: Serializer = serializer_class(
-            data=request.data, partial=True
-        )
+        serializer: Serializer = serializer_class(data=request.data, partial=True)
 
         if not serializer.is_valid():
             return Response(

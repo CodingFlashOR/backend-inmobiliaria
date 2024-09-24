@@ -30,9 +30,7 @@ class JWT(models.Model):
     expires_at = models.DateTimeField(
         db_column="expires_at", null=False, blank=False
     )
-    date_joined = models.DateTimeField(
-        db_column="date_joined", auto_now_add=True
-    )
+    date_joined = models.DateTimeField(db_column="date_joined", auto_now_add=True)
 
     class Meta:
         verbose_name = "JWT"
@@ -59,9 +57,7 @@ class JWTBlacklist(models.Model):
         null=False,
         blank=False,
     )
-    date_joined = models.DateTimeField(
-        db_column="date_joined", auto_now_add=True
-    )
+    date_joined = models.DateTimeField(db_column="date_joined", auto_now_add=True)
 
     class Meta:
         verbose_name = "JWT Blacklist"

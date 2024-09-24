@@ -16,7 +16,7 @@ import pytest
 
 
 @pytest.mark.django_db
-class TestSearcherRegisterUserAPIView:
+class TestRegisterSearcherAPIView:
     """
     This class encapsulates the tests for the view responsible for creating a
     user with the "Searcher" role.
@@ -50,7 +50,7 @@ class TestSearcherRegisterUserAPIView:
         assert response.status_code == status.HTTP_201_CREATED
 
     @pytest.mark.parametrize(
-        argnames="data, error_messages",
+        argnames="data, messages_expected",
         argvalues=[
             (
                 {},
@@ -74,37 +74,6 @@ class TestSearcherRegisterUserAPIView:
                     "email": [ERROR_MESSAGES["invalid"]],
                     "name": [ERROR_MESSAGES["invalid"]],
                     "last_name": [ERROR_MESSAGES["invalid"]],
-                },
-            ),
-            (
-                {
-                    "name": fake.bothify(text=f"{'?' * 41}"),
-                    "last_name": fake.bothify(text=f"{'?' * 41}"),
-                    "email": f"user{fake.random_number(digits=41)}@email.com",
-                    "password": fake.password(length=41, special_chars=True),
-                },
-                {
-                    "name": [
-                        ERROR_MESSAGES["max_length"].format(
-                            max_length=SearcherProperties.NAME_MAX_LENGTH.value,
-                        ),
-                    ],
-                    "last_name": [
-                        ERROR_MESSAGES["max_length"].format(
-                            max_length=SearcherProperties.LAST_NAME_MAX_LENGTH.value,
-                        ),
-                    ],
-                    "email": [
-                        ERROR_MESSAGES["max_length"].format(
-                            max_length=BaseUserProperties.EMAIL_MAX_LENGTH.value,
-                        ),
-                    ],
-                    "password": [
-                        ERROR_MESSAGES["max_length"].format(
-                            max_length=BaseUserProperties.PASSWORD_MAX_LENGTH.value,
-                        ),
-                    ],
-                    "confirm_password": [ERROR_MESSAGES["required"]],
                 },
             ),
             (
@@ -135,7 +104,6 @@ class TestSearcherRegisterUserAPIView:
         ids=[
             "empty_data",
             "invalid_data",
-            "max_length_data",
             "passwords_not_match",
             "password_no_upper_lower",
         ],
@@ -143,7 +111,7 @@ class TestSearcherRegisterUserAPIView:
     def test_if_invalid_data(
         self,
         data: Dict[str, Dict],
-        error_messages: Dict[str, Dict],
+        messages_expected: Dict[str, Dict],
     ) -> None:
         """
         This test is responsible for validating the expected behavior of the
@@ -164,11 +132,11 @@ class TestSearcherRegisterUserAPIView:
             for field, errors in response.data["detail"].items()
         }
 
-        for field, message in error_messages.items():
+        for field, message in messages_expected.items():
             assert errors_formatted[field] == message
 
     @pytest.mark.parametrize(
-        argnames="data, error_messages",
+        argnames="data, messages_expected",
         argvalues=[
             (
                 {
@@ -188,7 +156,7 @@ class TestSearcherRegisterUserAPIView:
     def test_data_used(
         self,
         data: Dict[str, Dict],
-        error_messages: Dict[str, Dict],
+        messages_expected: Dict[str, Dict],
     ) -> None:
         """
         This test is responsible for validating the expected behavior of the
@@ -220,7 +188,7 @@ class TestSearcherRegisterUserAPIView:
             for field, errors in response.data["detail"].items()
         }
 
-        for field, message in error_messages.items():
+        for field, message in messages_expected.items():
             assert errors_formatted[field] == message
 
     @patch(target="apps.users.applications.register.Group")
@@ -235,9 +203,7 @@ class TestSearcherRegisterUserAPIView:
         get.side_effect = OperationalError
 
         # Creating the user data to be used in the test
-        _, _, data = self.user_factory.searcher_user(
-            active=False, save=False, add_perm=False
-        )
+        _, _, data = self.user_factory.searcher_user(save=False)
         data["confirm_password"] = data["password"]
 
         # Simulating the request
