@@ -7,7 +7,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
 
-class BaseUserSerializer(ErrorMessagesSerializer, serializers.Serializer):
+class BaseUserSerializer(serializers.Serializer):
     """
     Defines the base data of a user.
     """
