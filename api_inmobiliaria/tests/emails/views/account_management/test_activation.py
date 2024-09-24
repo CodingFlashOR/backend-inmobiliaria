@@ -15,6 +15,12 @@ from uuid import uuid4
 import pytest
 
 
+# Error messages
+DEFAULT = ActionLinkManagerErrors.DEFAULT.value
+TOKEN_INVALID = ActionLinkManagerErrors.TOKEN_INVALID.value
+USER_NOT_FOUND = ActionLinkManagerErrors.USER_NOT_FOUND.value
+
+
 @pytest.mark.django_db
 class TestAccountActivationView:
     """
@@ -60,14 +66,11 @@ class TestAccountActivationView:
         )
 
         # Asserting that response data is correct
-        assert response.status_code == status.HTTP_200_OK
-
         template = TEMPLATES["account_management"]["activation"]["ok"]
-
-        assert template in [t.name for t in response.templates]
-
         context = response.context
 
+        assert response.status_code == status.HTTP_200_OK
+        assert template in [t.name for t in response.templates]
         assert "redirect" in context
         assert "action" in context["redirect"]
         assert "url" in context["redirect"]
@@ -85,26 +88,18 @@ class TestAccountActivationView:
         response = self.client.get(path=path)
 
         # Asserting that response data is correct
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-
         template = TEMPLATES["account_management"]["error"]
-
-        assert template in [t.name for t in response.templates]
-
         context = response.context
 
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert template in [t.name for t in response.templates]
         assert "message" in context
         assert "redirect" in context
         assert "action" in context["redirect"]
         assert "url" in context["redirect"]
-
-        message = ActionLinkManagerErrors.DEFAULT.value["message"]
-        action = ActionLinkManagerErrors.DEFAULT.value["redirect"]["action"]
-        url = ActionLinkManagerErrors.DEFAULT.value["redirect"]["url"]
-
-        assert context["message"] == message
-        assert context["redirect"]["action"] == action
-        assert context["redirect"]["url"] == url
+        assert context["message"] == DEFAULT["message"]
+        assert context["redirect"]["action"] == DEFAULT["redirect"]["action"]
+        assert context["redirect"]["url"] == DEFAULT["redirect"]["url"]
 
     def test_if_user_not_found(self) -> None:
         """
@@ -119,27 +114,20 @@ class TestAccountActivationView:
 
         # Asserting that response data is correct
         status_code_expected = ResourceNotFoundViewError.default_status_code
-
-        assert response.status_code == status_code_expected
-
         template = TEMPLATES["account_management"]["error"]
-
-        assert template in [t.name for t in response.templates]
-
         context = response.context
 
+        assert response.status_code == status_code_expected
+        assert template in [t.name for t in response.templates]
         assert "message" in context
         assert "redirect" in context
         assert "action" in context["redirect"]
         assert "url" in context["redirect"]
-
-        message = ActionLinkManagerErrors.USER_NOT_FOUND.value["message"]
-        action = ActionLinkManagerErrors.USER_NOT_FOUND.value["redirect"]["action"]
-        url = ActionLinkManagerErrors.USER_NOT_FOUND.value["redirect"]["url"]
-
-        assert context["message"] == message
-        assert context["redirect"]["action"] == action
-        assert context["redirect"]["url"] == url
+        assert context["message"] == USER_NOT_FOUND["message"]
+        assert (
+            context["redirect"]["action"] == USER_NOT_FOUND["redirect"]["action"]
+        )
+        assert context["redirect"]["url"] == USER_NOT_FOUND["redirect"]["url"]
 
     def test_if_token_not_found(self) -> None:
         """
@@ -159,26 +147,18 @@ class TestAccountActivationView:
 
         # Asserting that response data is correct
         status_code_expected = ResourceNotFoundViewError.default_status_code
-        assert response.status_code == status_code_expected
-
         template = TEMPLATES["account_management"]["error"]
-
-        assert template in [t.name for t in response.templates]
-
         context = response.context
 
+        assert response.status_code == status_code_expected
+        assert template in [t.name for t in response.templates]
         assert "message" in context
         assert "redirect" in context
         assert "action" in context["redirect"]
         assert "url" in context["redirect"]
-
-        message = ActionLinkManagerErrors.DEFAULT.value["message"]
-        action = ActionLinkManagerErrors.DEFAULT.value["redirect"]["action"]
-        url = ActionLinkManagerErrors.DEFAULT.value["redirect"]["url"]
-
-        assert context["message"] == message
-        assert context["redirect"]["action"] == action
-        assert context["redirect"]["url"] == url
+        assert context["message"] == DEFAULT["message"]
+        assert context["redirect"]["action"] == DEFAULT["redirect"]["action"]
+        assert context["redirect"]["url"] == DEFAULT["redirect"]["url"]
 
     def test_if_token_is_expired(self) -> None:
         """
@@ -204,15 +184,11 @@ class TestAccountActivationView:
 
         # Asserting that response data is correct
         status_code_expected = TokenViewError.default_status_code
-
-        assert response.status_code == status_code_expected
-
         template = TEMPLATES["account_management"]["error"]
-
-        assert template in [t.name for t in response.templates]
-
         context = response.context
 
+        assert response.status_code == status_code_expected
+        assert template in [t.name for t in response.templates]
         assert "message" in context
         assert "redirect" in context
         assert "action" in context["redirect"]
@@ -241,27 +217,18 @@ class TestAccountActivationView:
 
         # Asserting that response data is correct
         status_code_expected = TokenViewError.default_status_code
-
-        assert response.status_code == status_code_expected
-
         template = TEMPLATES["account_management"]["error"]
-
-        assert template in [t.name for t in response.templates]
-
         context = response.context
 
+        assert response.status_code == status_code_expected
+        assert template in [t.name for t in response.templates]
         assert "message" in context
         assert "redirect" in context
         assert "action" in context["redirect"]
         assert "url" in context["redirect"]
-
-        message = ActionLinkManagerErrors.TOKEN_INVALID.value["message"]
-        action = ActionLinkManagerErrors.TOKEN_INVALID.value["redirect"]["action"]
-        url = ActionLinkManagerErrors.TOKEN_INVALID.value["redirect"]["url"]
-
-        assert context["message"] == message
-        assert context["redirect"]["action"] == action
-        assert context["redirect"]["url"] == url
+        assert context["message"] == TOKEN_INVALID["message"]
+        assert context["redirect"]["action"] == TOKEN_INVALID["redirect"]["action"]
+        assert context["redirect"]["url"] == TOKEN_INVALID["redirect"]["url"]
 
     @patch(
         target="apps.emails.infrastructure.views.account_management.account_activation.UserRepository"
@@ -289,24 +256,15 @@ class TestAccountActivationView:
 
         # Asserting that response data is correct
         status_code_expected = DatabaseConnectionAPIError.status_code
-
-        assert response.status_code == status_code_expected
-
         template = TEMPLATES["account_management"]["error"]
-
-        assert template in [t.name for t in response.templates]
-
         context = response.context
 
+        assert response.status_code == status_code_expected
+        assert template in [t.name for t in response.templates]
         assert "message" in context
         assert "redirect" in context
         assert "action" in context["redirect"]
         assert "url" in context["redirect"]
-
-        message = ActionLinkManagerErrors.DEFAULT.value["message"]
-        action = ActionLinkManagerErrors.DEFAULT.value["redirect"]["action"]
-        url = ActionLinkManagerErrors.DEFAULT.value["redirect"]["url"]
-
-        assert context["message"] == message
-        assert context["redirect"]["action"] == action
-        assert context["redirect"]["url"] == url
+        assert context["message"] == DEFAULT["message"]
+        assert context["redirect"]["action"] == DEFAULT["redirect"]["action"]
+        assert context["redirect"]["url"] == DEFAULT["redirect"]["url"]

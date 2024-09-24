@@ -20,7 +20,7 @@ from jwt import decode, DecodeError, ExpiredSignatureError
 EMAIL_MAX_LENGTH = BaseUserProperties.EMAIL_MAX_LENGTH.value
 PASSWORD_MAX_LENGTH = BaseUserProperties.PASSWORD_MAX_LENGTH.value
 
-#  Error messages
+# Error messages
 INVALID_OR_EXPIRED = JWTErrorMessages.INVALID_OR_EXPIRED.value
 ACCESS_NOT_EXPIRED = JWTErrorMessages.ACCESS_NOT_EXPIRED.value
 

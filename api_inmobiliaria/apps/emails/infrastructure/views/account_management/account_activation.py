@@ -18,6 +18,10 @@ from django.views.generic import View
 from rest_framework import status
 
 
+# Error messages
+DEFAULT = ActionLinkManagerErrors.DEFAULT.value
+
+
 @method_decorator(view_exception_handler, name="dispatch")
 class AccountActivationView(View):
     """
@@ -40,8 +44,8 @@ class AccountActivationView(View):
         if not serializer.is_valid():
             return render(
                 request=request,
+                context=DEFAULT,
                 template_name=TEMPLATES["account_management"]["error"],
-                context=ActionLinkManagerErrors.DEFAULT.value,
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -59,8 +63,8 @@ class AccountActivationView(View):
         except DatabaseConnectionAPIError:
             return render(
                 request=request,
+                context=DEFAULT,
                 template_name=TEMPLATES["account_management"]["error"],
-                context=ActionLinkManagerErrors.DEFAULT.value,
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

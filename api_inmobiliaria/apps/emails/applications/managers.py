@@ -20,6 +20,13 @@ from django.urls import reverse
 from typing import Any, Dict
 
 
+# Error messages
+DEFAULT = ActionLinkManagerErrors.DEFAULT.value
+USER_NOT_FOUND = ActionLinkManagerErrors.USER_NOT_FOUND.value
+TOKEN_EXPIRED = ActionLinkManagerErrors.TOKEN_EXPIRED.value
+TOKEN_INVALID = ActionLinkManagerErrors.TOKEN_INVALID.value
+
+
 class ActionLinkManager:
     """
     This class encapsulates the logic in charge of e-mail communication related to user
@@ -140,7 +147,7 @@ class ActionLinkManager:
             raise ResourceNotFoundViewError(
                 request=request,
                 template_name=TEMPLATES["account_management"]["error"],
-                context=ActionLinkManagerErrors.USER_NOT_FOUND.value,
+                context=USER_NOT_FOUND,
             )
 
         token_obj = self._token_repository.get(token=token)
@@ -149,10 +156,10 @@ class ActionLinkManager:
             raise ResourceNotFoundViewError(
                 request=request,
                 template_name=TEMPLATES["account_management"]["error"],
-                context=ActionLinkManagerErrors.DEFAULT.value,
+                context=DEFAULT,
             )
         elif token_obj.is_expired():
-            context = ActionLinkManagerErrors.TOKEN_EXPIRED.value
+            context = TOKEN_EXPIRED
             context["redirect"]["url"] = reverse(
                 viewname=self.path_send_mail,
                 kwargs={"user_uuid": user_uuid},
@@ -167,6 +174,6 @@ class ActionLinkManager:
         elif not self._token_class.check_token(user=self.user, token=token):
             raise TokenViewError(
                 request=request,
-                context=ActionLinkManagerErrors.TOKEN_INVALID.value,
+                context=TOKEN_INVALID,
                 template_name=TEMPLATES["account_management"]["error"],
             )

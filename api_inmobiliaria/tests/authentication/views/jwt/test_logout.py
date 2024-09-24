@@ -11,8 +11,10 @@ from django.urls import reverse
 import pytest
 
 
-# This constant is used when the serializer error messages are the default.
+# Error messages
 DEFAULT_ERROR_MESSAGES = CharField().error_messages
+INVALID_OR_EXPIRED = JWTErrorMessages.INVALID_OR_EXPIRED.value
+BLACKLISTED = JWTErrorMessages.BLACKLISTED.value
 
 
 @pytest.mark.django_db
@@ -106,9 +108,7 @@ class TestLogoutAPIView:
         # Asserting that response data is correct
         status_code_expected = JWTAPIError.status_code
         code_expected = JWTAPIError.default_code
-        error_message_expected = JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
-            token_type="access"
-        )
+        error_message_expected = INVALID_OR_EXPIRED.format(token_type="access")
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == code_expected
@@ -140,9 +140,7 @@ class TestLogoutAPIView:
         # Asserting that response data is correct
         status_code_expected = JWTAPIError.status_code
         code_expected = JWTAPIError.default_code
-        error_message_expected = JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
-            token_type="access"
-        )
+        error_message_expected = INVALID_OR_EXPIRED.format(token_type="access")
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == code_expected
@@ -176,9 +174,7 @@ class TestLogoutAPIView:
         # Asserting that response data is correct
         status_code_expected = JWTAPIError.status_code
         code_expected = JWTAPIError.default_code
-        error_message_expected = JWTErrorMessages.BLACKLISTED.value.format(
-            token_type="access"
-        )
+        error_message_expected = BLACKLISTED.format(token_type="access")
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == code_expected

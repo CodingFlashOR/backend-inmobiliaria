@@ -6,6 +6,9 @@ from apps.api_exceptions import ResourceNotFoundAPIError
 from utils.messages import JWTErrorMessages
 
 
+USER_NOT_FOUND = JWTErrorMessages.USER_NOT_FOUND.value
+
+
 class JWTUpdate:
     """
     Use case for creating a new access token for a user authenticated with JSON Web
@@ -36,11 +39,9 @@ class JWTUpdate:
         )
 
         if not base_user:
-            message = JWTErrorMessages.USER_NOT_FOUND.value
-
             raise ResourceNotFoundAPIError(
-                code=message["code"],
-                detail=message["detail"],
+                code=USER_NOT_FOUND["code"],
+                detail=USER_NOT_FOUND["detail"],
             )
 
         return str(self._access_token_class(user=base_user))

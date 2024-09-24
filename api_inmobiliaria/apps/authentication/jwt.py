@@ -19,6 +19,14 @@ from rest_framework_simplejwt.settings import api_settings
 from typing import Any, Dict
 
 
+# Error messages
+INVALID_OR_EXPIRED = JWTErrorMessages.INVALID_OR_EXPIRED.value
+BLACKLISTED = JWTErrorMessages.BLACKLISTED.value
+TOKEN_NOT_FOUND = JWTErrorMessages.TOKEN_NOT_FOUND.value
+USER_NOT_FOUND = JWTErrorMessages.USER_NOT_FOUND.value
+INACTIVE_ACCOUNT = JWTErrorMessages.INACTIVE_ACCOUNT.value
+
+
 class Token(BaseToken):
     """
     A class which validates and wraps an existing JWT or can be used to build a new
@@ -67,7 +75,7 @@ class Token(BaseToken):
                 token_backend = self.get_token_backend()
                 self.payload = token_backend.decode(token=token, verify=verify)
         except TokenBackendError:
-            message = JWTErrorMessages.INVALID_OR_EXPIRED.value
+            message = INVALID_OR_EXPIRED
 
             raise TokenError(message.format(token_type=self.token_type))
 
@@ -109,7 +117,7 @@ class BlacklistMixin:
         jti = self.payload[api_settings.JTI_CLAIM]
 
         if self._jwt_repository.exists_in_blacklist(jti=jti):
-            message = JWTErrorMessages.BLACKLISTED.value
+            message = BLACKLISTED
 
             raise TokenError(message.format(token_type=self.token_type))
 
@@ -125,7 +133,7 @@ class BlacklistMixin:
         token = self._jwt_repository.get(jti=jti)
 
         if not token:
-            message = JWTErrorMessages.TOKEN_NOT_FOUND.value
+            message = TOKEN_NOT_FOUND
 
             raise ResourceNotFoundAPIError(
                 code=message["code"],
@@ -207,16 +215,14 @@ class JWTAuthentication(BaseJWTuthentication):
         )
 
         if not base_user:
-            message = JWTErrorMessages.USER_NOT_FOUND.value
+            message = USER_NOT_FOUND
 
             raise ResourceNotFoundAPIError(
                 code=message["code"], detail=message["detail"]
             )
 
         if not base_user.is_active:
-            raise AuthenticationFailedAPIError(
-                detail=JWTErrorMessages.INACTIVE_ACCOUNT.value
-            )
+            raise AuthenticationFailedAPIError(detail=INACTIVE_ACCOUNT)
 
         if api_settings.CHECK_REVOKE_TOKEN:
             if validated_token.get(

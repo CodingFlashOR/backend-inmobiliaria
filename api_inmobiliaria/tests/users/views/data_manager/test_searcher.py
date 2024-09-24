@@ -18,6 +18,18 @@ from typing import Dict, Any
 import pytest
 
 
+# Error messages
+INVALID_OR_EXPIRED = JWTErrorMessages.INVALID_OR_EXPIRED.value
+BLACKLISTED = JWTErrorMessages.BLACKLISTED.value
+USER_NOT_FOUND = JWTErrorMessages.USER_NOT_FOUND.value
+
+# Searcher properties
+NAME_MAX_LENGTH = SearcherProperties.NAME_MAX_LENGTH.value
+LAST_NAME_MAX_LENGTH = SearcherProperties.LAST_NAME_MAX_LENGTH.value
+CC_MAX_LENGTH = SearcherProperties.CC_MAX_LENGTH.value
+CC_MIN_LENGTH = SearcherProperties.CC_MIN_LENGTH.value
+
+
 @pytest.mark.django_db
 class TestGetSearcherUserAPIView:
     """
@@ -128,15 +140,11 @@ class TestGetSearcherUserAPIView:
         argvalues=[
             (
                 JWTFactory.access_invalid(),
-                JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
-                    token_type="access"
-                ),
+                INVALID_OR_EXPIRED.format(token_type="access"),
             ),
             (
                 JWTFactory.access(exp=True, save=False).get("token"),
-                JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
-                    token_type="access"
-                ),
+                INVALID_OR_EXPIRED.format(token_type="access"),
             ),
         ],
         ids=[
@@ -197,9 +205,7 @@ class TestGetSearcherUserAPIView:
         # Asserting that response data is correct
         status_code_expected = JWTAPIError.status_code
         code_expected = JWTAPIError.default_code
-        message_expected = JWTErrorMessages.BLACKLISTED.value.format(
-            token_type="access"
-        )
+        message_expected = BLACKLISTED.format(token_type="access")
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == code_expected
@@ -212,10 +218,7 @@ class TestGetSearcherUserAPIView:
         """
 
         # Creating the JWTs to be used in the test
-        access_token = self.jwt_factory.access(
-            exp=False,
-            save=False,
-        ).get("token")
+        access_token = self.jwt_factory.access(exp=False, save=False).get("token")
 
         # Simulating the request
         response = self.client.get(
@@ -226,9 +229,8 @@ class TestGetSearcherUserAPIView:
 
         # Asserting that response data is correct
         status_code_expected = ResourceNotFoundAPIError.status_code
-        message = JWTErrorMessages.USER_NOT_FOUND.value
-        response_code_expected = message["code"]
-        response_data_expected = message["detail"]
+        response_code_expected = USER_NOT_FOUND["code"]
+        response_data_expected = USER_NOT_FOUND["detail"]
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == response_code_expected
@@ -246,10 +248,7 @@ class TestGetSearcherUserAPIView:
         get_base_data.side_effect = DatabaseConnectionAPIError
 
         # Creating the user data to be used in the test
-        access_token = self.jwt_factory.access(
-            exp=False,
-            save=False,
-        ).get("token")
+        access_token = self.jwt_factory.access(exp=False, save=False).get("token")
 
         # Simulating the request
         response = self.client.get(
@@ -311,7 +310,7 @@ class TestUpdateSearcherUserAPIView:
             },
             {
                 "address": fake.address(),
-                "cc": fake.random_number(digits=10),
+                "cc": fake.random_number(digits=10, fix_len=True),
                 "phone_number": "+57 3503440010",
             },
             {
@@ -321,7 +320,7 @@ class TestUpdateSearcherUserAPIView:
             {
                 "name": fake.first_name(),
                 "last_name": fake.last_name(),
-                "cc": fake.random_number(digits=10),
+                "cc": fake.random_number(digits=10, fix_len=True),
                 "phone_number": "+57 3105002632",
             },
         ],
@@ -395,32 +394,32 @@ class TestUpdateSearcherUserAPIView:
                 {
                     "name": fake.bothify(text=f"{'?' * 41}"),
                     "last_name": fake.bothify(text=f"{'?' * 41}"),
-                    "cc": fake.random_number(digits=13),
+                    "cc": fake.random_number(digits=13, fix_len=True),
                 },
                 {
                     "name": [
                         ERROR_MESSAGES["max_length"].format(
-                            max_length=SearcherProperties.NAME_MAX_LENGTH.value,
+                            max_length=NAME_MAX_LENGTH
                         ),
                     ],
                     "last_name": [
                         ERROR_MESSAGES["max_length"].format(
-                            max_length=SearcherProperties.LAST_NAME_MAX_LENGTH.value,
+                            max_length=LAST_NAME_MAX_LENGTH
                         ),
                     ],
                     "cc": [
                         ERROR_MESSAGES["max_length"].format(
-                            max_length=SearcherProperties.CC_MAX_LENGTH.value,
+                            max_length=CC_MAX_LENGTH
                         ),
                     ],
                 },
             ),
             (
-                {"cc": fake.random_number(digits=5)},
+                {"cc": fake.random_number(digits=5, fix_len=True)},
                 {
                     "cc": [
                         ERROR_MESSAGES["min_length"].format(
-                            min_length=SearcherProperties.CC_MIN_LENGTH.value,
+                            min_length=CC_MIN_LENGTH
                         ),
                     ],
                 },
@@ -481,7 +480,7 @@ class TestUpdateSearcherUserAPIView:
                 {"phone_number": [ERROR_MESSAGES["phone_in_use"]]},
             ),
             (
-                {"cc": fake.random_number(digits=10)},
+                {"cc": fake.random_number(digits=10, fix_len=True)},
                 {"cc": [ERROR_MESSAGES["cc_in_use"]]},
             ),
         ],
@@ -567,15 +566,11 @@ class TestUpdateSearcherUserAPIView:
         argvalues=[
             (
                 JWTFactory.access_invalid(),
-                JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
-                    token_type="access"
-                ),
+                INVALID_OR_EXPIRED.format(token_type="access"),
             ),
             (
                 JWTFactory.access(exp=True, save=False).get("token"),
-                JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
-                    token_type="access"
-                ),
+                INVALID_OR_EXPIRED.format(token_type="access"),
             ),
         ],
         ids=[
@@ -638,9 +633,7 @@ class TestUpdateSearcherUserAPIView:
         # Asserting that response data is correct
         status_code_expected = JWTAPIError.status_code
         code_expected = JWTAPIError.default_code
-        message_expected = JWTErrorMessages.BLACKLISTED.value.format(
-            token_type="access"
-        )
+        message_expected = BLACKLISTED.format(token_type="access")
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == code_expected
@@ -653,10 +646,7 @@ class TestUpdateSearcherUserAPIView:
         """
 
         # Creating the JWTs to be used in the test
-        access_token = self.jwt_factory.access(
-            exp=False,
-            save=False,
-        ).get("token")
+        access_token = self.jwt_factory.access(exp=False, save=False).get("token")
 
         # Simulating the request
         response = self.client.patch(
@@ -668,9 +658,8 @@ class TestUpdateSearcherUserAPIView:
 
         # Asserting that response data is correct
         status_code_expected = ResourceNotFoundAPIError.status_code
-        message = JWTErrorMessages.USER_NOT_FOUND.value
-        response_code_expected = message["code"]
-        response_data_expected = message["detail"]
+        response_code_expected = USER_NOT_FOUND["code"]
+        response_data_expected = USER_NOT_FOUND["detail"]
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == response_code_expected
@@ -688,10 +677,7 @@ class TestUpdateSearcherUserAPIView:
         get_base_data.side_effect = DatabaseConnectionAPIError
 
         # Creating the user data to be used in the test
-        access_token = self.jwt_factory.access(
-            exp=False,
-            save=False,
-        ).get("token")
+        access_token = self.jwt_factory.access(exp=False, save=False).get("token")
 
         # Simulating the request
         response = self.client.patch(
