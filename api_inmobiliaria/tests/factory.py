@@ -1,7 +1,10 @@
 from apps.authentication.typing import AccessToken, JSONWebToken, JWTPayload
 from apps.authentication.constants import ACCESS_TOKEN_LIFETIME
 from apps.authentication.models import JWT, JWTBlacklist
-from apps.users.constants import UserRoles
+from apps.users.constants import (
+    UserRoles,
+    DOCUMENTS_REQUESTED_REAL_ESTATE_ENTITY,
+)
 from apps.users.typing import UserUUID
 from apps.users.models import BaseUser
 from apps.emails.models import Token
@@ -18,8 +21,10 @@ from django.contrib.auth.models import Group
 from django.db.models import Model
 from typing import Optional, Tuple, Dict, Any
 from datetime import datetime
+from copy import deepcopy
 from jwt import encode
 from uuid import uuid4
+import random
 
 
 class UserFactory:
@@ -72,9 +77,7 @@ class UserFactory:
         user.save()
 
     @classmethod
-    def _get_data(
-        cls, user_role: str, **data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _get_data(cls, user_role: str, **data: Dict[str, Any]) -> Dict[str, Any]:
         """
         This method returns the data for the user creation.
 
@@ -89,10 +92,38 @@ class UserFactory:
                 "password": "contraseña1234",
                 "name": "Nombre del ususario",
                 "last_name": "Apellido del usuario",
-                "cc": data.get("cc", None) or str(fake.random_number(digits=9)),
+                "cc": data.get("cc", None)
+                or str(fake.random_number(digits=9, fix_len=True)),
                 "phone_number": data.get("phone_number", None)
-                or fake.phone_number(),
-            }
+                or f"+57311111{fake.random_number(digits=4, fix_len=True)}",
+            },
+            UserRoles.REAL_ESTATE_ENTITY.value: {
+                "type_entity": data.get("type_entity", None)
+                or random.choice(
+                    [
+                        UserRoles.REAL_ESTATE.value,
+                        UserRoles.CONSTRUCTION_COMPANY.value,
+                    ]
+                ),
+                "logo": data.get("logo", None) or fake.url(),
+                "name": "Nombre de la entidad",
+                "email": data.get("email", None) or fake.email(),
+                "password": "contraseña1234",
+                "description": data.get("description", None) or fake.paragraph(),
+                "nit": data.get("nit", None)
+                or str(fake.random_number(digits=10, fix_len=True)),
+                "phone_numbers": data.get("phone_numbers", None)
+                or [
+                    f"+57311111{fake.random_number(digits=4, fix_len=True)}",
+                    f"+57311111{fake.random_number(digits=4, fix_len=True)}",
+                ],
+                "department": data.get("department", None) or "Antioquia",
+                "municipality": data.get("municipality", None) or "Medellín",
+                "region": data.get("region", None)
+                or "Región Eje Cafetero - Antioquia",
+                "coordinate": data.get("coordinate", None)
+                or str(fake.coordinate()),
+            },
         }
 
         return data[user_role]
@@ -123,6 +154,7 @@ class UserFactory:
 
         method_map = {
             UserRoles.SEARCHER.value: cls.searcher_user,
+            UserRoles.REAL_ESTATE_ENTITY.value: cls.real_estate_entity,
         }
         user_data = cls._get_data(user_role=user_role, **data)
 
@@ -134,8 +166,8 @@ class UserFactory:
     def searcher_user(
         cls,
         save: bool,
-        active: bool,
-        add_perm: bool,
+        active: bool = False,
+        add_perm: bool = False,
         **data: Dict[str, Any],
     ) -> Tuple[BaseUser, Model, Dict[str, Any]]:
         """
@@ -152,34 +184,81 @@ class UserFactory:
         user data.
         """
 
-        base_user = None
-        user_role = None
-        data = cls._get_data(user_role=UserRoles.SEARCHER.value, **data)
+        base_user_model = None
+        user_role_model = None
+        user_role = UserRoles.SEARCHER.value
+        user_data = cls._get_data(user_role=user_role, **data)
 
         if save:
-            base_user, user_role = cls._create_user(
+            user_data_copy = deepcopy(user_data)
+            email = user_data_copy.pop("email")
+            password = user_data_copy.pop("password")
+
+            base_user_model, user_role_model = cls._create_user(
                 data={
-                    "base_data": {
-                        "email": data["email"],
-                        "password": data["password"],
-                    },
-                    "role_data": {
-                        "name": data["name"],
-                        "last_name": data["last_name"],
-                        "cc": data["cc"],
-                        "phone_number": data["phone_number"],
-                    },
+                    "base_data": {"email": email, "password": password},
+                    "role_data": user_data_copy,
                 },
                 active=active,
-                user_role=UserRoles.SEARCHER.value,
+                user_role=user_role,
             )
 
             if add_perm:
-                cls._assign_permissions(
-                    user=base_user, user_role=UserRoles.SEARCHER.value
-                )
+                cls._assign_permissions(user=base_user_model, user_role=user_role)
 
-        return base_user, user_role, data
+        return base_user_model, user_role_model, user_data
+
+    @classmethod
+    def real_estate_entity(
+        cls,
+        save: bool,
+        active: bool = False,
+        add_perm: bool = False,
+        **data: Dict[str, Any],
+    ) -> Tuple[BaseUser, Model, Dict[str, Any]]:
+        """
+        This method creates a real estate entity user with the provided data.
+
+        #### Parameters:
+        - save: If the user should be saved in the database.
+        - add_perm: If the user should have the permissions assigned.
+        - active: If the user should be active.
+        - data: The data to create the user.
+
+        #### Returns:
+        - A tuple of an instance of the user and real estate entity models or `None` and the
+        user data.
+        """
+
+        base_user_model = None
+        user_role_model = None
+        user_role = UserRoles.REAL_ESTATE_ENTITY.value
+        user_data = cls._get_data(user_role=user_role, **data)
+        type_entity = user_data["type_entity"]
+        user_data["documents"] = {
+            key: fake.url()
+            for key in DOCUMENTS_REQUESTED_REAL_ESTATE_ENTITY[type_entity]
+        }
+
+        if save:
+            user_data_copy = deepcopy(user_data)
+            user_data_copy["phone_numbers"] = ",".join(user_data["phone_numbers"])
+            email = user_data_copy.pop("email")
+            password = user_data_copy.pop("password")
+
+            base_user_model, user_role_model = cls._create_user(
+                data={
+                    "base_data": {"email": email, "password": password},
+                    "role_data": user_data_copy,
+                },
+                active=active,
+                user_role=user_role,
+            )
+
+            if add_perm:
+                cls._assign_permissions(user=base_user_model, user_role=user_role)
+
+        return base_user_model, user_role_model, user_data
 
 
 class TokenFactory:
@@ -353,9 +432,7 @@ class JWTFactory:
         )
 
         return cls._create(
-            user=(
-                user if user else cls._get_user(user_role=user_role, save=save)
-            ),
+            user=(user if user else cls._get_user(user_role=user_role, save=save)),
             user_role=user_role,
             save=save,
             add_blacklist=add_blacklist,
