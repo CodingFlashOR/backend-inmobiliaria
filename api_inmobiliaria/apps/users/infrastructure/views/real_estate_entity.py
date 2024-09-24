@@ -1,5 +1,7 @@
 from apps.users.infrastructure.repositories import UserRepository
-from apps.users.infrastructure.serializers import RealEstateEntitySerializer
+from apps.users.infrastructure.serializers import (
+    RegisterRealEstateEntitySerializer,
+)
 from apps.users.infrastructure.schemas import POSTRealEstateEntitySchema
 from apps.users.applications import RegisterUser
 from utils.views import MethodHTTPMapped, PermissionMixin
@@ -22,7 +24,7 @@ class RealEstateEntityAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView)
     authentication_mapping = {"POST": []}
     permission_mapping = {"POST": [AllowAny]}
     application_mapping = {"POST": RegisterUser}
-    serializer_mapping = {"POST": RealEstateEntitySerializer}
+    serializer_mapping = {"POST": RegisterRealEstateEntitySerializer}
 
     @POSTRealEstateEntitySchema
     def post(self, request: Request, *args, **kwargs) -> Response:
@@ -52,6 +54,7 @@ class RealEstateEntityAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView)
         register: RegisterUser = self.get_application_class(
             user_repository=UserRepository
         )
+        serializer.validated_data.pop("confirm_password")
         register.real_estate_entity(
             data=serializer.validated_data, request=request
         )

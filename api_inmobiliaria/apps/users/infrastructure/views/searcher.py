@@ -2,7 +2,7 @@ from apps.users.infrastructure.repositories import UserRepository
 from apps.users.infrastructure.serializers import (
     RegisterSearcherSerializer,
     SearcherReadOnlySerializer,
-    SearcherSerializer,
+    SearcherRoleSerializer,
 )
 from apps.users.infrastructure.schemas import (
     POSTSearcherSchema,
@@ -47,7 +47,7 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
     serializer_mapping = {
         "POST": RegisterSearcherSerializer,
         "GET": SearcherReadOnlySerializer,
-        "PATCH": SearcherSerializer,
+        "PATCH": SearcherRoleSerializer,
     }
 
     @GETSearcherSchema
@@ -104,7 +104,7 @@ class SearcherAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
         register: RegisterUser = self.get_application_class(
             user_repository=UserRepository
         )
-        del serializer.validated_data["confirm_password"]
+        serializer.validated_data.pop("confirm_password")
         register.searcher(data=serializer.validated_data, request=request)
 
         return Response(status=status.HTTP_201_CREATED)

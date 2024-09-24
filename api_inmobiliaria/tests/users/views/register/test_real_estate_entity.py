@@ -34,6 +34,7 @@ class TestRegisterRealEstateEntityAPIView:
 
         # Creating the user data to be used in the test
         _, _, data = self.user_factory.real_estate_entity(save=False)
+        data["confirm_password"] = data["password"]
 
         # Simulating the request
         response = self.client.post(
@@ -265,6 +266,7 @@ class TestRegisterRealEstateEntityAPIView:
 
         # Creating the user data to be used in the test
         _, _, data = self.user_factory.real_estate_entity(save=False)
+        data["confirm_password"] = data["password"]
 
         # Simulating the request
         response = self.client.post(

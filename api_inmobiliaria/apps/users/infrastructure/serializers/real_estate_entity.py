@@ -33,7 +33,7 @@ COORDINATE_MAX_LENGTH = RealEstateEntityProperties.COORDINATE_MAX_LENGTH.value
 
 
 @RealEstateEntitySchema
-class RealEstateEntitySerializer(BaseUserSerializer):
+class RealEstateEntityRoleSerializer(BaseUserSerializer):
     """
     Defines the fields that are required for the real estate entity user profile.
     """
@@ -327,3 +327,33 @@ class RealEstateEntitySerializer(BaseUserSerializer):
             )
 
         return value
+
+
+class RegisterRealEstateEntitySerializer(RealEstateEntityRoleSerializer):
+    """
+    Defines the fields that are required for the real estate entity user registration.
+    """
+
+    confirm_password = serializers.CharField(
+        required=True, write_only=True, style={"input_type": "password"}
+    )
+
+    def validate(self, data: Dict[str, str]) -> Dict[str, str]:
+        """
+        Check if the password and confirm password match.
+        """
+
+        password = data["password"]
+        confirm_password = data["confirm_password"]
+
+        if not password == confirm_password:
+            raise serializers.ValidationError(
+                code="invalid_data",
+                detail={
+                    "confirm_password": [
+                        ERROR_MESSAGES["password_mismatch"],
+                    ]
+                },
+            )
+
+        return data

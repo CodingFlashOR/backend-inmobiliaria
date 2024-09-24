@@ -16,6 +16,15 @@ from rest_framework import serializers
 from jwt import decode, DecodeError, ExpiredSignatureError
 
 
+# Base user properties
+EMAIL_MAX_LENGTH = BaseUserProperties.EMAIL_MAX_LENGTH.value
+PASSWORD_MAX_LENGTH = BaseUserProperties.PASSWORD_MAX_LENGTH.value
+
+#  Error messages
+INVALID_OR_EXPIRED = JWTErrorMessages.INVALID_OR_EXPIRED.value
+ACCESS_NOT_EXPIRED = JWTErrorMessages.ACCESS_NOT_EXPIRED.value
+
+
 @LoginSerializerSchema
 class LoginSerializer(ErrorMessagesSerializer, serializers.Serializer):
     """
@@ -25,7 +34,7 @@ class LoginSerializer(ErrorMessagesSerializer, serializers.Serializer):
 
     email = serializers.CharField(
         required=True,
-        max_length=BaseUserProperties.EMAIL_MAX_LENGTH.value,
+        max_length=EMAIL_MAX_LENGTH,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -34,7 +43,7 @@ class LoginSerializer(ErrorMessagesSerializer, serializers.Serializer):
     )
     password = serializers.CharField(
         required=True,
-        max_length=BaseUserProperties.PASSWORD_MAX_LENGTH.value,
+        max_length=PASSWORD_MAX_LENGTH,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -76,10 +85,10 @@ class UpdateTokenSerializer(serializers.Serializer):
 
             return access_token
         except DecodeError:
-            message = JWTErrorMessages.INVALID_OR_EXPIRED.value
+            message = INVALID_OR_EXPIRED
 
             raise JWTAPIError(
                 detail=message.format(token_type=AccessToken.token_type)
             )
 
-        raise JWTAPIError(detail=JWTErrorMessages.ACCESS_NOT_EXPIRED.value)
+        raise JWTAPIError(detail=ACCESS_NOT_EXPIRED)

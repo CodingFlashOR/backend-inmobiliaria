@@ -1,5 +1,8 @@
 from apps.users.infrastructure.repositories import UserRepository
-from apps.users.infrastructure.serializers import BaseUserSerializer
+from apps.users.infrastructure.serializers import (
+    BaseUserReadOnlySerializer,
+    BaseUserSerializer,
+)
 from apps.users.infrastructure.schemas import (
     RegisterSearcherSchema,
     SearcherSchema,
@@ -14,8 +17,19 @@ from phonenumber_field.serializerfields import PhoneNumberField
 from typing import Dict, Any
 
 
+# User toles
+SEARCHER = UserRoles.SEARCHER.value
+
+# Searcher user properties
+NAME_MAX_LENGTH = SearcherProperties.NAME_MAX_LENGTH.value
+LAST_NAME_MAX_LENGTH = SearcherProperties.LAST_NAME_MAX_LENGTH.value
+CC_MIN_LENGTH = SearcherProperties.CC_MIN_LENGTH.value
+CC_MAX_LENGTH = SearcherProperties.CC_MAX_LENGTH.value
+PHONE_NUMBER_MAX_LENGTH = SearcherProperties.PHONE_NUMBER_MAX_LENGTH.value
+
+
 @SearcherSchema
-class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
+class SearcherRoleSerializer(ErrorMessagesSerializer, serializers.Serializer):
     """
     Defines the fields that are required for the searcher user profile.
     """
@@ -26,7 +40,7 @@ class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
 
     name = serializers.CharField(
         required=False,
-        max_length=SearcherProperties.NAME_MAX_LENGTH.value,
+        max_length=NAME_MAX_LENGTH,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -42,7 +56,7 @@ class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
     )
     last_name = serializers.CharField(
         required=False,
-        max_length=SearcherProperties.LAST_NAME_MAX_LENGTH.value,
+        max_length=LAST_NAME_MAX_LENGTH,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -58,14 +72,14 @@ class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
     )
     cc = serializers.CharField(
         required=False,
-        min_length=SearcherProperties.CC_MIN_LENGTH.value,
-        max_length=SearcherProperties.CC_MAX_LENGTH.value,
+        min_length=CC_MIN_LENGTH,
+        max_length=CC_MAX_LENGTH,
         error_messages={
             "min_length": ERROR_MESSAGES["min_length"].format(
-                min_length=SearcherProperties.CC_MIN_LENGTH.value
+                min_length="{min_length}"
             ),
             "max_length": ERROR_MESSAGES["max_length"].format(
-                max_length=SearcherProperties.CC_MAX_LENGTH.value
+                max_length="{max_length}"
             ),
         },
         validators=[
@@ -78,7 +92,7 @@ class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
     )
     phone_number = PhoneNumberField(
         required=False,
-        max_length=SearcherProperties.PHONE_NUMBER_MAX_LENGTH.value,
+        max_length=PHONE_NUMBER_MAX_LENGTH,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -92,8 +106,7 @@ class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
         """
 
         exists = self._user_repository.role_data_exists(
-            user_role=UserRoles.SEARCHER.value,
-            cc=value,
+            user_role=SEARCHER, cc=value
         )
 
         if exists:
@@ -109,16 +122,14 @@ class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
         Validate that the phone number is not in use.
         """
 
-        phone_number_str = str(value)
-        numobj = parse(number=phone_number_str, region="CO")
+        numobj = parse(number=str(value), region="CO")
         formatted_number = format_number(
             numobj=numobj,
             num_format=PhoneNumberFormat.E164,
         )
 
         exists = self._user_repository.role_data_exists(
-            user_role=UserRoles.SEARCHER.value,
-            phone_number=formatted_number,
+            user_role=SEARCHER, phone_number=formatted_number
         )
 
         if exists:
@@ -144,44 +155,37 @@ class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
         return attrs
 
 
+class SearcherRoleReadOnlySerializer(serializers.Serializer):
+    """
+    Defines the fields of the searcher user profile for reading.
+    """
+
+    name = serializers.CharField(read_only=True)
+    last_name = serializers.CharField(read_only=True)
+    cc = serializers.CharField(read_only=True)
+    phone_number = serializers.CharField(read_only=True)
+    is_phone_verified = serializers.BooleanField(read_only=True)
+
+
 @RegisterSearcherSchema
-class RegisterSearcherSerializer(BaseUserSerializer):
+class RegisterSearcherSerializer(BaseUserSerializer, SearcherRoleSerializer):
     """
     Defines the fields that are required for the searcher user registration.
     """
 
-    name = serializers.CharField(
-        required=True,
-        max_length=SearcherProperties.NAME_MAX_LENGTH.value,
-        error_messages={
-            "max_length": ERROR_MESSAGES["max_length"].format(
-                max_length="{max_length}"
-            ),
-        },
-        validators=[
-            RegexValidator(
-                regex=r"^[A-Za-zñÑ\s]+$",
-                code="invalid_data",
-                message=ERROR_MESSAGES["invalid"],
-            ),
-        ],
-    )
-    last_name = serializers.CharField(
-        required=True,
-        max_length=SearcherProperties.LAST_NAME_MAX_LENGTH.value,
-        error_messages={
-            "max_length": ERROR_MESSAGES["max_length"].format(
-                max_length="{max_length}"
-            ),
-        },
-        validators=[
-            RegexValidator(
-                regex=r"^[A-Za-zñÑ\s]+$",
-                code="invalid_data",
-                message=ERROR_MESSAGES["invalid"],
-            ),
-        ],
-    )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Remove fields that are not needed
+        self.fields.pop("cc", None)
+        self.fields.pop("phone_number", None)
+
+        # Make the name and last name required
+        name = self.fields["name"]
+        name.required = True
+        last_name = self.fields["last_name"]
+        last_name.required = True
+
     confirm_password = serializers.CharField(
         required=True, write_only=True, style={"input_type": "password"}
     )
@@ -215,21 +219,15 @@ class SearcherReadOnlySerializer(serializers.Serializer):
     def __init__(self, role_instance: Searcher, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.role_instance = role_instance
+        self.base_data = BaseUserReadOnlySerializer()
+        self.role_data = SearcherRoleReadOnlySerializer()
 
-    def to_representation(self, instance: BaseUser) -> Dict[str, Dict[str, Any]]:
+    def to_representation(self, instance: BaseUser) -> Dict[str, Any]:
+        """
+        Return a dictionary with the serialized data.
+        """
 
-        phone_number = self.role_instance.phone_number
+        base_data = self.base_data.to_representation(instance)
+        role_data = self.role_data.to_representation(self.role_instance)
 
-        if phone_number:
-            phone_number = str(phone_number)
-
-        return {
-            "base_data": {"email": instance.email},
-            "role_data": {
-                "name": self.role_instance.name,
-                "last_name": self.role_instance.last_name,
-                "cc": self.role_instance.cc,
-                "phone_number": phone_number,
-                "is_phone_verified": self.role_instance.is_phone_verified,
-            },
-        }
+        return {"base_data": base_data, "role_data": role_data}

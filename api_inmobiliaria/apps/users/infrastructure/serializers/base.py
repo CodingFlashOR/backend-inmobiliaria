@@ -7,6 +7,12 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
 
+# Base user properties
+EMAIL_MAX_LENGTH = BaseUserProperties.EMAIL_MAX_LENGTH.value
+PASSWORD_MAX_LENGTH = BaseUserProperties.PASSWORD_MAX_LENGTH.value
+PASSWORD_MIN_LENGTH = BaseUserProperties.PASSWORD_MIN_LENGTH.value
+
+
 class BaseUserSerializer(ErrorMessagesSerializer, serializers.Serializer):
     """
     Defines the base data of a user.
@@ -18,7 +24,7 @@ class BaseUserSerializer(ErrorMessagesSerializer, serializers.Serializer):
 
     email = serializers.CharField(
         required=True,
-        max_length=BaseUserProperties.EMAIL_MAX_LENGTH.value,
+        max_length=EMAIL_MAX_LENGTH,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -35,8 +41,8 @@ class BaseUserSerializer(ErrorMessagesSerializer, serializers.Serializer):
     password = serializers.CharField(
         required=True,
         write_only=True,
-        max_length=BaseUserProperties.PASSWORD_MAX_LENGTH.value,
-        min_length=BaseUserProperties.PASSWORD_MIN_LENGTH.value,
+        max_length=PASSWORD_MAX_LENGTH,
+        min_length=PASSWORD_MIN_LENGTH,
         style={"input_type": "password"},
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
@@ -83,3 +89,11 @@ class BaseUserSerializer(ErrorMessagesSerializer, serializers.Serializer):
             )
 
         return value
+
+
+class BaseUserReadOnlySerializer(serializers.Serializer):
+    """
+    Defines the base data of a user for read only.
+    """
+
+    email = serializers.EmailField(read_only=True)

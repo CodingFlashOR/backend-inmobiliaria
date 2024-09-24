@@ -20,7 +20,7 @@ class BaseUserProperties(Enum):
 
     EMAIL_MAX_LENGTH = 40
     PASSWORD_MIN_LENGTH = 8
-    PASSWORD_MAX_LENGTH = 40
+    PASSWORD_MAX_LENGTH = 30
 
 
 class SearcherProperties(Enum):
@@ -53,7 +53,7 @@ class RealEstateEntityProperties(Enum):
     LINK_MAX_LENGTH = 2083
 
 
-DOCUMENTS_REQUESTED_REAL_ESTATE_ENTITY = {
+DOCUMENTS_REQUESTED_REAL_ESTATE_ENTITY: Dict[str, List[str]] = {
     UserRoles.REAL_ESTATE.value: [
         "Certificado del Registro Único Tributario (RUT)",
         "Cámara de Comercio",
@@ -66,7 +66,7 @@ DOCUMENTS_REQUESTED_REAL_ESTATE_ENTITY = {
 }
 
 
-USER_ROLE_PERMISSIONS: Dict[str, Dict[str, Dict[str, str | List]]] = {
+USER_ROLE_PERMISSIONS: Dict[str, Dict[str, Dict[str, str | List[str]]]] = {
     UserRoles.SEARCHER.value: {
         "model_level": {
             "jwt_auth": "authentication.add_jwt",
