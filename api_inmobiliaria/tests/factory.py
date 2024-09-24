@@ -27,6 +27,13 @@ from uuid import uuid4
 import random
 
 
+# User roles
+SEARCHER = UserRoles.SEARCHER.value
+REAL_ESTATE_ENTITY = UserRoles.REAL_ESTATE_ENTITY.value
+REAL_ESTATE = UserRoles.REAL_ESTATE.value
+CONSTRUCTION_COMPANY = UserRoles.CONSTRUCTION_COMPANY.value
+
+
 class UserFactory:
     """
     Factory in charge of creating users with false data.
@@ -87,7 +94,7 @@ class UserFactory:
         """
 
         data = {
-            UserRoles.SEARCHER.value: {
+            SEARCHER: {
                 "email": data.get("email", None) or fake.email(),
                 "password": "contraseña1234",
                 "name": "Nombre del ususario",
@@ -97,14 +104,9 @@ class UserFactory:
                 "phone_number": data.get("phone_number", None)
                 or f"+57311111{fake.random_number(digits=4, fix_len=True)}",
             },
-            UserRoles.REAL_ESTATE_ENTITY.value: {
+            REAL_ESTATE_ENTITY: {
                 "type_entity": data.get("type_entity", None)
-                or random.choice(
-                    [
-                        UserRoles.REAL_ESTATE.value,
-                        UserRoles.CONSTRUCTION_COMPANY.value,
-                    ]
-                ),
+                or random.choice([REAL_ESTATE, CONSTRUCTION_COMPANY]),
                 "logo": data.get("logo", None) or fake.url(),
                 "name": "Nombre de la entidad",
                 "email": data.get("email", None) or fake.email(),
@@ -153,8 +155,8 @@ class UserFactory:
         """
 
         method_map = {
-            UserRoles.SEARCHER.value: cls.searcher_user,
-            UserRoles.REAL_ESTATE_ENTITY.value: cls.real_estate_entity,
+            SEARCHER: cls.searcher_user,
+            REAL_ESTATE_ENTITY: cls.real_estate_entity,
         }
         user_data = cls._get_data(user_role=user_role, **data)
 
@@ -186,7 +188,7 @@ class UserFactory:
 
         base_user_model = None
         user_role_model = None
-        user_role = UserRoles.SEARCHER.value
+        user_role = SEARCHER
         user_data = cls._get_data(user_role=user_role, **data)
 
         if save:
@@ -232,7 +234,7 @@ class UserFactory:
 
         base_user_model = None
         user_role_model = None
-        user_role = UserRoles.REAL_ESTATE_ENTITY.value
+        user_role = REAL_ESTATE_ENTITY
         user_data = cls._get_data(user_role=user_role, **data)
         type_entity = user_data["type_entity"]
         user_data["documents"] = {

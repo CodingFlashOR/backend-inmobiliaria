@@ -17,8 +17,12 @@ from typing import Dict
 import pytest
 
 
-# This constant is used when the serializer error messages are the default.
+# Error messages
 DEFAULT_ERROR_MESSAGES = CharField().error_messages
+USER_NOT_FOUND = JWTErrorMessages.USER_NOT_FOUND.value
+BLACKLISTED = JWTErrorMessages.BLACKLISTED.value
+INVALID_OR_EXPIRED = JWTErrorMessages.INVALID_OR_EXPIRED.value
+ACCESS_NOT_EXPIRED = JWTErrorMessages.ACCESS_NOT_EXPIRED.value
 
 
 @pytest.mark.django_db
@@ -112,9 +116,7 @@ class TestUpdateTokensAPIView:
         argvalues=[
             (
                 {"access_token": JWTFactory.access_invalid()},
-                JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
-                    token_type="access"
-                ),
+                INVALID_OR_EXPIRED.format(token_type="access"),
             ),
             (
                 {
@@ -122,7 +124,7 @@ class TestUpdateTokensAPIView:
                         "token"
                     ),
                 },
-                JWTErrorMessages.ACCESS_NOT_EXPIRED.value,
+                ACCESS_NOT_EXPIRED,
             ),
         ],
         ids=[
@@ -148,11 +150,8 @@ class TestUpdateTokensAPIView:
         )
 
         # Asserting that response data is correct
-        status_code_expected = JWTAPIError.status_code
-        code_expected = JWTAPIError.default_code
-
-        assert response.status_code == status_code_expected
-        assert response.data["code"] == code_expected
+        assert response.status_code == JWTAPIError.status_code
+        assert response.data["code"] == JWTAPIError.default_code
         assert response.data["detail"] == error_message
 
     def test_if_token_blacklisted(self) -> None:
@@ -181,15 +180,9 @@ class TestUpdateTokensAPIView:
         )
 
         # Asserting that response data is correct
-        status_code_expected = JWTAPIError.status_code
-        code_expected = JWTAPIError.default_code
-        error_message_expected = JWTErrorMessages.BLACKLISTED.value.format(
-            token_type="access"
-        )
-
-        assert response.status_code == status_code_expected
-        assert response.data["code"] == code_expected
-        assert response.data["detail"] == error_message_expected
+        assert response.status_code == JWTAPIError.status_code
+        assert response.data["code"] == JWTAPIError.default_code
+        assert response.data["detail"] == BLACKLISTED.format(token_type="access")
 
     @patch(target="apps.authentication.infrastructure.views.jwt.UserRepository")
     def test_if_user_not_found(self, user_repository_mock: Mock) -> None:
@@ -218,14 +211,9 @@ class TestUpdateTokensAPIView:
         )
 
         # Asserting that response data is correct
-        status_code_expected = ResourceNotFoundAPIError.status_code
-        message = JWTErrorMessages.USER_NOT_FOUND.value
-        response_code_expected = message["code"]
-        response_data_expected = message["detail"]
-
-        assert response.status_code == status_code_expected
-        assert response.data["code"] == response_code_expected
-        assert response.data["detail"] == response_data_expected
+        assert response.status_code == ResourceNotFoundAPIError.status_code
+        assert response.data["code"] == USER_NOT_FOUND["code"]
+        assert response.data["detail"] == USER_NOT_FOUND["detail"]
 
     @patch(target="apps.authentication.infrastructure.views.jwt.UserRepository")
     def test_if_conection_db_failed(self, user_repository_mock: Mock) -> None:

@@ -15,6 +15,14 @@ from typing import Dict, List
 import pytest
 
 
+# User roles
+SEARCHER = UserRoles.SEARCHER.value
+
+# Error messages
+AUTHENTICATION_FAILED = JWTErrorMessages.AUTHENTICATION_FAILED.value
+INACTIVE_ACCOUNT = JWTErrorMessages.INACTIVE_ACCOUNT.value
+
+
 @pytest.mark.django_db
 class TestAuthenticationAPIView:
     """
@@ -31,9 +39,7 @@ class TestAuthenticationAPIView:
     client = Client()
 
     @pytest.mark.parametrize(
-        argnames="user_role",
-        argvalues=[UserRoles.SEARCHER.value],
-        ids=["searcher_user"],
+        argnames="user_role", argvalues=[SEARCHER], ids=["searcher_user"]
     )
     def test_if_valid_data(self, user_role: str, setup_database) -> None:
         """
@@ -128,16 +134,13 @@ class TestAuthenticationAPIView:
         # Asserting that response data is correct
         status_code_expected = AuthenticationFailedAPIError.status_code
         response_code_expected = AuthenticationFailedAPIError.default_code
-        response_data_expected = JWTErrorMessages.AUTHENTICATION_FAILED.value
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == response_code_expected
-        assert response.data["detail"] == response_data_expected
+        assert response.data["detail"] == AUTHENTICATION_FAILED
 
     @pytest.mark.parametrize(
-        argnames="user_role",
-        argvalues=[UserRoles.SEARCHER.value],
-        ids=["searcher_user"],
+        argnames="user_role", argvalues=[SEARCHER], ids=["searcher_user"]
     )
     def test_if_inactive_user_account(
         self, user_role: str, setup_database
@@ -163,16 +166,13 @@ class TestAuthenticationAPIView:
         # Asserting that response data is correct
         status_code_expected = AuthenticationFailedAPIError.status_code
         response_code_expected = AuthenticationFailedAPIError.default_code
-        response_data_expected = JWTErrorMessages.INACTIVE_ACCOUNT.value
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == response_code_expected
-        assert response.data["detail"] == response_data_expected
+        assert response.data["detail"] == INACTIVE_ACCOUNT
 
     @pytest.mark.parametrize(
-        argnames="user_role",
-        argvalues=[UserRoles.SEARCHER.value],
-        ids=["searcher_user"],
+        argnames="user_role", argvalues=[SEARCHER], ids=["searcher_user"]
     )
     def test_if_user_has_not_permission(self, user_role: str) -> None:
         """

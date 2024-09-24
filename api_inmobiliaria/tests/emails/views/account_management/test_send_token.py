@@ -13,6 +13,11 @@ from uuid import uuid4
 import pytest
 
 
+# Error messages
+ACTIVE_ACCOUNT = ActivationErrors.ACTIVE_ACCOUNT.value
+USER_NOT_FOUND = ActivationErrors.USER_NOT_FOUND.value
+
+
 @pytest.mark.django_db
 class TestSendAccountActivationTokenAPIView:
     """
@@ -83,7 +88,7 @@ class TestSendAccountActivationTokenAPIView:
         # Asserting that response data is correct
         status_code_expected = ResourceNotFoundAPIError.status_code
         response_code_expected = "user_not_found"
-        response_data_expected = ActivationErrors.USER_NOT_FOUND.value
+        response_data_expected = USER_NOT_FOUND
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == response_code_expected
@@ -109,7 +114,7 @@ class TestSendAccountActivationTokenAPIView:
         # Asserting that response data is correct
         status_code_expected = AccountActivationAPIError.status_code
         response_code_expected = AccountActivationAPIError.default_code
-        response_data_expected = ActivationErrors.ACTIVE_ACCOUNT.value
+        response_data_expected = ACTIVE_ACCOUNT
 
         assert response.status_code == status_code_expected
         assert response.data["code"] == response_code_expected

@@ -11,6 +11,11 @@ from django.contrib.auth import authenticate
 from typing import Dict
 
 
+# Error messages
+AUTHENTICATION_FAILED = JWTErrorMessages.AUTHENTICATION_FAILED.value
+INACTIVE_ACCOUNT = JWTErrorMessages.INACTIVE_ACCOUNT.value
+
+
 class JWTLogin:
     """
     Use case for login in with JSON Web Token.
@@ -35,13 +40,9 @@ class JWTLogin:
         base_user: BaseUser | None = authenticate(**credentials)
 
         if not base_user:
-            raise AuthenticationFailedAPIError(
-                detail=JWTErrorMessages.AUTHENTICATION_FAILED.value,
-            )
+            raise AuthenticationFailedAPIError(detail=AUTHENTICATION_FAILED)
         elif not base_user.is_active:
-            raise AuthenticationFailedAPIError(
-                detail=JWTErrorMessages.INACTIVE_ACCOUNT.value,
-            )
+            raise AuthenticationFailedAPIError(detail=INACTIVE_ACCOUNT)
 
         user_role = base_user.content_type.model
 

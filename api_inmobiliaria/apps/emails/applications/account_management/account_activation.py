@@ -13,6 +13,11 @@ from rest_framework.request import Request
 from django.http.request import HttpRequest
 
 
+# Error messages
+USER_NOT_FOUND = ActivationErrors.USER_NOT_FOUND.value
+ACTIVE_ACCOUNT = ActivationErrors.ACTIVE_ACCOUNT.value
+
+
 class AccountActivation(ActionLinkManager):
     """
     This class encapsulates the logic of the use case responsible for sending the
@@ -27,13 +32,10 @@ class AccountActivation(ActionLinkManager):
 
         if not user:
             raise ResourceNotFoundAPIError(
-                code="user_not_found",
-                detail=ActivationErrors.USER_NOT_FOUND.value,
+                code="user_not_found", detail=USER_NOT_FOUND
             )
         elif user.is_active:
-            raise AccountActivationAPIError(
-                detail=ActivationErrors.ACTIVE_ACCOUNT.value
-            )
+            raise AccountActivationAPIError(detail=ACTIVE_ACCOUNT)
 
         super().send_email(user=user, request=request)
 

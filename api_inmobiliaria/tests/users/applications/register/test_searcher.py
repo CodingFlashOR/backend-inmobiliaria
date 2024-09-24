@@ -29,9 +29,7 @@ class TestRegisterSearcherApplication:
         """
 
         # Creating the user data to be used in the test
-        _, _, data = self.user_factory.searcher_user(
-            active=False, save=False, add_perm=False
-        )
+        _, _, data = self.user_factory.searcher_user(save=False)
 
         # Asserting that the user does not exist in the database
         assert not BaseUser.objects.filter(email=data["email"]).exists()
@@ -43,7 +41,7 @@ class TestRegisterSearcherApplication:
         )
 
         # Asserting that the user was created successfully
-        user = BaseUser.objects.filter(email=data["email"]).first()
+        user: BaseUser = BaseUser.objects.filter(email=data["email"]).first()
         role = Searcher.objects.filter(name=data["name"]).first()
         assert user and role
 
@@ -81,9 +79,7 @@ class TestRegisterSearcherApplication:
         """
 
         # Creating the user data to be used in the test
-        _, _, data = self.user_factory.searcher_user(
-            active=False, save=False, add_perm=False
-        )
+        _, _, data = self.user_factory.searcher_user(save=False)
 
         # Mocking the methods
         create: Mock = user_repository.create
@@ -91,9 +87,8 @@ class TestRegisterSearcherApplication:
 
         # Instantiating the application and calling the method
         with pytest.raises(DatabaseConnectionAPIError):
-            self.application_class(user_repository=user_repository).searcher(
-                data=data, request=RequestFactory().post("/")
-            )
+            app = self.application_class(user_repository=user_repository)
+            app.searcher(data=data, request=RequestFactory().post("/"))
 
         # Asserting that the email was not sent
         assert len(mail.outbox) == 0
