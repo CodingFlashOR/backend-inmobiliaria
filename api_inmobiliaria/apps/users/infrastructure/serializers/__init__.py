@@ -1,7 +1,10 @@
-from .base import BaseUserSerializer
+from .base import BaseUserReadOnlySerializer, BaseUserSerializer
 from .searcher import (
     RegisterSearcherSerializer,
     SearcherReadOnlySerializer,
-    SearcherSerializer,
+    SearcherRoleSerializer,
 )
-from .real_estate_entity import RealEstateEntitySerializer
+from .real_estate_entity import (
+    RegisterRealEstateEntitySerializer,
+    RealEstateEntityRoleSerializer,
+)
