@@ -9,6 +9,7 @@ from apps.users.models import BaseUser, Searcher
 from apps.utils.messages import ErrorMessagesSerializer, ERROR_MESSAGES
 from rest_framework import serializers
 from django.core.validators import RegexValidator
+from phonenumbers import PhoneNumberFormat, PhoneNumber, parse, format_number
 from phonenumber_field.serializerfields import PhoneNumberField
 from typing import Dict, Any
 
@@ -103,14 +104,21 @@ class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
 
         return value
 
-    def validate_phone_number(self, value: str) -> str:
+    def validate_phone_number(self, value: PhoneNumber) -> str:
         """
         Validate that the phone number is not in use.
         """
 
+        phone_number_str = str(value)
+        numobj = parse(number=phone_number_str, region="CO")
+        formatted_number = format_number(
+            numobj=numobj,
+            num_format=PhoneNumberFormat.E164,
+        )
+
         exists = self._user_repository.role_data_exists(
             user_role=UserRoles.SEARCHER.value,
-            phone_number=value,
+            phone_number=formatted_number,
         )
 
         if exists:
@@ -119,7 +127,7 @@ class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
                 detail=ERROR_MESSAGES["phone_in_use"],
             )
 
-        return value
+        return formatted_number
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -137,7 +145,7 @@ class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
 
 
 @RegisterSearcherSchema
-class RegisterSearcherSerializer(BaseUserSerializer):
+class RegisterSearcherSerializer(ErrorMessagesSerializer, BaseUserSerializer):
     """
     Defines the fields that are required for the searcher user registration.
     """
@@ -208,9 +216,7 @@ class SearcherReadOnlySerializer(serializers.Serializer):
         super().__init__(*args, **kwargs)
         self.role_instance = role_instance
 
-    def to_representation(
-        self, instance: BaseUser
-    ) -> Dict[str, Dict[str, Any]]:
+    def to_representation(self, instance: BaseUser) -> Dict[str, Dict[str, Any]]:
 
         phone_number = self.role_instance.phone_number
 

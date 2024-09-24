@@ -9,8 +9,27 @@ from apps.users.constants import (
 from apps.utils.messages import ERROR_MESSAGES
 from rest_framework import serializers
 from django.core.validators import RegexValidator
+from phonenumbers import PhoneNumberFormat, PhoneNumber, parse, format_number
 from phonenumber_field.serializerfields import PhoneNumberField
 from typing import List, Dict
+
+
+# User toles
+REAL_ESTATE = UserRoles.REAL_ESTATE.value
+REAL_ESTATE_ENTITY = UserRoles.REAL_ESTATE_ENTITY.value
+CONSTRUCTION_COMPANY = UserRoles.CONSTRUCTION_COMPANY.value
+
+# Real estate entity properties
+NAME_MAX_LENGTH = RealEstateEntityProperties.NAME_MAX_LENGTH.value
+LINK_MAX_LENGTH = RealEstateEntityProperties.LINK_MAX_LENGTH.value
+DESCRIPTION_MAX_LENGTH = RealEstateEntityProperties.DESCRIPTION_MAX_LENGTH.value
+NIT_MAX_LENGTH = RealEstateEntityProperties.NIT_MAX_LENGTH.value
+PHONE_NUMBER_MAX_LENGTH = RealEstateEntityProperties.PHONE_NUMBER_MAX_LENGTH.value
+MAXIMUM_PHONE_NUMBERS = RealEstateEntityProperties.MAXIMUM_PHONE_NUMBERS.value
+DEPARTMENT_MAX_LENGTH = RealEstateEntityProperties.DEPARTMENT_MAX_LENGTH.value
+MUNICIPALITY_MAX_LENGTH = RealEstateEntityProperties.MUNICIPALITY_MAX_LENGTH.value
+REGION_MAX_LENGTH = RealEstateEntityProperties.REGION_MAX_LENGTH.value
+COORDINATE_MAX_LENGTH = RealEstateEntityProperties.COORDINATE_MAX_LENGTH.value
 
 
 @RealEstateEntitySchema
@@ -26,11 +45,8 @@ class RealEstateEntitySerializer(BaseUserSerializer):
     type_entity = serializers.ChoiceField(
         required=True,
         choices=[
-            (UserRoles.REAL_ESTATE.value, UserRoles.REAL_ESTATE.value),
-            (
-                UserRoles.CONSTRUCTION_COMPANY.value,
-                UserRoles.CONSTRUCTION_COMPANY.value,
-            ),
+            (REAL_ESTATE, REAL_ESTATE),
+            (CONSTRUCTION_COMPANY, CONSTRUCTION_COMPANY),
         ],
         error_messages={
             "invalid_choice": ERROR_MESSAGES["invalid_choice"].format(
@@ -40,7 +56,7 @@ class RealEstateEntitySerializer(BaseUserSerializer):
     )
     logo = serializers.URLField(
         required=True,
-        max_length=RealEstateEntityProperties.LOGO_LINK_MAX_LENGTH.value,
+        max_length=LINK_MAX_LENGTH,
         error_messages={
             "invalid": ERROR_MESSAGES["invalid_url"],
             "max_length": ERROR_MESSAGES["max_length"].format(
@@ -50,7 +66,7 @@ class RealEstateEntitySerializer(BaseUserSerializer):
     )
     name = serializers.CharField(
         required=True,
-        max_length=RealEstateEntityProperties.NAME_MAX_LENGTH.value,
+        max_length=NAME_MAX_LENGTH,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -66,7 +82,7 @@ class RealEstateEntitySerializer(BaseUserSerializer):
     )
     description = serializers.CharField(
         required=True,
-        max_length=RealEstateEntityProperties.DESCRIPTION_MAX_LENGTH.value,
+        max_length=DESCRIPTION_MAX_LENGTH,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -75,8 +91,8 @@ class RealEstateEntitySerializer(BaseUserSerializer):
     )
     nit = serializers.CharField(
         required=True,
-        max_length=RealEstateEntityProperties.NIT_MAX_LENGTH.value,
-        min_length=RealEstateEntityProperties.NIT_MAX_LENGTH.value,
+        max_length=NIT_MAX_LENGTH,
+        min_length=NIT_MAX_LENGTH,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -89,10 +105,9 @@ class RealEstateEntitySerializer(BaseUserSerializer):
     phone_numbers = serializers.ListField(
         required=True,
         allow_empty=False,
-        max_length=RealEstateEntityProperties.MAXIMUM_PHONE_NUMBERS.value,
-        min_length=RealEstateEntityProperties.MINIMUM_PHONE_NUMBERS.value,
+        max_length=MAXIMUM_PHONE_NUMBERS,
         child=PhoneNumberField(
-            max_length=RealEstateEntityProperties.PHONE_NUMBER_MAX_LENGTH.value,
+            max_length=PHONE_NUMBER_MAX_LENGTH,
             error_messages={
                 "invalid": ERROR_MESSAGES["invalid"],
                 "null": ERROR_MESSAGES["null"],
@@ -117,7 +132,7 @@ class RealEstateEntitySerializer(BaseUserSerializer):
     )
     department = serializers.CharField(
         required=True,
-        max_length=RealEstateEntityProperties.DEPARTMENT_MAX_LENGTH.value,
+        max_length=DEPARTMENT_MAX_LENGTH,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -126,7 +141,7 @@ class RealEstateEntitySerializer(BaseUserSerializer):
     )
     municipality = serializers.CharField(
         required=True,
-        max_length=RealEstateEntityProperties.MUNICIPALITY_MAX_LENGTH.value,
+        max_length=MUNICIPALITY_MAX_LENGTH,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -135,7 +150,7 @@ class RealEstateEntitySerializer(BaseUserSerializer):
     )
     region = serializers.CharField(
         required=True,
-        max_length=RealEstateEntityProperties.REGION_MAX_LENGTH.value,
+        max_length=REGION_MAX_LENGTH,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -144,7 +159,7 @@ class RealEstateEntitySerializer(BaseUserSerializer):
     )
     coordinate = serializers.CharField(
         required=True,
-        max_length=RealEstateEntityProperties.COORDINATE_MAX_LENGTH.value,
+        max_length=COORDINATE_MAX_LENGTH,
         error_messages={
             "max_length": ERROR_MESSAGES["max_length"].format(
                 max_length="{max_length}"
@@ -155,7 +170,7 @@ class RealEstateEntitySerializer(BaseUserSerializer):
         required=True,
         allow_empty=False,
         child=serializers.URLField(
-            max_length=RealEstateEntityProperties.DOCUMENT_LINK_MAX_LENGTH.value,
+            max_length=LINK_MAX_LENGTH,
             error_messages={
                 "null": ERROR_MESSAGES["null"],
                 "blank": ERROR_MESSAGES["blank"],
@@ -179,8 +194,7 @@ class RealEstateEntitySerializer(BaseUserSerializer):
         """
 
         exists = self._user_repository.role_data_exists(
-            user_role=UserRoles.REAL_ESTATE_ENTITY.value,
-            name=value,
+            user_role=REAL_ESTATE_ENTITY, name=value
         )
 
         if exists:
@@ -196,64 +210,77 @@ class RealEstateEntitySerializer(BaseUserSerializer):
         """
 
         exists = self._user_repository.role_data_exists(
-            user_role=UserRoles.REAL_ESTATE_ENTITY.value,
-            nit=value,
+            user_role=REAL_ESTATE_ENTITY, nit=value
         )
 
         if exists:
             raise serializers.ValidationError(
                 code="invalid_data", detail=ERROR_MESSAGES["nit_in_use"]
             )
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                code="invalid_data", detail=ERROR_MESSAGES["invalid"]
+            )
 
         return value
 
-    def validate_phone_numbers(self, value: List[str]) -> List[str]:
+    def validate_phone_numbers(self, value: List[PhoneNumber]) -> str:
         """
         Validate that the real estate entity phone numbers is not in use.
         """
 
         error_messages = []
+        phone_numbers_formatted = []
 
         for phone_number in value:
+            phone_number_str = str(phone_number)
+            numobj = parse(number=phone_number_str, region="CO")
+            formatted_number = format_number(
+                numobj=numobj,
+                num_format=PhoneNumberFormat.E164,
+            )
+
             exists = self._user_repository.role_data_exists(
-                user_role=UserRoles.REAL_ESTATE_ENTITY.value,
-                phone_numbers__icontains=phone_number,
+                user_role=REAL_ESTATE_ENTITY,
+                phone_numbers__icontains=formatted_number,
             )
 
             if exists:
                 error_messages.append(
                     ERROR_MESSAGES["phone_numbers_in_use"].format(
-                        phone_number=phone_number
+                        phone_number=phone_number_str
                     )
                 )
 
+            phone_numbers_formatted.append(formatted_number)
+
         if error_messages:
             raise serializers.ValidationError(
-                code="invalid_data", detail={"phone_numbers": error_messages}
+                code="invalid_data", detail=error_messages
             )
 
-        return ",".join(self.initial_data.get("phone_numbers"))
+        return ",".join(phone_numbers_formatted)
 
     def validate_department(self, value: str) -> str:
         """
         validate that the department exists in the database.
         """
 
-        pass
+        return value
 
     def validate_municipality(self, value: str) -> str:
         """
         validate that the municipality exists in the database.
         """
 
-        pass
+        return value
 
     def validate_region(self, value: str) -> str:
         """
         validate that the region exists in the database.
         """
 
-        pass
+        return value
 
     def validate_coordinate(self, value: str) -> str:
         """
@@ -261,7 +288,7 @@ class RealEstateEntitySerializer(BaseUserSerializer):
         """
 
         exists = self._user_repository.role_data_exists(
-            user_role=UserRoles.REAL_ESTATE_ENTITY.value,
+            user_role=REAL_ESTATE_ENTITY,
             coordinate=value,
         )
 
@@ -296,7 +323,7 @@ class RealEstateEntitySerializer(BaseUserSerializer):
 
         if error_messages:
             raise serializers.ValidationError(
-                code="invalid_data", detail={"documents": error_messages}
+                code="invalid_data", detail=error_messages
             )
 
         return value
