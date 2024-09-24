@@ -12,6 +12,7 @@ from typing import Dict
 import pytest
 
 
+# Real estate entity properties
 MAXIMUM_PHONE_NUMBERS = RealEstateEntityProperties.MAXIMUM_PHONE_NUMBERS.value
 
 
@@ -63,6 +64,7 @@ class TestRegisterRealEstateEntityAPIView:
                     "documents": [ERROR_MESSAGES["required"]],
                     "email": [ERROR_MESSAGES["required"]],
                     "password": [ERROR_MESSAGES["required"]],
+                    "confirm_password": [ERROR_MESSAGES["required"]],
                 },
             ),
             (
@@ -81,6 +83,7 @@ class TestRegisterRealEstateEntityAPIView:
                     "documents": [ERROR_MESSAGES["empty"]],
                     "email": [ERROR_MESSAGES["required"]],
                     "password": [ERROR_MESSAGES["required"]],
+                    "confirm_password": [ERROR_MESSAGES["required"]],
                 },
             ),
             (
@@ -99,6 +102,8 @@ class TestRegisterRealEstateEntityAPIView:
                     "municipality": [ERROR_MESSAGES["required"]],
                     "region": [ERROR_MESSAGES["required"]],
                     "coordinate": [ERROR_MESSAGES["required"]],
+                    "documents": [ERROR_MESSAGES["required"]],
+                    "confirm_password": [ERROR_MESSAGES["required"]],
                     "email": [ERROR_MESSAGES["invalid"]],
                     "name": [ERROR_MESSAGES["invalid"]],
                     "nit": [ERROR_MESSAGES["invalid"]],
@@ -127,6 +132,7 @@ class TestRegisterRealEstateEntityAPIView:
                     "coordinate": [ERROR_MESSAGES["required"]],
                     "email": [ERROR_MESSAGES["required"]],
                     "password": [ERROR_MESSAGES["required"]],
+                    "confirm_password": [ERROR_MESSAGES["required"]],
                     "documents": [
                         ERROR_MESSAGES["document_invalid"].format(
                             doc_name="other doc"
@@ -158,11 +164,52 @@ class TestRegisterRealEstateEntityAPIView:
                     "documents": [ERROR_MESSAGES["required"]],
                     "email": [ERROR_MESSAGES["required"]],
                     "password": [ERROR_MESSAGES["required"]],
+                    "confirm_password": [ERROR_MESSAGES["required"]],
                     "phone_numbers": [
                         ERROR_MESSAGES["max_length_list"].format(
                             max_length=MAXIMUM_PHONE_NUMBERS
                         )
                     ],
+                },
+            ),
+            (
+                {
+                    "password": "contraseña1234",
+                    "confirm_password": "contraseña5678",
+                },
+                {
+                    "type_entity": [ERROR_MESSAGES["required"]],
+                    "logo": [ERROR_MESSAGES["required"]],
+                    "name": [ERROR_MESSAGES["required"]],
+                    "description": [ERROR_MESSAGES["required"]],
+                    "nit": [ERROR_MESSAGES["required"]],
+                    "phone_numbers": [ERROR_MESSAGES["required"]],
+                    "department": [ERROR_MESSAGES["required"]],
+                    "municipality": [ERROR_MESSAGES["required"]],
+                    "region": [ERROR_MESSAGES["required"]],
+                    "coordinate": [ERROR_MESSAGES["required"]],
+                    "documents": [ERROR_MESSAGES["required"]],
+                    "email": [ERROR_MESSAGES["required"]],
+                    "confirm_password": [ERROR_MESSAGES["password_mismatch"]],
+                },
+            ),
+            (
+                {"password": f"{fake.random_number(digits=10, fix_len=True)}"},
+                {
+                    "type_entity": [ERROR_MESSAGES["required"]],
+                    "logo": [ERROR_MESSAGES["required"]],
+                    "name": [ERROR_MESSAGES["required"]],
+                    "description": [ERROR_MESSAGES["required"]],
+                    "nit": [ERROR_MESSAGES["required"]],
+                    "phone_numbers": [ERROR_MESSAGES["required"]],
+                    "department": [ERROR_MESSAGES["required"]],
+                    "municipality": [ERROR_MESSAGES["required"]],
+                    "region": [ERROR_MESSAGES["required"]],
+                    "coordinate": [ERROR_MESSAGES["required"]],
+                    "documents": [ERROR_MESSAGES["required"]],
+                    "email": [ERROR_MESSAGES["required"]],
+                    "confirm_password": [ERROR_MESSAGES["required"]],
+                    "password": [ERROR_MESSAGES["password_no_upper_lower"]],
                 },
             ),
         ],
@@ -172,6 +219,8 @@ class TestRegisterRealEstateEntityAPIView:
             "invalid_data",
             "invalid_documents",
             "max_length_phone_numbers",
+            "passwords_not_match",
+            "password_no_upper_lower",
         ],
     )
     def test_if_invalid_data(
@@ -205,12 +254,12 @@ class TestRegisterRealEstateEntityAPIView:
             else:
                 errors_formatted[field] = [str(error) for error in errors]
 
-        for field, message in messages_expected.items():
+        for field, message in errors_formatted.items():
             if isinstance(message, dict):
                 for field_nested, message_nested in message.items():
-                    assert errors_formatted[field][field_nested] == message_nested
+                    assert messages_expected[field][field_nested] == message_nested
             else:
-                assert errors_formatted[field] == message
+                assert messages_expected[field] == message
 
     def test_data_used(self) -> None:
         """

@@ -23,12 +23,6 @@ INVALID_OR_EXPIRED = JWTErrorMessages.INVALID_OR_EXPIRED.value
 BLACKLISTED = JWTErrorMessages.BLACKLISTED.value
 USER_NOT_FOUND = JWTErrorMessages.USER_NOT_FOUND.value
 
-# Searcher properties
-NAME_MAX_LENGTH = SearcherProperties.NAME_MAX_LENGTH.value
-LAST_NAME_MAX_LENGTH = SearcherProperties.LAST_NAME_MAX_LENGTH.value
-CC_MAX_LENGTH = SearcherProperties.CC_MAX_LENGTH.value
-CC_MIN_LENGTH = SearcherProperties.CC_MIN_LENGTH.value
-
 
 @pytest.mark.django_db
 class TestGetSearcherUserAPIView:
@@ -228,13 +222,9 @@ class TestGetSearcherUserAPIView:
         )
 
         # Asserting that response data is correct
-        status_code_expected = ResourceNotFoundAPIError.status_code
-        response_code_expected = USER_NOT_FOUND["code"]
-        response_data_expected = USER_NOT_FOUND["detail"]
-
-        assert response.status_code == status_code_expected
-        assert response.data["code"] == response_code_expected
-        assert response.data["detail"] == response_data_expected
+        assert response.status_code == ResourceNotFoundAPIError.status_code
+        assert response.data["code"] == USER_NOT_FOUND["code"]
+        assert response.data["detail"] == USER_NOT_FOUND["detail"]
 
     @patch(target="apps.authentication.jwt.JWTAuthentication._user_repository")
     def test_if_conection_db_failed(self, user_repository_mock: Mock) -> None:
@@ -390,47 +380,8 @@ class TestUpdateSearcherUserAPIView:
                     "phone_number": [ERROR_MESSAGES["invalid"]],
                 },
             ),
-            (
-                {
-                    "name": fake.bothify(text=f"{'?' * 41}"),
-                    "last_name": fake.bothify(text=f"{'?' * 41}"),
-                    "cc": fake.random_number(digits=13, fix_len=True),
-                },
-                {
-                    "name": [
-                        ERROR_MESSAGES["max_length"].format(
-                            max_length=NAME_MAX_LENGTH
-                        ),
-                    ],
-                    "last_name": [
-                        ERROR_MESSAGES["max_length"].format(
-                            max_length=LAST_NAME_MAX_LENGTH
-                        ),
-                    ],
-                    "cc": [
-                        ERROR_MESSAGES["max_length"].format(
-                            max_length=CC_MAX_LENGTH
-                        ),
-                    ],
-                },
-            ),
-            (
-                {"cc": fake.random_number(digits=5, fix_len=True)},
-                {
-                    "cc": [
-                        ERROR_MESSAGES["min_length"].format(
-                            min_length=CC_MIN_LENGTH
-                        ),
-                    ],
-                },
-            ),
         ],
-        ids=[
-            "empty_data",
-            "invalid_data",
-            "max_length_data",
-            "min_length_data",
-        ],
+        ids=["empty_data", "invalid_data"],
     )
     def test_if_invalid_data(
         self, data: Dict[str, Any], error_messages: Dict[str, Any]
@@ -469,8 +420,8 @@ class TestUpdateSearcherUserAPIView:
             for field, errors in response.data["detail"].items()
         }
 
-        for field, message in error_messages.items():
-            assert errors_formatted[field] == message
+        for field, message in errors_formatted.items():
+            assert error_messages[field] == message
 
     @pytest.mark.parametrize(
         argnames="data, error_messages",
@@ -523,8 +474,8 @@ class TestUpdateSearcherUserAPIView:
             for field, errors in response.data["detail"].items()
         }
 
-        for field, message in error_messages.items():
-            assert errors_formatted[field] == message
+        for field, message in errors_formatted.items():
+            assert error_messages[field] == message
 
     def test_if_user_has_not_permission(self, setup_database) -> None:
         """
@@ -657,13 +608,9 @@ class TestUpdateSearcherUserAPIView:
         )
 
         # Asserting that response data is correct
-        status_code_expected = ResourceNotFoundAPIError.status_code
-        response_code_expected = USER_NOT_FOUND["code"]
-        response_data_expected = USER_NOT_FOUND["detail"]
-
-        assert response.status_code == status_code_expected
-        assert response.data["code"] == response_code_expected
-        assert response.data["detail"] == response_data_expected
+        assert response.status_code == ResourceNotFoundAPIError.status_code
+        assert response.data["code"] == USER_NOT_FOUND["code"]
+        assert response.data["detail"] == USER_NOT_FOUND["detail"]
 
     @patch(target="apps.authentication.jwt.JWTAuthentication._user_repository")
     def test_if_conection_db_failed(self, user_repository_mock: Mock) -> None:

@@ -89,7 +89,7 @@ class TestRegisterSearcherAPIView:
                     "name": "Nombre del usuario",
                     "last_name": "Apellido del usuario",
                     "email": "user1@email.com",
-                    "password": f"{fake.random_number(digits=10)}",
+                    "password": f"{fake.random_number(digits=10, fix_len=True)}",
                 },
                 {
                     "password": [ERROR_MESSAGES["password_no_upper_lower"]],
@@ -128,8 +128,8 @@ class TestRegisterSearcherAPIView:
             for field, errors in response.data["detail"].items()
         }
 
-        for field, message in messages_expected.items():
-            assert errors_formatted[field] == message
+        for field, message in errors_formatted.items():
+            assert messages_expected[field] == message
 
     @pytest.mark.parametrize(
         argnames="data, messages_expected",
@@ -184,8 +184,8 @@ class TestRegisterSearcherAPIView:
             for field, errors in response.data["detail"].items()
         }
 
-        for field, message in messages_expected.items():
-            assert errors_formatted[field] == message
+        for field, message in errors_formatted.items():
+            assert messages_expected[field] == message
 
     @patch(target="apps.users.applications.register.Group")
     def test_if_conection_db_failed(self, model_group_mock: Mock) -> None:
