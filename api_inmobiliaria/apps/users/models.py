@@ -104,6 +104,12 @@ class UserManager(BaseUserManager):
 
         for number in phone_numbers:
             role_data["is_phones_verified"][number] = False
+            role_data["communication_channels"] = {
+                "Correo": False,
+                "WhatsApp": False,
+                "Telegram": False,
+                "Teléfono": False,
+            }
 
         return self._create_user(
             related_model_name=UserRoles.REAL_ESTATE_ENTITY.value,
@@ -217,9 +223,7 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(
         db_column="last_login", null=True, blank=True
     )
-    date_joined = models.DateTimeField(
-        db_column="date_joined", auto_now_add=True
-    )
+    date_joined = models.DateTimeField(db_column="date_joined", auto_now_add=True)
 
     objects: UserManager = UserManager()
 
@@ -319,7 +323,7 @@ class RealEstateEntity(models.Model):
     )
     logo = models.CharField(
         db_column="logo",
-        max_length=RealEstateEntityProperties.LOGO_LINK_MAX_LENGTH.value,
+        max_length=RealEstateEntityProperties.LINK_MAX_LENGTH.value,
         null=False,
         blank=False,
     )
@@ -389,17 +393,15 @@ class RealEstateEntity(models.Model):
     )
     communication_channels = models.JSONField(
         db_column="communication_channels",
-        null=True,
-        blank=True,
+        null=False,
+        blank=False,
     )
     documents = models.JSONField(
         db_column="documents",
         null=True,
         blank=True,
     )
-    verified = models.BooleanField(
-        db_column="verified", null=False, blank=False
-    )
+    verified = models.BooleanField(db_column="verified", null=False, blank=False)
 
     class Meta:
         verbose_name = "Real Estate Entity"
