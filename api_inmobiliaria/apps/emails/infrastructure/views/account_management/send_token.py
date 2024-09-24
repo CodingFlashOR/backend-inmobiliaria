@@ -45,9 +45,7 @@ class SendTokenAPIView(GenericAPIView):
                 content_type="application/json",
             )
 
-        base_user = self._user_repository.get_base_data(
-            uuid=kwargs["user_uuid"]
-        )
+        base_user = self._user_repository.get_base_data(uuid=kwargs["user_uuid"])
 
         application: ActionLinkManager = self.application_class(
             token_class=TokenGenerator(),

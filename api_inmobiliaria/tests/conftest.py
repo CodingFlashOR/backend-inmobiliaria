@@ -14,7 +14,9 @@ def setup_database(db) -> None:
     Set up data for the whole TestCase.
     """
 
-    for role in [UserRoles.SEARCHER.value]:
+    user_roles = [UserRoles.SEARCHER.value, UserRoles.REAL_ESTATE_ENTITY.value]
+
+    for role in user_roles:
         # Create the group and assign permissions
         group = Group.objects.create(name=role)
         perm_list = [

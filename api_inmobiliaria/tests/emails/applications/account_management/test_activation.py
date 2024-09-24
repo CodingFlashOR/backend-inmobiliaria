@@ -165,9 +165,7 @@ class TestApplicationCheckToken:
         use case when the user is not found.
         """
 
-        base_user = BaseUser(
-            uuid=uuid4(), email="user@gmail.com", is_active=False
-        )
+        base_user = BaseUser(uuid=uuid4(), email="user@gmail.com", is_active=False)
 
         # Preparing the mocks
         get_base_data: Mock = user_repository.get_base_data

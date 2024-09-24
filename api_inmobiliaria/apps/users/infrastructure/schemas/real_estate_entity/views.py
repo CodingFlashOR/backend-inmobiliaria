@@ -46,7 +46,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid_url"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=RealEstateEntityProperties.LOGO_LINK_MAX_LENGTH.value,
+                                    max_length=RealEstateEntityProperties.LINK_MAX_LENGTH.value,
                                 ),
                             ],
                             "name": [
@@ -169,9 +169,6 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["max_length_list"].format(
                                     max_length=RealEstateEntityProperties.MAXIMUM_PHONE_NUMBERS.value,
                                 ),
-                                ERROR_MESSAGES["min_length_list"].format(
-                                    min_length=RealEstateEntityProperties.MINIMUM_PHONE_NUMBERS.value,
-                                ),
                             ],
                             "phone_numbers (example 2)": {
                                 "0": [
@@ -213,7 +210,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                     ERROR_MESSAGES["null"],
                                     ERROR_MESSAGES["invalid_url"],
                                     ERROR_MESSAGES["max_length"].format(
-                                        max_length=RealEstateEntityProperties.DOCUMENT_LINK_MAX_LENGTH.value,
+                                        max_length=RealEstateEntityProperties.LINK_MAX_LENGTH.value,
                                     ),
                                 ],
                                 "Certificado del Registro Único Tributario (RUT)": [
@@ -221,7 +218,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                     ERROR_MESSAGES["null"],
                                     ERROR_MESSAGES["invalid_url"],
                                     ERROR_MESSAGES["max_length"].format(
-                                        max_length=RealEstateEntityProperties.DOCUMENT_LINK_MAX_LENGTH.value,
+                                        max_length=RealEstateEntityProperties.LINK_MAX_LENGTH.value,
                                     ),
                                 ],
                                 "Licencias de construcción": [
@@ -229,7 +226,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                     ERROR_MESSAGES["null"],
                                     ERROR_MESSAGES["invalid_url"],
                                     ERROR_MESSAGES["max_length"].format(
-                                        max_length=RealEstateEntityProperties.DOCUMENT_LINK_MAX_LENGTH.value,
+                                        max_length=RealEstateEntityProperties.LINK_MAX_LENGTH.value,
                                     ),
                                 ],
                             },

@@ -115,7 +115,5 @@ class NotAuthenticatedAPIError(APIException):
 class PermissionDeniedAPIError(APIException):
 
     status_code = status.HTTP_403_FORBIDDEN
-    default_detail = (
-        "The user does not have permissions to perform this action."
-    )
+    default_detail = "The user does not have permissions to perform this action."
     default_code = "permission_denied"

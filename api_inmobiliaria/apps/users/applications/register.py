@@ -86,9 +86,7 @@ class RegisterUser:
             sender=__name__, user=base_user, request=request
         )
 
-    def real_estate_entity(
-        self, data: Dict[str, Any], request: Request
-    ) -> None:
+    def real_estate_entity(self, data: Dict[str, Any], request: Request) -> None:
         """
         Create a new real estate entity user with the given data and assign
         appropriate permissions.

@@ -134,9 +134,7 @@ class TestAccountActivationView:
         assert "url" in context["redirect"]
 
         message = ActionLinkManagerErrors.USER_NOT_FOUND.value["message"]
-        action = ActionLinkManagerErrors.USER_NOT_FOUND.value["redirect"][
-            "action"
-        ]
+        action = ActionLinkManagerErrors.USER_NOT_FOUND.value["redirect"]["action"]
         url = ActionLinkManagerErrors.USER_NOT_FOUND.value["redirect"]["url"]
 
         assert context["message"] == message
@@ -258,9 +256,7 @@ class TestAccountActivationView:
         assert "url" in context["redirect"]
 
         message = ActionLinkManagerErrors.TOKEN_INVALID.value["message"]
-        action = ActionLinkManagerErrors.TOKEN_INVALID.value["redirect"][
-            "action"
-        ]
+        action = ActionLinkManagerErrors.TOKEN_INVALID.value["redirect"]["action"]
         url = ActionLinkManagerErrors.TOKEN_INVALID.value["redirect"]["url"]
 
         assert context["message"] == message

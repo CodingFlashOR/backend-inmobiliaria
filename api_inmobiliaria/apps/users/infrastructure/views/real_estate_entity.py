@@ -11,9 +11,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework import status
 
 
-class RealEstateEntityAPIView(
-    MethodHTTPMapped, PermissionMixin, GenericAPIView
-):
+class RealEstateEntityAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView):
     """
     API view for managing operations for users with `real estate entity role`.
 
@@ -54,7 +52,6 @@ class RealEstateEntityAPIView(
         register: RegisterUser = self.get_application_class(
             user_repository=UserRepository
         )
-        del serializer.validated_data["confirm_password"]
         register.real_estate_entity(
             data=serializer.validated_data, request=request
         )

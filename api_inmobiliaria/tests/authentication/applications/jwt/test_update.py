@@ -82,9 +82,7 @@ class TestUpdateTokensApplication:
         assert access_token_obj
 
         # Asserting that the tokens were created with the correct data
-        assert (
-            str(access_token_obj.user.uuid) == access_token_payload["user_uuid"]
-        )
+        assert str(access_token_obj.user.uuid) == access_token_payload["user_uuid"]
         assert access_token_obj.jti == access_token_payload["jti"]
         assert access_token_obj.token == new_access_token
         assert access_token_payload["user_role"] == user_role

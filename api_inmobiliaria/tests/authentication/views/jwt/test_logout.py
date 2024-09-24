@@ -106,10 +106,8 @@ class TestLogoutAPIView:
         # Asserting that response data is correct
         status_code_expected = JWTAPIError.status_code
         code_expected = JWTAPIError.default_code
-        error_message_expected = (
-            JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
-                token_type="access"
-            )
+        error_message_expected = JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
+            token_type="access"
         )
 
         assert response.status_code == status_code_expected
@@ -142,10 +140,8 @@ class TestLogoutAPIView:
         # Asserting that response data is correct
         status_code_expected = JWTAPIError.status_code
         code_expected = JWTAPIError.default_code
-        error_message_expected = (
-            JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
-                token_type="access"
-            )
+        error_message_expected = JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
+            token_type="access"
         )
 
         assert response.status_code == status_code_expected
