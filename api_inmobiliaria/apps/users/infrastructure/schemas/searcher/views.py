@@ -13,6 +13,24 @@ from drf_spectacular.utils import (
 )
 
 
+# Searcher and base user properties
+EMAIL_MAX_LENGTH = BaseUserProperties.EMAIL_MAX_LENGTH.value
+PASSWORD_MAX_LENGTH = BaseUserProperties.PASSWORD_MAX_LENGTH.value
+PASSWORD_MIN_LENGTH = BaseUserProperties.PASSWORD_MIN_LENGTH.value
+NAME_MAX_LENGTH = SearcherProperties.NAME_MAX_LENGTH.value
+LAST_NAME_MAX_LENGTH = SearcherProperties.LAST_NAME_MAX_LENGTH.value
+CC_MAX_LENGTH = SearcherProperties.CC_MAX_LENGTH.value
+CC_MIN_LENGTH = SearcherProperties.CC_MIN_LENGTH.value
+PHONE_NUMBER_MAX_LENGTH = SearcherProperties.PHONE_NUMBER_MAX_LENGTH.value
+
+# Error messages
+USER_NOT_FOUND = JWTErrorMessages.USER_NOT_FOUND.value
+BLACKLISTED = JWTErrorMessages.BLACKLISTED.value.format(token_type="access")
+INVALID_OR_EXPIRED = JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
+    token_type="access"
+)
+
+
 POSTSearcherSchema = extend_schema(
     operation_id="create_searcher",
     tags=["Users"],
@@ -42,7 +60,7 @@ POSTSearcherSchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=SearcherProperties.NAME_MAX_LENGTH.value,
+                                    max_length=NAME_MAX_LENGTH
                                 ),
                             ],
                             "last_name": [
@@ -51,7 +69,7 @@ POSTSearcherSchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=SearcherProperties.LAST_NAME_MAX_LENGTH.value,
+                                    max_length=LAST_NAME_MAX_LENGTH
                                 ),
                             ],
                             "email": [
@@ -59,10 +77,10 @@ POSTSearcherSchema = extend_schema(
                                 ERROR_MESSAGES["blank"],
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
-                                ERROR_MESSAGES["max_length"].format(
-                                    max_length=BaseUserProperties.EMAIL_MAX_LENGTH.value,
-                                ),
                                 ERROR_MESSAGES["email_in_use"],
+                                ERROR_MESSAGES["max_length"].format(
+                                    max_length=EMAIL_MAX_LENGTH
+                                ),
                             ],
                             "password": [
                                 ERROR_MESSAGES["required"],
@@ -70,10 +88,10 @@ POSTSearcherSchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=BaseUserProperties.PASSWORD_MAX_LENGTH.value,
+                                    max_length=PASSWORD_MAX_LENGTH
                                 ),
                                 ERROR_MESSAGES["min_length"].format(
-                                    min_length=BaseUserProperties.PASSWORD_MIN_LENGTH.value,
+                                    min_length=PASSWORD_MIN_LENGTH
                                 ),
                             ],
                             "confirm_password": [
@@ -164,9 +182,7 @@ GETSearcherSchema = extend_schema(
                     description="The access token sent in the request header is invalid or has expired.",
                     value={
                         "code": JWTAPIError.default_code,
-                        "detail": JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
-                            token_type="access",
-                        ),
+                        "detail": INVALID_OR_EXPIRED,
                     },
                 ),
                 OpenApiExample(
@@ -175,9 +191,7 @@ GETSearcherSchema = extend_schema(
                     description="The access token sent in the request header exists in the blacklist.",
                     value={
                         "code": JWTAPIError.default_code,
-                        "detail": JWTErrorMessages.BLACKLISTED.value.format(
-                            token_type="access",
-                        ),
+                        "detail": BLACKLISTED,
                     },
                 ),
                 OpenApiExample(
@@ -224,7 +238,7 @@ GETSearcherSchema = extend_schema(
                     name="user_not_found",
                     summary="User not found",
                     description="The user in the provided JSON Web Tokens does not exist in the database.",
-                    value=JWTErrorMessages.USER_NOT_FOUND.value,
+                    value=USER_NOT_FOUND,
                 ),
             ],
         ),
@@ -322,7 +336,7 @@ PATCHearcherSchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=SearcherProperties.NAME_MAX_LENGTH.value,
+                                    max_length=NAME_MAX_LENGTH
                                 ),
                             ],
                             "last_name": [
@@ -330,29 +344,29 @@ PATCHearcherSchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=SearcherProperties.LAST_NAME_MAX_LENGTH.value,
+                                    max_length=LAST_NAME_MAX_LENGTH
                                 ),
                             ],
                             "cc": [
                                 ERROR_MESSAGES["blank"],
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
+                                ERROR_MESSAGES["cc_in_use"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=SearcherProperties.CC_MAX_LENGTH.value,
+                                    max_length=CC_MAX_LENGTH
                                 ),
                                 ERROR_MESSAGES["min_length"].format(
-                                    min_length=SearcherProperties.CC_MIN_LENGTH.value,
+                                    min_length=CC_MIN_LENGTH
                                 ),
-                                ERROR_MESSAGES["cc_in_use"],
                             ],
                             "phone_number": [
                                 ERROR_MESSAGES["blank"],
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
-                                ERROR_MESSAGES["max_length"].format(
-                                    max_length=SearcherProperties.PHONE_NUMBER_MAX_LENGTH.value,
-                                ),
                                 ERROR_MESSAGES["phone_in_use"],
+                                ERROR_MESSAGES["max_length"].format(
+                                    max_length=PHONE_NUMBER_MAX_LENGTH
+                                ),
                             ],
                         },
                     },
@@ -374,9 +388,7 @@ PATCHearcherSchema = extend_schema(
                     description="The access token sent in the request header is invalid or has expired.",
                     value={
                         "code": JWTAPIError.default_code,
-                        "detail": JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
-                            token_type="access",
-                        ),
+                        "detail": INVALID_OR_EXPIRED,
                     },
                 ),
                 OpenApiExample(
@@ -385,9 +397,7 @@ PATCHearcherSchema = extend_schema(
                     description="The access token sent in the request header exists in the blacklist.",
                     value={
                         "code": JWTAPIError.default_code,
-                        "detail": JWTErrorMessages.BLACKLISTED.value.format(
-                            token_type="access",
-                        ),
+                        "detail": BLACKLISTED,
                     },
                 ),
                 OpenApiExample(
@@ -434,7 +444,7 @@ PATCHearcherSchema = extend_schema(
                     name="user_not_found",
                     summary="User not found",
                     description="The user in the provided JSON Web Tokens does not exist in the database.",
-                    value=JWTErrorMessages.USER_NOT_FOUND.value,
+                    value=USER_NOT_FOUND,
                 ),
             ],
         ),

@@ -1,5 +1,5 @@
 from apps.users.infrastructure.repositories import UserRepository
-from apps.users.infrastructure.schemas import RealEstateEntitySchema
+from apps.users.infrastructure.schemas import RegisterRealEstateEntitySchema
 from apps.users.infrastructure.serializers import BaseUserSerializer
 from apps.users.constants import (
     DOCUMENTS_REQUESTED_REAL_ESTATE_ENTITY,
@@ -32,7 +32,6 @@ REGION_MAX_LENGTH = RealEstateEntityProperties.REGION_MAX_LENGTH.value
 COORDINATE_MAX_LENGTH = RealEstateEntityProperties.COORDINATE_MAX_LENGTH.value
 
 
-@RealEstateEntitySchema
 class RealEstateEntityRoleSerializer(BaseUserSerializer):
     """
     Defines the fields that are required for the real estate entity user profile.
@@ -329,6 +328,7 @@ class RealEstateEntityRoleSerializer(BaseUserSerializer):
         return value
 
 
+@RegisterRealEstateEntitySchema
 class RegisterRealEstateEntitySerializer(RealEstateEntityRoleSerializer):
     """
     Defines the fields that are required for the real estate entity user registration.

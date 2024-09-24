@@ -1,2 +1,2 @@
 from .views import POSTRealEstateEntitySchema
-from .serializers import RealEstateEntitySchema
+from .serializers import RegisterRealEstateEntitySchema

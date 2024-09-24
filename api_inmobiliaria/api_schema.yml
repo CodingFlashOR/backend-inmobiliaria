@@ -39,7 +39,7 @@ paths:
                 description: |-
                   Valid credentials for a user. The following validations will be applied:
                   - **Email:** This field is required and must not exceed 40 characters.
-                  - **Password:** This field is required and must not exceed 40 characters.
+                  - **Password:** This field is required and must not exceed 30 characters.
 
                   Request responses that include messages in Spanish indicate that these are messages intended for use on the frontend by the client.
           application/x-www-form-urlencoded:
@@ -93,7 +93,7 @@ paths:
                       - Este campo no puede estar en blanco.
                       - Este campo no puede ser nulo.
                       - El valor ingresado es inválido.
-                      - El valor ingresado no puede tener más de 40 caracteres.
+                      - El valor ingresado no puede tener más de 30 caracteres.
                   summary: Invalid data
                   description: These are the possible error messages for each field.
           description: '**(BAD_REQUEST)** The request data are invalid, error message(s)
@@ -437,7 +437,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RealEstateEntityRequest'
+              $ref: '#/components/schemas/RegisterRealEstateEntityRequest'
             examples:
               DataValid:
                 value:
@@ -465,10 +465,10 @@ paths:
                   A valid user registration data. The following validations will be applied:
                   - **Name:** This field is required, must not exceed 40 characters and must contain only letters and spaces.
                   - **Email:** This field is required and must not exceed 40 characters, must follow standard email format, and must not be in use.
-                  - **Password:** This field is required and should be between 8 and 40 characters. It should not be a common password or contain only numbers.
+                  - **Password:** This field is required and should be between 8 and 30 characters. It should not be a common password or contain only numbers.
                   - **Confirm password:** This field is required and should match the password field.
                   - **Logo:** This field is required, it must have the structure of a valid link and cannot have more than 2083 character.
-                  - **Description:** This field is required, it must be a text string in Markdown (MD) format and cannot have more than 25 character.
+                  - **Description:** This field is required, it must be a text string in Markdown (MD) format and cannot have more than 400 character.
                   - **NIT:** This field is required and must be a numeric text string of exactly 10 characters.
                   - **Phone numbers:** This field is required and must be an array where each element is a text string with the structure of a valid phone number. Each number must have a maximum of 19 characters. The array cannot be empty, and must contain at least 1 element and at most 5 elements.
                   - **Department:** This field is required and must be a valid Colombian department.
@@ -480,10 +480,10 @@ paths:
                   Request responses that include messages in Spanish indicate that these are messages intended for use on the frontend by the client.
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/RealEstateEntityRequest'
+              $ref: '#/components/schemas/RegisterRealEstateEntityRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/RealEstateEntityRequest'
+              $ref: '#/components/schemas/RegisterRealEstateEntityRequest'
         required: true
       security:
       - {}
@@ -573,7 +573,7 @@ paths:
                       - Este campo no puede estar en blanco.
                       - Este campo no puede ser nulo.
                       - El valor ingresado es inválido.
-                      - El valor ingresado no puede tener más de 40 caracteres.
+                      - El valor ingresado no puede tener más de 30 caracteres.
                       - El valor ingresado debe tener al menos 8 caracteres.
                       confirm_password:
                       - Este campo es requerido.
@@ -597,7 +597,6 @@ paths:
                       - Se esperaba una lista de elementos pero se obtuvo un dato
                         de tipo (int).
                       - No puedes agregar o seleccionar más de 5 elementos.
-                      - Debes agregar o seleccionar al menos 1 elementos.
                       phone_numbers (example 2):
                         '0':
                         - Este campo no puede estar en blanco.
@@ -822,7 +821,7 @@ paths:
                   \ spaces.\n- **Email:** This field is required and must not exceed\
                   \ 40 characters, must follow standard email format, and must not\
                   \ be in use.\n- **Password:** This field is required and should\
-                  \ be between 8 and 40 characters. It should not be a common password\
+                  \ be between 8 and 30 characters. It should not be a common password\
                   \ or contain only numbers. \n- **Confirm password:** This field\
                   \ is required and should match the password field.\n\nRequest responses\
                   \ that include messages in Spanish indicate that these are messages\
@@ -870,14 +869,14 @@ paths:
                       - Este campo no puede estar en blanco.
                       - Este campo no puede ser nulo.
                       - El valor ingresado es inválido.
-                      - El valor ingresado no puede tener más de 40 caracteres.
                       - Este correo electrónico ya está en uso.
+                      - El valor ingresado no puede tener más de 40 caracteres.
                       password:
                       - Este campo es requerido.
                       - Este campo no puede estar en blanco.
                       - Este campo no puede ser nulo.
                       - El valor ingresado es inválido.
-                      - El valor ingresado no puede tener más de 40 caracteres.
+                      - El valor ingresado no puede tener más de 30 caracteres.
                       - El valor ingresado debe tener al menos 8 caracteres.
                       confirm_password:
                       - Este campo es requerido.
@@ -923,7 +922,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedSearcherRequest'
+              $ref: '#/components/schemas/PatchedSearcherRoleRequest'
             examples:
               DataValid:
                 value:
@@ -933,7 +932,7 @@ paths:
                     name: Nuevo nombre
                     last_name: Nuevo apellido
                     cc: '1234567890'
-                    phone_number: +57 3111111111
+                    phone_number: '+573111111111'
                 summary: The role data of a user with role searcher.
                 description: |-
                   A valid user data. The following validations will be applied:
@@ -943,10 +942,10 @@ paths:
                   - **Phone number** Must not exceed 19 characters and must not be in use.
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedSearcherRequest'
+              $ref: '#/components/schemas/PatchedSearcherRoleRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedSearcherRequest'
+              $ref: '#/components/schemas/PatchedSearcherRoleRequest'
       security:
       - JWTAuth: []
       responses:
@@ -1002,15 +1001,15 @@ paths:
                       - Este campo no puede estar en blanco.
                       - Este campo no puede ser nulo.
                       - El valor ingresado es inválido.
+                      - Este número de identificación ya está en uso.
                       - El valor ingresado no puede tener más de 10 caracteres.
                       - El valor ingresado debe tener al menos 6 caracteres.
-                      - Este número de identificación ya está en uso.
                       phone_number:
                       - Este campo no puede estar en blanco.
                       - Este campo no puede ser nulo.
                       - El valor ingresado es inválido.
-                      - El valor ingresado no puede tener más de 19 caracteres.
                       - Este número de teléfono ya está en uso.
+                      - El valor ingresado no puede tener más de 19 caracteres.
                   summary: Invalid data
                   description: These are the possible error messages for each field.
           description: '**(BAD_REQUEST)** The request data is invalid, error messages
@@ -1118,11 +1117,11 @@ components:
         password:
           type: string
           minLength: 1
-          maxLength: 40
+          maxLength: 30
       required:
       - email
       - password
-    PatchedSearcherRequest:
+    PatchedSearcherRoleRequest:
       type: object
       description: Defines the fields that are required for the searcher user profile.
       properties:
@@ -1145,10 +1144,10 @@ components:
           type: string
           minLength: 1
           maxLength: 19
-    RealEstateEntityRequest:
+    RegisterRealEstateEntityRequest:
       type: object
       description: Defines the fields that are required for the real estate entity
-        user profile.
+        user registration.
       properties:
         email:
           type: string
@@ -1159,7 +1158,7 @@ components:
           type: string
           writeOnly: true
           minLength: 8
-          maxLength: 40
+          maxLength: 30
         type_entity:
           $ref: '#/components/schemas/TypeEntityEnum'
         logo:
@@ -1187,7 +1186,6 @@ components:
             minLength: 1
             maxLength: 19
           maxItems: 5
-          minItems: 1
         department:
           type: string
           minLength: 1
@@ -1211,7 +1209,12 @@ components:
             format: uri
             minLength: 1
             maxLength: 2083
+        confirm_password:
+          type: string
+          writeOnly: true
+          minLength: 1
       required:
+      - confirm_password
       - coordinate
       - department
       - description
@@ -1238,16 +1241,16 @@ components:
           type: string
           writeOnly: true
           minLength: 8
-          maxLength: 40
+          maxLength: 30
         name:
           type: string
           minLength: 1
-          pattern: ^[A-Za-z\u00f1\u00d1\s]+$
+          pattern: ^[A-Za-z\u00f1\u00d1\u00e1\u00e9\u00ed\u00f3\u00fa\u00c1\u00c9\u00cd\u00d3\u00da\s]+$
           maxLength: 40
         last_name:
           type: string
           minLength: 1
-          pattern: ^[A-Za-z\u00f1\u00d1\s]+$
+          pattern: ^[A-Za-z\u00f1\u00d1\u00e1\u00e9\u00ed\u00f3\u00fa\u00c1\u00c9\u00cd\u00d3\u00da\s]+$
           maxLength: 40
         confirm_password:
           type: string
