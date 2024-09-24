@@ -13,6 +13,11 @@ from jwt import decode
 import pytest
 
 
+# User roles
+SEARCHER = UserRoles.SEARCHER.value
+REAL_ESTATE_ENTITY = UserRoles.REAL_ESTATE_ENTITY.value
+
+
 @pytest.mark.django_db
 class TestLoginApplication:
     """
@@ -29,8 +34,8 @@ class TestLoginApplication:
 
     @pytest.mark.parametrize(
         argnames="user_role",
-        argvalues=[UserRoles.SEARCHER.value],
-        ids=["searcher_user"],
+        argvalues=[SEARCHER, REAL_ESTATE_ENTITY],
+        ids=["searcher", "real_estate_entity"],
     )
     def test_authenticated_user(self, user_role: str, setup_database) -> None:
         """
@@ -92,8 +97,8 @@ class TestLoginApplication:
 
     @pytest.mark.parametrize(
         argnames="user_role",
-        argvalues=[UserRoles.SEARCHER.value],
-        ids=["searcher_user"],
+        argvalues=[SEARCHER, REAL_ESTATE_ENTITY],
+        ids=["searcher", "real_estate_entity"],
     )
     def test_if_inactive_user_account(
         self, user_role: str, setup_database
@@ -123,8 +128,8 @@ class TestLoginApplication:
 
     @pytest.mark.parametrize(
         argnames="user_role",
-        argvalues=[UserRoles.SEARCHER.value],
-        ids=["searcher_user"],
+        argvalues=[SEARCHER, REAL_ESTATE_ENTITY],
+        ids=["searcher", "real_estate_entity"],
     )
     def test_if_user_has_not_permission(self, user_role: str) -> None:
         """
