@@ -8,6 +8,22 @@ from drf_spectacular.utils import (
 )
 
 
+# Real estate entity and base user properties
+EMAIL_MAX_LENGTH = BaseUserProperties.EMAIL_MAX_LENGTH.value
+PASSWORD_MAX_LENGTH = BaseUserProperties.PASSWORD_MAX_LENGTH.value
+PASSWORD_MIN_LENGTH = BaseUserProperties.PASSWORD_MIN_LENGTH.value
+NAME_MAX_LENGTH = RealEstateEntityProperties.NAME_MAX_LENGTH.value
+LINK_MAX_LENGTH = RealEstateEntityProperties.LINK_MAX_LENGTH.value
+DEPARTMENT_MAX_LENGTH = RealEstateEntityProperties.DEPARTMENT_MAX_LENGTH.value
+MUNICIPALITY_MAX_LENGTH = RealEstateEntityProperties.MUNICIPALITY_MAX_LENGTH.value
+REGION_MAX_LENGTH = RealEstateEntityProperties.REGION_MAX_LENGTH.value
+COORDINATE_MAX_LENGTH = RealEstateEntityProperties.COORDINATE_MAX_LENGTH.value
+NIT_MAX_LENGTH = RealEstateEntityProperties.NIT_MAX_LENGTH.value
+PHONE_NUMBER_MAX_LENGTH = RealEstateEntityProperties.PHONE_NUMBER_MAX_LENGTH.value
+MAXIMUM_PHONE_NUMBERS = RealEstateEntityProperties.MAXIMUM_PHONE_NUMBERS.value
+DESCRIPTION_MAX_LENGTH = RealEstateEntityProperties.DESCRIPTION_MAX_LENGTH.value
+
+
 POSTRealEstateEntitySchema = extend_schema(
     operation_id="create_real_estate_entity",
     tags=["Users"],
@@ -46,7 +62,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid_url"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=RealEstateEntityProperties.LINK_MAX_LENGTH.value,
+                                    max_length=LINK_MAX_LENGTH
                                 ),
                             ],
                             "name": [
@@ -56,7 +72,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["name_in_use"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=RealEstateEntityProperties.NAME_MAX_LENGTH.value,
+                                    max_length=NAME_MAX_LENGTH
                                 ),
                             ],
                             "description": [
@@ -65,7 +81,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=RealEstateEntityProperties.DESCRIPTION_MAX_LENGTH.value
+                                    max_length=DESCRIPTION_MAX_LENGTH
                                 ),
                             ],
                             "nit": [
@@ -75,10 +91,10 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["nit_in_use"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=RealEstateEntityProperties.NIT_MAX_LENGTH.value,
+                                    max_length=NIT_MAX_LENGTH
                                 ),
                                 ERROR_MESSAGES["min_length"].format(
-                                    min_length=RealEstateEntityProperties.NIT_MAX_LENGTH.value,
+                                    min_length=NIT_MAX_LENGTH
                                 ),
                             ],
                             "department": [
@@ -87,7 +103,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=RealEstateEntityProperties.DEPARTMENT_MAX_LENGTH.value,
+                                    max_length=DEPARTMENT_MAX_LENGTH
                                 ),
                             ],
                             "municipality": [
@@ -96,7 +112,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=RealEstateEntityProperties.MUNICIPALITY_MAX_LENGTH.value,
+                                    max_length=MUNICIPALITY_MAX_LENGTH
                                 ),
                             ],
                             "region": [
@@ -105,7 +121,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=RealEstateEntityProperties.REGION_MAX_LENGTH.value,
+                                    max_length=REGION_MAX_LENGTH
                                 ),
                             ],
                             "coordinate": [
@@ -114,7 +130,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=RealEstateEntityProperties.COORDINATE_MAX_LENGTH.value,
+                                    max_length=COORDINATE_MAX_LENGTH
                                 ),
                             ],
                             "email": [
@@ -124,7 +140,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["email_in_use"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=BaseUserProperties.EMAIL_MAX_LENGTH.value,
+                                    max_length=EMAIL_MAX_LENGTH
                                 ),
                             ],
                             "password": [
@@ -133,10 +149,10 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
                                 ERROR_MESSAGES["max_length"].format(
-                                    max_length=BaseUserProperties.PASSWORD_MAX_LENGTH.value,
+                                    max_length=PASSWORD_MAX_LENGTH
                                 ),
                                 ERROR_MESSAGES["min_length"].format(
-                                    min_length=BaseUserProperties.PASSWORD_MIN_LENGTH.value,
+                                    min_length=PASSWORD_MIN_LENGTH
                                 ),
                             ],
                             "confirm_password": [
@@ -167,7 +183,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                     input_type="int"
                                 ),
                                 ERROR_MESSAGES["max_length_list"].format(
-                                    max_length=RealEstateEntityProperties.MAXIMUM_PHONE_NUMBERS.value,
+                                    max_length=MAXIMUM_PHONE_NUMBERS
                                 ),
                             ],
                             "phone_numbers (example 2)": {
@@ -176,7 +192,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                     ERROR_MESSAGES["null"],
                                     ERROR_MESSAGES["invalid"],
                                     ERROR_MESSAGES["max_length"].format(
-                                        max_length=RealEstateEntityProperties.PHONE_NUMBER_MAX_LENGTH.value,
+                                        max_length=PHONE_NUMBER_MAX_LENGTH
                                     ),
                                 ],
                             },
@@ -210,7 +226,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                     ERROR_MESSAGES["null"],
                                     ERROR_MESSAGES["invalid_url"],
                                     ERROR_MESSAGES["max_length"].format(
-                                        max_length=RealEstateEntityProperties.LINK_MAX_LENGTH.value,
+                                        max_length=LINK_MAX_LENGTH
                                     ),
                                 ],
                                 "Certificado del Registro Único Tributario (RUT)": [
@@ -218,7 +234,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                     ERROR_MESSAGES["null"],
                                     ERROR_MESSAGES["invalid_url"],
                                     ERROR_MESSAGES["max_length"].format(
-                                        max_length=RealEstateEntityProperties.LINK_MAX_LENGTH.value,
+                                        max_length=LINK_MAX_LENGTH
                                     ),
                                 ],
                                 "Licencias de construcción": [
@@ -226,7 +242,7 @@ POSTRealEstateEntitySchema = extend_schema(
                                     ERROR_MESSAGES["null"],
                                     ERROR_MESSAGES["invalid_url"],
                                     ERROR_MESSAGES["max_length"].format(
-                                        max_length=RealEstateEntityProperties.LINK_MAX_LENGTH.value,
+                                        max_length=LINK_MAX_LENGTH
                                     ),
                                 ],
                             },
