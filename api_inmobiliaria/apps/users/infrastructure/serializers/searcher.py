@@ -6,7 +6,7 @@ from apps.users.infrastructure.schemas import (
 )
 from apps.users.constants import UserRoles, SearcherProperties
 from apps.users.models import BaseUser, Searcher
-from apps.utils.messages import ErrorMessagesSerializer, ERROR_MESSAGES
+from utils.messages import ErrorMessagesSerializer, ERROR_MESSAGES
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 from phonenumbers import PhoneNumberFormat, PhoneNumber, parse, format_number
@@ -145,7 +145,7 @@ class SearcherSerializer(ErrorMessagesSerializer, serializers.Serializer):
 
 
 @RegisterSearcherSchema
-class RegisterSearcherSerializer(ErrorMessagesSerializer, BaseUserSerializer):
+class RegisterSearcherSerializer(BaseUserSerializer):
     """
     Defines the fields that are required for the searcher user registration.
     """

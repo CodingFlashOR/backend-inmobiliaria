@@ -1,11 +1,11 @@
 from apps.users.constants import UserRoles
 from apps.users.models import BaseUser
-from apps.utils.messages import JWTErrorMessages
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,
     ResourceNotFoundAPIError,
     JWTAPIError,
 )
+from utils.messages import JWTErrorMessages
 from tests.factory import JWTFactory, UserFactory
 from tests.utils import empty_queryset
 from rest_framework import status

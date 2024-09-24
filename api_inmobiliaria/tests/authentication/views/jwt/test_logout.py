@@ -1,8 +1,8 @@
-from apps.utils.messages import JWTErrorMessages
 from apps.api_exceptions import (
     NotAuthenticatedAPIError,
     JWTAPIError,
 )
+from utils.messages import JWTErrorMessages
 from tests.factory import JWTFactory, UserFactory
 from rest_framework.fields import CharField
 from rest_framework import status

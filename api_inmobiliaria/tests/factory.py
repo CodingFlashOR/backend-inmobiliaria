@@ -2,13 +2,13 @@ from apps.authentication.typing import AccessToken, JSONWebToken, JWTPayload
 from apps.authentication.constants import ACCESS_TOKEN_LIFETIME
 from apps.authentication.models import JWT, JWTBlacklist
 from apps.users.constants import (
-    UserRoles,
     DOCUMENTS_REQUESTED_REAL_ESTATE_ENTITY,
+    UserRoles,
 )
 from apps.users.typing import UserUUID
 from apps.users.models import BaseUser
 from apps.emails.models import Token
-from apps.utils.generators import TokenGenerator
+from utils.generators import TokenGenerator
 from settings.environments.base import SIMPLE_JWT
 from tests.utils import fake
 from rest_framework_simplejwt.utils import (

@@ -1,6 +1,5 @@
 from apps.authentication.constants import ACCESS_TOKEN_LIFETIME
 from apps.users.constants import BaseUserProperties
-from apps.utils.messages import ERROR_MESSAGES, JWTErrorMessages
 from apps.api_exceptions import (
     PermissionDeniedAPIError,
     DatabaseConnectionAPIError,
@@ -8,6 +7,7 @@ from apps.api_exceptions import (
     NotAuthenticatedAPIError,
     JWTAPIError,
 )
+from utils.messages import ERROR_MESSAGES, JWTErrorMessages
 from rest_framework.fields import CharField
 from drf_spectacular.utils import (
     extend_schema,

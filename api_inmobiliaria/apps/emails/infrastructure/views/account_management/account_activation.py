@@ -6,10 +6,10 @@ from apps.emails.applications.account_management import AccountActivation
 from apps.emails.constants import LOGIN_URL
 from apps.emails.paths import TEMPLATES
 from apps.users.infrastructure.repositories import UserRepository
-from apps.utils.generators import TokenGenerator
-from apps.utils.messages import ActionLinkManagerErrors
-from apps.utils.exceptions import view_exception_handler
 from apps.api_exceptions import DatabaseConnectionAPIError
+from utils.generators import TokenGenerator
+from utils.messages import ActionLinkManagerErrors
+from utils.exceptions import view_exception_handler
 from django.utils.decorators import method_decorator
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse

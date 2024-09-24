@@ -1,13 +1,13 @@
 from apps.users.infrastructure.repositories import UserRepository
 from apps.users.constants import BaseUserProperties
-from apps.utils.messages import ErrorMessagesSerializer, ERROR_MESSAGES
+from utils.messages import ErrorMessagesSerializer, ERROR_MESSAGES
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
 
-class BaseUserSerializer(serializers.Serializer):
+class BaseUserSerializer(ErrorMessagesSerializer, serializers.Serializer):
     """
     Defines the base data of a user.
     """

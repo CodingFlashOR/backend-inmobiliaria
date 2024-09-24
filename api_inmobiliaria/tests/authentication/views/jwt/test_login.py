@@ -1,11 +1,10 @@
 from apps.users.constants import UserRoles, BaseUserProperties
-from apps.utils.messages import JWTErrorMessages
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,
     PermissionDeniedAPIError,
     AuthenticationFailedAPIError,
 )
-from apps.utils.messages import ERROR_MESSAGES
+from utils.messages import JWTErrorMessages, ERROR_MESSAGES
 from tests.factory import UserFactory
 from tests.utils import fake
 from rest_framework import status

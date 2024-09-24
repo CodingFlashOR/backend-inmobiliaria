@@ -5,7 +5,7 @@ from apps.api_exceptions import (
     PermissionDeniedAPIError,
     JWTAPIError,
 )
-from apps.utils.messages import ERROR_MESSAGES, JWTErrorMessages
+from utils.messages import ERROR_MESSAGES, JWTErrorMessages
 from drf_spectacular.utils import (
     extend_schema,
     OpenApiResponse,

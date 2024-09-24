@@ -4,7 +4,7 @@ from apps.authentication.infrastructure.schemas.jwt import (
 )
 from apps.authentication.jwt import AccessToken
 from apps.users.constants import BaseUserProperties
-from apps.utils.messages import (
+from utils.messages import (
     ErrorMessagesSerializer,
     JWTErrorMessages,
     ERROR_MESSAGES,

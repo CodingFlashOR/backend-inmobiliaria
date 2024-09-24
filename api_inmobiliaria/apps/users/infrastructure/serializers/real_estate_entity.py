@@ -6,7 +6,7 @@ from apps.users.constants import (
     RealEstateEntityProperties,
     UserRoles,
 )
-from apps.utils.messages import ERROR_MESSAGES
+from utils.messages import ERROR_MESSAGES
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 from phonenumbers import PhoneNumberFormat, PhoneNumber, parse, format_number

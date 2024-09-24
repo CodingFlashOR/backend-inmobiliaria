@@ -1,6 +1,6 @@
 from apps.users.constants import RealEstateEntityProperties, BaseUserProperties
 from apps.api_exceptions import DatabaseConnectionAPIError
-from apps.utils.messages import ERROR_MESSAGES
+from utils.messages import ERROR_MESSAGES
 from drf_spectacular.utils import (
     extend_schema,
     OpenApiResponse,

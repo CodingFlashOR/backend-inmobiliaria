@@ -1,9 +1,9 @@
-from apps.utils.messages import ActivationErrors
 from apps.api_exceptions import (
     DatabaseConnectionAPIError,
     ResourceNotFoundAPIError,
     AccountActivationAPIError,
 )
+from utils.messages import ActivationErrors
 from tests.factory import UserFactory
 from rest_framework import status
 from django.test import Client

@@ -1,6 +1,6 @@
 from apps.users.typing import UserUUID
-from apps.utils.generators import decode_b64
-from apps.utils.validators import is_valid_uuid, is_base64
+from utils.generators import decode_b64
+from utils.validators import is_valid_uuid, is_base64
 from rest_framework import serializers
 
 
