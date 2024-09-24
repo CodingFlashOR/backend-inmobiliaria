@@ -2,7 +2,7 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter",
         "black-formatter.args": [
-            "--line-length", "80",
+            "--line-length", "84",
             "--target-version", "py311",
             "--include", "../api_inmobiliaria/*.pyi?",
             "--check",
