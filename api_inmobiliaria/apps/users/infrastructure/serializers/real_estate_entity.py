@@ -1,17 +1,21 @@
 from apps.users.infrastructure.repositories import UserRepository
 from apps.users.infrastructure.schemas import RegisterRealEstateEntitySchema
-from apps.users.infrastructure.serializers import BaseUserSerializer
+from apps.users.infrastructure.serializers import (
+    BaseUserReadOnlySerializer,
+    BaseUserSerializer,
+)
 from apps.users.constants import (
     DOCUMENTS_REQUESTED_REAL_ESTATE_ENTITY,
     RealEstateEntityProperties,
     UserRoles,
 )
+from apps.users.models import BaseUser, RealEstateEntity
 from utils.messages import ERROR_MESSAGES
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 from phonenumbers import PhoneNumberFormat, PhoneNumber, parse, format_number
 from phonenumber_field.serializerfields import PhoneNumberField
-from typing import List, Dict
+from typing import List, Dict, Any
 
 
 # User toles
@@ -258,7 +262,7 @@ class RealEstateEntityRoleSerializer(BaseUserSerializer):
                 code="invalid_data", detail=error_messages
             )
 
-        return ",".join(phone_numbers_formatted)
+        return phone_numbers_formatted
 
     def validate_department(self, value: str) -> str:
         """
@@ -328,6 +332,39 @@ class RealEstateEntityRoleSerializer(BaseUserSerializer):
         return value
 
 
+class RealEstateEntityRoleReadOnlySerializer(serializers.Serializer):
+    """
+    Defines the fields of the real estate entity role for reading.
+    """
+
+    type_entity = serializers.CharField(read_only=True)
+    logo = serializers.URLField(read_only=True)
+    name = serializers.CharField(read_only=True)
+    description = serializers.CharField(read_only=True)
+    nit = serializers.CharField(read_only=True)
+    phone_numbers = serializers.ListField(
+        child=serializers.CharField(read_only=True),
+        read_only=True,
+    )
+    department = serializers.CharField(read_only=True)
+    municipality = serializers.CharField(read_only=True)
+    region = serializers.CharField(read_only=True)
+    coordinate = serializers.CharField(read_only=True)
+    documents = serializers.DictField(
+        child=serializers.URLField(read_only=True),
+        read_only=True,
+    )
+    is_phones_verified = serializers.DictField(
+        child=serializers.BooleanField(read_only=True),
+        read_only=True,
+    )
+    communication_channels = serializers.DictField(
+        child=serializers.BooleanField(read_only=True),
+        read_only=True,
+    )
+    verified = serializers.BooleanField(read_only=True)
+
+
 @RegisterRealEstateEntitySchema
 class RegisterRealEstateEntitySerializer(RealEstateEntityRoleSerializer):
     """
@@ -357,3 +394,25 @@ class RegisterRealEstateEntitySerializer(RealEstateEntityRoleSerializer):
             )
 
         return data
+
+
+class RealEstateEntityReadOnlySerializer(serializers.Serializer):
+    """
+    Defines the fields of the real estate entity information for reading.
+    """
+
+    def __init__(self, role_instance: RealEstateEntity, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.role_instance = role_instance
+        self.base_data = BaseUserReadOnlySerializer()
+        self.role_data = RealEstateEntityRoleReadOnlySerializer()
+
+    def to_representation(self, instance: BaseUser) -> Dict[str, Any]:
+        """
+        Return a dictionary with the serialized data.
+        """
+
+        base_data = self.base_data.to_representation(instance)
+        role_data = self.role_data.to_representation(self.role_instance)
+
+        return {"base_data": base_data, "role_data": role_data}

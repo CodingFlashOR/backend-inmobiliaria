@@ -157,7 +157,7 @@ class SearcherRoleSerializer(ErrorMessagesSerializer, serializers.Serializer):
 
 class SearcherRoleReadOnlySerializer(serializers.Serializer):
     """
-    Defines the fields of the searcher user profile for reading.
+    Defines the fields of the searcher role for reading.
     """
 
     name = serializers.CharField(read_only=True)
