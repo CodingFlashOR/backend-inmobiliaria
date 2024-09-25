@@ -244,7 +244,6 @@ class UserFactory:
 
         if save:
             user_data_copy = deepcopy(user_data)
-            user_data_copy["phone_numbers"] = ",".join(user_data["phone_numbers"])
             email = user_data_copy.pop("email")
             password = user_data_copy.pop("password")
 

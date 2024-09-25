@@ -5,6 +5,7 @@ from .searcher import (
     SearcherRoleSerializer,
 )
 from .real_estate_entity import (
+    RealEstateEntityReadOnlySerializer,
     RegisterRealEstateEntitySerializer,
     RealEstateEntityRoleSerializer,
 )

@@ -1,11 +1,14 @@
 from apps.users.infrastructure.repositories import UserRepository
 from apps.users.infrastructure.serializers import (
+    RealEstateEntityReadOnlySerializer,
     RegisterRealEstateEntitySerializer,
 )
 from apps.users.infrastructure.schemas import POSTRealEstateEntitySchema
-from apps.users.applications import RegisterUser
+from apps.users.applications import RegisterUser, UserDataManager
+from apps.users.permissions import IsRealEstateEntity
+from apps.authentication.jwt import JWTAuthentication
 from utils.views import MethodHTTPMapped, PermissionMixin
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.serializers import Serializer
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -21,10 +24,41 @@ class RealEstateEntityAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView)
     permissions, and serializers based on the HTTP method of the incoming request.
     """
 
-    authentication_mapping = {"POST": []}
-    permission_mapping = {"POST": [AllowAny]}
-    application_mapping = {"POST": RegisterUser}
-    serializer_mapping = {"POST": RegisterRealEstateEntitySerializer}
+    authentication_mapping = {"POST": [], "GET": [JWTAuthentication]}
+    permission_mapping = {
+        "POST": [AllowAny],
+        "GET": [IsAuthenticated, IsRealEstateEntity],
+    }
+    application_mapping = {"GET": UserDataManager, "POST": RegisterUser}
+    serializer_mapping = {
+        "GET": RealEstateEntityReadOnlySerializer,
+        "POST": RegisterRealEstateEntitySerializer,
+    }
+
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        """
+        Handle GET requests to obtain user information.
+
+        This method returns the user account information associated with the request's
+        access token, without revealing sensitive data, provided the user has
+        permission to read their own information.
+        """
+
+        data_manager: UserDataManager = self.get_application_class(
+            user_repository=UserRepository
+        )
+        user_role = data_manager.get(base_user=request.user)
+
+        serializer_class = self.get_serializer_class()
+        serializer: Serializer = serializer_class(
+            instance=request.user, role_instance=user_role
+        )
+
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_200_OK,
+            content_type="application/json",
+        )
 
     @POSTRealEstateEntitySchema
     def post(self, request: Request, *args, **kwargs) -> Response:

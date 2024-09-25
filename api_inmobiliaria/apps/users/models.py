@@ -98,18 +98,20 @@ class UserManager(BaseUserManager):
         base_data.setdefault("is_active", False)
         base_data.setdefault("is_deleted", False)
         role_data.setdefault("verified", False)
-
-        phone_numbers = role_data["phone_numbers"].split(",")
-        role_data["is_phones_verified"] = {}
-
-        for number in phone_numbers:
-            role_data["is_phones_verified"][number] = False
-            role_data["communication_channels"] = {
+        role_data.setdefault(
+            "communication_channels",
+            {
                 "Correo": False,
                 "WhatsApp": False,
                 "Telegram": False,
                 "Teléfono": False,
-            }
+            },
+        )
+
+        role_data["is_phones_verified"] = {}
+
+        for number in role_data["phone_numbers"]:
+            role_data["is_phones_verified"][number] = False
 
         return self._create_user(
             related_model_name=UserRoles.REAL_ESTATE_ENTITY.value,
@@ -307,6 +309,11 @@ class RealEstateEntity(models.Model):
     This object encapsulates the `role data` of a real estate entity user.
     """
 
+    def __init__(self, *args, **kwargs):
+        super(RealEstateEntity, self).__init__(*args, **kwargs)
+        if isinstance(self.phone_numbers, str):
+            self.phone_numbers = self.phone_numbers.split(",")
+
     uuid = models.UUIDField(db_column="uuid", default=uuid4, primary_key=True)
     type_entity = models.CharField(
         db_column="type_entity",
@@ -406,6 +413,11 @@ class RealEstateEntity(models.Model):
     class Meta:
         verbose_name = "Real Estate Entity"
         verbose_name_plural = "Real Estate Entities"
+
+    def save(self, *args, **kwargs):
+        if isinstance(self.phone_numbers, list):
+            self.phone_numbers = ",".join(self.phone_numbers)
+        super(RealEstateEntity, self).save(*args, **kwargs)
 
     def __str__(self) -> str:
         """
