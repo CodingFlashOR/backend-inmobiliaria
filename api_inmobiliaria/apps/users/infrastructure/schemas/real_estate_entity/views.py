@@ -1,12 +1,23 @@
-from apps.users.constants import RealEstateEntityProperties, BaseUserProperties
-from apps.api_exceptions import DatabaseConnectionAPIError
-from utils.messages import ERROR_MESSAGES
+from apps.users.constants import (
+    RealEstateEntityProperties,
+    BaseUserProperties,
+    UserRoles,
+)
+from apps.api_exceptions import (
+    DatabaseConnectionAPIError,
+    NotAuthenticatedAPIError,
+    PermissionDeniedAPIError,
+    JWTAPIError,
+)
+from utils.messages import ERROR_MESSAGES, JWTErrorMessages
 from drf_spectacular.utils import (
     extend_schema,
     OpenApiResponse,
     OpenApiExample,
 )
 
+# User roles
+CONSTRUCTION_COMPANY = UserRoles.CONSTRUCTION_COMPANY.value
 
 # Real estate entity and base user properties
 EMAIL_MAX_LENGTH = BaseUserProperties.EMAIL_MAX_LENGTH.value
@@ -22,6 +33,13 @@ NIT_MAX_LENGTH = RealEstateEntityProperties.NIT_MAX_LENGTH.value
 PHONE_NUMBER_MAX_LENGTH = RealEstateEntityProperties.PHONE_NUMBER_MAX_LENGTH.value
 MAXIMUM_PHONE_NUMBERS = RealEstateEntityProperties.MAXIMUM_PHONE_NUMBERS.value
 DESCRIPTION_MAX_LENGTH = RealEstateEntityProperties.DESCRIPTION_MAX_LENGTH.value
+
+# Error messages
+USER_NOT_FOUND = JWTErrorMessages.USER_NOT_FOUND.value
+BLACKLISTED = JWTErrorMessages.BLACKLISTED.value.format(token_type="access")
+INVALID_OR_EXPIRED = JWTErrorMessages.INVALID_OR_EXPIRED.value.format(
+    token_type="access"
+)
 
 
 POSTRealEstateEntitySchema = extend_schema(
@@ -148,6 +166,8 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["blank"],
                                 ERROR_MESSAGES["null"],
                                 ERROR_MESSAGES["invalid"],
+                                ERROR_MESSAGES["password_no_upper_lower"],
+                                ERROR_MESSAGES["password_common"],
                                 ERROR_MESSAGES["max_length"].format(
                                     max_length=PASSWORD_MAX_LENGTH
                                 ),
@@ -159,8 +179,6 @@ POSTRealEstateEntitySchema = extend_schema(
                                 ERROR_MESSAGES["required"],
                                 ERROR_MESSAGES["blank"],
                                 ERROR_MESSAGES["null"],
-                                ERROR_MESSAGES["password_no_upper_lower"],
-                                ERROR_MESSAGES["password_common"],
                                 ERROR_MESSAGES["password_mismatch"],
                             ],
                         },
@@ -248,6 +266,162 @@ POSTRealEstateEntitySchema = extend_schema(
                             },
                         },
                     },
+                ),
+            ],
+        ),
+        500: OpenApiResponse(
+            description="**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.",
+            response={
+                "properties": {
+                    "detail": {
+                        "type": "string",
+                    },
+                    "code": {
+                        "type": "string",
+                    },
+                }
+            },
+            examples=[
+                OpenApiExample(
+                    name="database_connection_error",
+                    summary="Database connection error",
+                    description="The connection to the database could not be established.",
+                    value={
+                        "code": DatabaseConnectionAPIError.default_code,
+                        "detail": DatabaseConnectionAPIError.default_detail,
+                    },
+                ),
+            ],
+        ),
+    },
+)
+
+
+GETRealEstateEntitySchema = extend_schema(
+    operation_id="get_real_estate_entity",
+    tags=["Users"],
+    responses={
+        200: OpenApiResponse(
+            description="**(OK)** The requested user information is returned.",
+            response={
+                "properties": {
+                    "base_data": {"type": "object"},
+                    "role_data": {"type": "object"},
+                }
+            },
+            examples=[
+                OpenApiExample(
+                    name="response_ok",
+                    summary="Get user data",
+                    description="User information is displayed without showing sensitive data, it is possible that some of this data has a 'null' value.",
+                    value={
+                        "base_data": {
+                            "email": "user@email.com",
+                        },
+                        "role_data": {
+                            "type_entity": CONSTRUCTION_COMPANY,
+                            "name": "Nombres de la entidad",
+                            "logo": "https://www.logo.com/",
+                            "description": "Descripción de la entidad.",
+                            "nit": "1234567890",
+                            "phone_numbers": ["+573111111111", "+573222222222"],
+                            "department": "Antioquia",
+                            "municipality": "Medellín",
+                            "region": "Región Eje Cafetero - Antioquia",
+                            "coordinate": "6.244203,-75.581211",
+                            "verified": False,
+                            "documents": {
+                                "Cámara de Comercio": "https://www.camaracomercio.com/",
+                                "Certificado del Registro Único Tributario (RUT)": "https://www.rut.com/",
+                                "Licencias de construcción": "https://www.licencias.com/",
+                            },
+                            "communication_channels": {
+                                "Correo": False,
+                                "WhatsApp": False,
+                                "Telegram": False,
+                                "Teléfono": False,
+                            },
+                            "is_phones_verified": {
+                                "+573111111111": False,
+                                "+573222222222": False,
+                            },
+                        },
+                    },
+                )
+            ],
+        ),
+        401: OpenApiResponse(
+            description="**(UNAUTHORIZED)** The user's JSON Web Token is not valid for logout.",
+            response={
+                "properties": {
+                    "code": {"type": "string"},
+                    "detail": {"type": "string"},
+                }
+            },
+            examples=[
+                OpenApiExample(
+                    name="invalid_expired",
+                    summary="Access token invalid or expired",
+                    description="The access token sent in the request header is invalid or has expired.",
+                    value={
+                        "code": JWTAPIError.default_code,
+                        "detail": INVALID_OR_EXPIRED,
+                    },
+                ),
+                OpenApiExample(
+                    name="token_blacklisted",
+                    summary="Access token exists in the blacklist",
+                    description="The access token sent in the request header exists in the blacklist.",
+                    value={
+                        "code": JWTAPIError.default_code,
+                        "detail": BLACKLISTED,
+                    },
+                ),
+                OpenApiExample(
+                    name="access_token_not_provided",
+                    summary="Access token not provided",
+                    description="The access token was not provided in the request header.",
+                    value={
+                        "code": NotAuthenticatedAPIError.default_code,
+                        "detail": NotAuthenticatedAPIError.default_detail,
+                    },
+                ),
+            ],
+        ),
+        403: OpenApiResponse(
+            description="**(FORBIDDEN)** The user does not have permission to access this resource.",
+            response={
+                "properties": {
+                    "code": {"type": "string"},
+                    "detail": {"type": "string"},
+                }
+            },
+            examples=[
+                OpenApiExample(
+                    name="permission_denied",
+                    summary="Permission denied",
+                    description="This response is displayed when the user does not have permission to read your data or does not have the required role.",
+                    value={
+                        "code": PermissionDeniedAPIError.default_code,
+                        "detail": PermissionDeniedAPIError.default_detail,
+                    },
+                ),
+            ],
+        ),
+        404: OpenApiResponse(
+            description="**(NOT_FOUND)** Some resources necessary for this process were not found in the database.",
+            response={
+                "properties": {
+                    "code": {"type": "string"},
+                    "detail": {"type": "string"},
+                }
+            },
+            examples=[
+                OpenApiExample(
+                    name="user_not_found",
+                    summary="User not found",
+                    description="The user in the provided JSON Web Tokens does not exist in the database.",
+                    value=USER_NOT_FOUND,
                 ),
             ],
         ),

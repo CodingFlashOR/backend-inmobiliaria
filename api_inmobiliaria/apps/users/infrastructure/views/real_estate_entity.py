@@ -3,7 +3,10 @@ from apps.users.infrastructure.serializers import (
     RealEstateEntityReadOnlySerializer,
     RegisterRealEstateEntitySerializer,
 )
-from apps.users.infrastructure.schemas import POSTRealEstateEntitySchema
+from apps.users.infrastructure.schemas import (
+    POSTRealEstateEntitySchema,
+    GETRealEstateEntitySchema,
+)
 from apps.users.applications import RegisterUser, UserDataManager
 from apps.users.permissions import IsRealEstateEntity
 from apps.authentication.jwt import JWTAuthentication
@@ -35,6 +38,7 @@ class RealEstateEntityAPIView(MethodHTTPMapped, PermissionMixin, GenericAPIView)
         "POST": RegisterRealEstateEntitySerializer,
     }
 
+    @GETRealEstateEntitySchema
     def get(self, request: Request, *args, **kwargs) -> Response:
         """
         Handle GET requests to obtain user information.
