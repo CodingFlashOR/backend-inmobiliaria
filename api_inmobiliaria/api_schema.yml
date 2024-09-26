@@ -421,6 +421,151 @@ paths:
                   description: The connection to the database could not be established.
           description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
   /api/v1/user/real_estate_entity/:
+    get:
+      operationId: get_real_estate_entity
+      description: |-
+        Handle GET requests to obtain user information.
+
+        This method returns the user account information associated with the request's
+        access token, without revealing sensitive data, provided the user has
+        permission to read their own information.
+      tags:
+      - Users
+      security:
+      - JWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  base_data:
+                    type: object
+                  role_data:
+                    type: object
+              examples:
+                ResponseOk:
+                  value:
+                    base_data:
+                      email: user@email.com
+                    role_data:
+                      type_entity: constructioncompany
+                      name: Nombres de la entidad
+                      logo: https://www.logo.com/
+                      description: Descripción de la entidad.
+                      nit: '1234567890'
+                      phone_numbers:
+                      - '+573111111111'
+                      - '+573222222222'
+                      department: Antioquia
+                      municipality: Medellín
+                      region: Región Eje Cafetero - Antioquia
+                      coordinate: 6.244203,-75.581211
+                      verified: false
+                      documents:
+                        Cámara de Comercio: https://www.camaracomercio.com/
+                        Certificado del Registro Único Tributario (RUT): https://www.rut.com/
+                        Licencias de construcción: https://www.licencias.com/
+                      communication_channels:
+                        Correo: false
+                        WhatsApp: false
+                        Telegram: false
+                        Teléfono: false
+                      is_phones_verified:
+                        '+573111111111': false
+                        '+573222222222': false
+                  summary: Get user data
+                  description: User information is displayed without showing sensitive
+                    data, it is possible that some of this data has a 'null' value.
+          description: '**(OK)** The requested user information is returned.'
+        '401':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string
+              examples:
+                InvalidExpired:
+                  value:
+                    code: jwt_error
+                    detail: access token is invalid or expired.
+                  summary: Access token invalid or expired
+                  description: The access token sent in the request header is invalid
+                    or has expired.
+                TokenBlacklisted:
+                  value:
+                    code: jwt_error
+                    detail: access token is blacklisted.
+                  summary: Access token exists in the blacklist
+                  description: The access token sent in the request header exists
+                    in the blacklist.
+                AccessTokenNotProvided:
+                  value:
+                    code: authentication_failed
+                    detail: Authentication credentials were not provided.
+                  summary: Access token not provided
+                  description: The access token was not provided in the request header.
+          description: '**(UNAUTHORIZED)** The user''s JSON Web Token is not valid
+            for logout.'
+        '403':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string
+              examples:
+                PermissionDenied:
+                  value:
+                    code: permission_denied
+                    detail: The user does not have permissions to perform this action.
+                  summary: Permission denied
+                  description: This response is displayed when the user does not have
+                    permission to read your data or does not have the required role.
+          description: '**(FORBIDDEN)** The user does not have permission to access
+            this resource.'
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: string
+                  detail:
+                    type: string
+              examples:
+                UserNotFound:
+                  value:
+                    code: user_not_found
+                    detail: The token user does not exist.
+                  summary: User not found
+                  description: The user in the provided JSON Web Tokens does not exist
+                    in the database.
+          description: '**(NOT_FOUND)** Some resources necessary for this process
+            were not found in the database.'
+        '500':
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                  code:
+                    type: string
+              examples:
+                DatabaseConnectionError:
+                  value:
+                    code: database_connection_error
+                    detail: Unable to establish a connection with the database. Please
+                      try again later.
+                  summary: Database connection error
+                  description: The connection to the database could not be established.
+          description: '**(INTERNAL_SERVER_ERROR)** An unexpected error occurred.'
     post:
       operationId: create_real_estate_entity
       description: |-
@@ -573,14 +718,14 @@ paths:
                       - Este campo no puede estar en blanco.
                       - Este campo no puede ser nulo.
                       - El valor ingresado es inválido.
+                      - La contraseña debe contener al menos una mayuscula o una minuscula.
+                      - Esta contraseña es demasiado común.
                       - El valor ingresado no puede tener más de 30 caracteres.
                       - El valor ingresado debe tener al menos 8 caracteres.
                       confirm_password:
                       - Este campo es requerido.
                       - Este campo no puede estar en blanco.
                       - Este campo no puede ser nulo.
-                      - La contraseña debe contener al menos una mayuscula o una minuscula.
-                      - Esta contraseña es demasiado común.
                       - Las contraseñas no coinciden.
                   summary: Invalid data
                   description: These are the possible error messages for each field.
